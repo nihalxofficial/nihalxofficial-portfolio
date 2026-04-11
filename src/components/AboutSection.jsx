@@ -46,13 +46,13 @@ export default function AboutSection() {
           {/* Bio column */}
           <div className="reveal-right">
             <p className="text-[var(--text-secondary)] leading-[1.75] mb-5">
-              I'm a passionate Frontend Developer with 5+ years of experience creating exceptional digital experiences. My journey started during computer science studies, and I've been in love with the craft ever since.
+              I'm a passionate Frontend Developer with 4+ years of experience creating exceptional digital experiences. My journey started during computer science studies, and I've been in love with the craft ever since.
             </p>
             <p className="text-[var(--text-secondary)] leading-[1.75] mb-5">
-              I specialize in building responsive, user-friendly web applications using React, Vue.js, and TypeScript. I believe that great design and rock-solid functionality should always go hand in hand.
+              I specialize in building responsive, user-friendly web applications using React, Next.js and TypeScript. I believe that great design and rock-solid functionality should always go hand in hand.
             </p>
             <p className="text-[var(--text-secondary)] leading-[1.75] mb-5">
-              When not coding, I explore new technologies, contribute to open-source, or share knowledge via blog posts and tech talks.
+              When not coding, I explore new technologies, contribute to open-source or share knowledge via blog posts and tech talks.
             </p>
 
             {/* Highlight bullets */}
