@@ -42,7 +42,7 @@ export default function Navbar() {
             onClick={(e) => { e.preventDefault(); handleLink('#home'); }}
             className="font-syne font-extrabold text-[1.4rem] gradient-text no-underline"
           >
-            Alex Morgan
+            nihalxofficial
           </a>
 
           {/* Desktop links */}

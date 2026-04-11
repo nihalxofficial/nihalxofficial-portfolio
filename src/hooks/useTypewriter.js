@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 
 const ROLES = [
+  "Full Stack Web Developer",
   'Mern Stack Developer',
-  'UI/UX Designer',
-  'Full Stack Developer',
   'React Specialist',
   'Open Source Contributor',
+  "Aspiring Software Engineer"
 ];
 
 /**

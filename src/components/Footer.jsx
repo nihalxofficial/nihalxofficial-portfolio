@@ -39,7 +39,7 @@ export default function Footer() {
         </div>
 
         <div className="text-[var(--text-muted)] text-[0.83rem]">
-          © 2024 Alex Morgan. Crafted with{' '}
+          &copy; 2026 nihal@official. Crafted with {' '} 
           <i className="fas fa-heart" style={{ color: '#ef4444', fontSize: '0.8em' }} />{' '}
           All rights reserved.
         </div>

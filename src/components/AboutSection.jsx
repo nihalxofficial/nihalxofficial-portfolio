@@ -1,11 +1,12 @@
 import SectionHeader from './SectionHeader';
 import { useToast } from '../context/ToastContext';
 import './AboutSection.css';
+import aboutImg from "../assets/md-nihal-uddin-removebg-preview.png"
 
 const HIGHLIGHTS = [
-  { strong: '5+ years',       rest: 'professional web development' },
-  { strong: '50+ projects',   rest: 'for clients worldwide' },
-  { strong: 'React & Vue.js', rest: 'expert' },
+  { strong: '4+ years',       rest: 'professional web development' },
+  { strong: '30+ projects',   rest: 'for clients worldwide' },
+  { strong: 'React & Next.js', rest: 'expert' },
   { strong: 'UI/UX principles', rest: 'strong foundation' },
   { strong: 'Fortune 500',    rest: 'startups & enterprise clients' },
   { strong: 'Open-source',    rest: 'contributor' },
@@ -32,7 +33,8 @@ export default function AboutSection() {
           {/* Avatar column */}
           <div className="relative max-w-[320px] mx-auto lg:mx-0 reveal-left">
             <div className="about-avatar">
-              <i className="fas fa-user-astronaut" />
+              {/* <i className="fas fa-user-astronaut" /> */}
+              <img src={aboutImg} alt="" />
             </div>
             {/* Experience badge overlay */}
             <div className="absolute -bottom-5 -right-5 gradient-bg text-white p-4 rounded-2xl text-center shadow-[0_8px_24px_var(--accent-glow)]">

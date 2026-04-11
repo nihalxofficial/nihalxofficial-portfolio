@@ -1,6 +1,7 @@
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useToast } from '../context/ToastContext';
 import './HeroSection.css';
+import heroImg from "../assets/md-nihal-uddin-github.png"
 
 // Smooth scroll helper
 function scrollTo(id) {
@@ -41,7 +42,7 @@ export default function HeroSection() {
 
           {/* Tagline */}
           <p className="text-[var(--text-secondary)] leading-[1.7] max-w-[520px] mb-10 text-[1.05rem] animate-fadeInUp3">
-            I craft beautiful, functional web experiences using modern technologies. Specializing in React, Vue.js, TypeScript, and responsive design.
+            I build beautiful, high-performance web applications & mobile apps using modern technologies. As a MERN Stack developer, I specialize in React, Next.js, and responsive design to create seamless user experiences.
           </p>
 
           {/* CTA buttons */}
@@ -65,9 +66,9 @@ export default function HeroSection() {
           {/* Stats strip */}
           <div className="flex gap-8 mt-12 pt-10 border-t border-[var(--border)] animate-fadeInUp5 justify-center lg:justify-start flex-wrap">
             {[
-              { num: '5+',  label: 'Years of experience' },
-              { num: '50+', label: 'Projects delivered' },
-              { num: '30+', label: 'Happy clients' },
+              { num: '4+',  label: 'Years of experience' },
+              { num: '30+', label: 'Projects delivered' },
+              { num: '20+', label: 'Happy clients' },
             ].map(({ num, label }) => (
               <div key={label}>
                 <div className="font-syne text-[2rem] font-extrabold text-[var(--text-primary)] leading-none">{num}</div>
@@ -80,8 +81,9 @@ export default function HeroSection() {
         {/* ── Right: avatar with floating badges ── */}
         <div className="flex justify-center items-center animate-fadeInRight order-first lg:order-last">
           <div className="relative inline-block">
-            <div className="hero-avatar">
-              <i className="fas fa-user-tie" />
+            <div className="hero-avatar ">
+              {/* <i className="fas fa-user-tie" /> */}
+              <img src={heroImg} alt=""  className=''/>
             </div>
             <div className="floating-badge animate-float" style={{ bottom: '-16px', left: '-20px' }}>
               <span className="dot" /> Open to work
