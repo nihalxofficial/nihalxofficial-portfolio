@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/static/css/main.46d59f15.css",
-    "main.js": "/static/js/main.710dec1c.js",
+    "main.js": "/static/js/main.b99589d6.js",
     "static/media/md-nihal-uddin-github.png": "/static/media/md-nihal-uddin-github.495480b0a0a16b08b6cb.png",
     "static/media/md-nihal-uddin-removebg-preview.png": "/static/media/md-nihal-uddin-removebg-preview.a63256ed5dff1007ff0d.png",
     "index.html": "/index.html",
     "main.46d59f15.css.map": "/static/css/main.46d59f15.css.map",
-    "main.710dec1c.js.map": "/static/js/main.710dec1c.js.map"
+    "main.b99589d6.js.map": "/static/js/main.b99589d6.js.map"
   },
   "entrypoints": [
     "static/css/main.46d59f15.css",
-    "static/js/main.710dec1c.js"
+    "static/js/main.b99589d6.js"
   ]
 }

@@ -41,9 +41,9 @@ function AppContent() {
         <ServicesSection />
         <SkillsSection />
         <ProjectsSection />
-        {/* <EducationSection /> */}
-        {/* <TestimonialsSection /> */}
-        {/* <BlogSection /> */}
+        <EducationSection />
+        <TestimonialsSection />
+        <BlogSection />
         <ContactSection />
       </main>
       <Footer />
