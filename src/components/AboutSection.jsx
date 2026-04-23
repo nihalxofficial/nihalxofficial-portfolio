@@ -1,7 +1,7 @@
 import SectionHeader from './SectionHeader';
 import { useToast } from '../context/ToastContext';
 import './AboutSection.css';
-import aboutImg from "../assets/md-nihal-uddin-removebg-preview.png"
+import aboutImg from "../assetes/md-nihal-uddin-removebg-preview.png"
 
 const HIGHLIGHTS = [
   { strong: '4+ years',       rest: 'professional web development' },

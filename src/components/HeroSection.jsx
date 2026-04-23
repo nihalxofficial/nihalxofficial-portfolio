@@ -1,7 +1,7 @@
 import { useTypewriter } from '../hooks/useTypewriter';
 import { useToast } from '../context/ToastContext';
 import './HeroSection.css';
-import heroImg from "../assets/md-nihal-uddin-github.png"
+import heroImg from "../assetes/md-nihal-uddin-github.png"
 
 // Smooth scroll helper
 function scrollTo(id) {
