@@ -1,16 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import gsap from "gsap";
+import { useGSAP } from "@gsap/react";
 import Magnetic from "@/components/ui/Magnetic";
 
 export default function NotFound() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    
+  useGSAP(() => {
     gsap.from(".not-found-anim", {
       y: 30,
       opacity: 0,
@@ -18,7 +17,7 @@ export default function NotFound() {
       duration: 0.8,
       ease: "power3.out",
     });
-  }, []);
+  }, { scope: containerRef });
 
   return (
     <div 
@@ -39,8 +38,7 @@ export default function NotFound() {
           style={{ 
             background: "linear-gradient(to right, var(--accent), var(--accent-2))",
             WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            filter: "drop-shadow(0 0 20px var(--accent-glow))"
+            WebkitTextFillColor: "transparent"
           }}
         >
           404
