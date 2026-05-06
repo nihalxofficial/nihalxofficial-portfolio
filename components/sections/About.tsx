@@ -74,7 +74,7 @@ export default function About({ onDownload }: AboutProps) {
 
           {/* Text */}
           <div>
-            <div className="about-text-item border-l-[6px] border-[var(--accent)] bg-[var(--accent-glow)] py-5 pr-5 pl-7 rounded-2xl mb-7 will-change-transform">
+            <div className="about-text-item mb-7 will-change-transform">
               <p className="leading-[1.75] mb-4 text-[0.9rem]" style={{ color: "var(--text-secondary)" }}>
                 I’m a Full Stack Developer who started coding with curiosity of how things work — and haven’t slowed down since. I turn ideas into fast, scalable and user-focused applications, specializing in Dashboards, E-commerce and SaaS products.
               </p>

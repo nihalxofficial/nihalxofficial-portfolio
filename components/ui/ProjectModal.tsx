@@ -111,7 +111,6 @@ export default function ProjectModal() {
                       Brief Description
                     </div>
                     <p
-                      className="border-l-[6px] border-[var(--accent)] bg-[var(--accent-glow)] p-5 rounded-xl"
                       style={{
                         color: "var(--text-secondary)",
                         lineHeight: 1.7,

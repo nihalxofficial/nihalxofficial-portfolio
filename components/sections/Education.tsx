@@ -45,7 +45,7 @@ const AnimatedEduCard = ({ edu, index }: { edu: any; index: number }) => {
           {edu.school}
         </p>
         <p
-          className="text-[0.875rem] leading-[1.65] border-l-[6px] border-[var(--accent)] bg-[var(--accent-glow)] py-3 pr-4 pl-5 rounded-xl mt-2"
+          className="text-[0.875rem] leading-[1.65] mt-2"
           style={{ color: "var(--text-secondary)" }}
         >
           {edu.desc}
