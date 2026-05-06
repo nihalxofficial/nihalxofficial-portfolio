@@ -8,7 +8,7 @@ import CustomCursor from "@/components/ui/CustomCursor";
 
 export const metadata: Metadata = {
   title: "Md. Nihal Uddin · Full-Stack Developer",
-  description: "Full-Stack Developer specializing in React, Vue.js, TypeScript, and responsive design.",
+  description: "Full-Stack Developer specializing in React, Next.js, Node.js, MongoDB, SQL, TypeScript, Golang, Python and responsive design.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
