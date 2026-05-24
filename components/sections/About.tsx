@@ -16,7 +16,7 @@ export default function About({ onDownload }: AboutProps) {
 
   useGSAP(() => {
 
-    // 2. Avatar scrub (from left)
+    // 2. Avatar scrub (from bottom)
     gsap.from(".about-avatar-wrapper", {
       scrollTrigger: {
         trigger: ".about-avatar-wrapper",
@@ -24,12 +24,12 @@ export default function About({ onDownload }: AboutProps) {
         end: "top 50%",
         scrub: 1,
       },
-      x: -100,
+      y: 60,
       opacity: 0,
-      scale: 0.8,
+      scale: 0.9,
     });
 
-    // 3. Text items scrub (from right)
+    // 3. Text items scrub (from bottom)
     const textElements = gsap.utils.toArray(".about-text-item");
     textElements.forEach((el) => {
       gsap.from(el as Element, {
@@ -39,7 +39,7 @@ export default function About({ onDownload }: AboutProps) {
           end: "top 65%",
           scrub: 1,
         },
-        x: 100,
+        y: 40,
         opacity: 0,
       });
     });

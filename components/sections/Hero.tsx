@@ -8,9 +8,9 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import heroImg from "@/assets/md-nihal-uddin-github.png"
 import Magnetic from "@/components/ui/Magnetic";
-import { Pacifico } from "next/font/google";
+import { Fira_Code } from "next/font/google";
 
-const pacifico = Pacifico({ subsets: ["latin"], weight: "400" });
+const firaCode = Fira_Code({ subsets: ["latin"], weight: ["400", "500"] });
 
 function smoothScroll(href: string) {
   const el = document.querySelector(href);
@@ -123,7 +123,7 @@ export default function Hero() {
             style={{ color: "var(--text-secondary)" }}>
             <span className="mr-[6px]">I specialize in</span>
             <span
-              className={`text-[1.5rem] tracking-wide ${pacifico.className}`}
+              className={`text-[1.3rem] font-medium tracking-tight ${firaCode.className}`}
               style={{ color: "var(--accent)" }}
             >
               {typedText}

@@ -35,8 +35,7 @@ export default function Home() {
         <Projects />
         <Education />
         {/* <Testimonials /> */}
-        {/* <Blog /> */}
-        <Contact onSubmit={showToast} />
+        <Contact />
         <Footer />
       </main>
       <ProjectModal />

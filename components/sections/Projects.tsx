@@ -60,7 +60,23 @@ export default function Projects() {
       stagger: 0.1,
       ease: "power3.out",
     });
-  }, { scope: containerRef });
+
+    // Card scrub animation (fade and scale up on scroll)
+    const cards = gsap.utils.toArray(".project-card");
+    cards.forEach((card: any) => {
+      gsap.from(card, {
+        scrollTrigger: {
+          trigger: card,
+          start: "top 95%",
+          end: "top 75%",
+          scrub: 1,
+        },
+        y: 60,
+        opacity: 0,
+        scale: 0.95,
+      });
+    });
+  }, { scope: containerRef, dependencies: [currentPage, activeFilter] });
 
   return (
     <section
@@ -96,12 +112,10 @@ export default function Projects() {
             {paginatedProjects.map((project) => (
               <motion.div
                 layout
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: -20 }}
                 transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
                 key={`${project.title}-${project.originalIdx}`}
-                className="project-card group cursor-pointer"
+                className="project-card group cursor-pointer will-change-transform"
                 onClick={() => openModal(project.originalIdx)}
               >
                 {/* Thumbnail */}

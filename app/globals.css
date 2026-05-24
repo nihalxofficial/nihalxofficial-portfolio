@@ -30,6 +30,10 @@
   --img-border: rgba(99, 102, 241, 0.3);
 }
 
+[data-theme="dark"] .map-theme-filter {
+  filter: grayscale(100%) invert(100%) contrast(85%) opacity(0.85);
+}
+
 [data-theme="light"] {
   --bg-primary: #faf8f5;
   --bg-secondary: #f3f0eb;
@@ -54,6 +58,10 @@
   --toggle-bg: #e8e4df;
   --img-bg: linear-gradient(135deg, #e8e4df, #f3f0eb);
   --img-border: rgba(79, 70, 229, 0.2);
+}
+
+[data-theme="light"] .map-theme-filter {
+  filter: grayscale(10%) contrast(100%) opacity(0.9);
 }
 
 html { scroll-behavior: smooth; }

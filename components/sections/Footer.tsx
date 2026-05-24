@@ -1,15 +1,37 @@
+"use client";
+
 import { NAV_LINKS } from "@/data/portfolio";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useRef } from "react";
 
 export default function Footer() {
+  const footerRef = useRef<HTMLElement>(null);
+
+  useGSAP(() => {
+    gsap.from(".footer-content", {
+      scrollTrigger: {
+        trigger: footerRef.current,
+        start: "top 95%",
+        end: "bottom bottom",
+        scrub: 1,
+      },
+      y: 50,
+      opacity: 0,
+      scale: 0.95,
+    });
+  }, { scope: footerRef });
+
   return (
     <footer
-      className="py-12"
+      ref={footerRef}
+      className="py-12 overflow-hidden"
       style={{
         background: "var(--bg-primary)",
         borderTop: "1px solid var(--border)",
       }}
     >
-      <div className="max-w-[1200px] mx-auto px-6 flex flex-col items-center gap-6">
+      <div className="footer-content max-w-[1200px] mx-auto px-6 flex flex-col items-center gap-6 will-change-transform">
         <div className="font-syne text-[1.5rem] font-extrabold gradient-text">
           Nihal Uddin
         </div>

@@ -37,11 +37,15 @@ export function useBackToTop(threshold = 400) {
 }
 
 export function useToast() {
-  const [toast, setToast] = useState<{ show: boolean; msg: string }>({ show: false, msg: "" });
+  const [toast, setToast] = useState<{ show: boolean; msg: string; type?: "success" | "error" }>({ 
+    show: false, 
+    msg: "", 
+    type: "success" 
+  });
 
-  function showToast(msg: string) {
-    setToast({ show: true, msg });
-    setTimeout(() => setToast({ show: false, msg: "" }), 3500);
+  function showToast(msg: string, type: "success" | "error" = "success") {
+    setToast({ show: true, msg, type });
+    setTimeout(() => setToast({ show: false, msg: "", type }), 3500);
   }
 
   return { toast, showToast };

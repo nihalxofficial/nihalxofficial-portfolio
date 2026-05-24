@@ -15,14 +15,14 @@ const AnimatedEduCard = ({ edu, index }: { edu: any; index: number }) => {
     // Progress starts when element enters bottom of screen (windowHeight), completes at 70% of screen
     const progress = Math.min(Math.max((windowHeight - rect.top) / (windowHeight * 0.3), 0), 1);
     
-    // Slide in from left (-100px to 0)
-    const x = -100 * (1 - progress);
-    ref.current.style.transform = `translateX(${x}px)`;
+    // Slide in from bottom (40px to 0)
+    const y = 40 * (1 - progress);
+    ref.current.style.transform = `translateY(${y}px)`;
     ref.current.style.opacity = progress.toString();
   });
 
   return (
-    <div ref={ref} className="flex gap-5 opacity-0 -translate-x-[100px] will-change-transform">
+    <div ref={ref} className="flex gap-5 opacity-0 translate-y-[40px] will-change-transform">
       <div className="edu-dot">
         <i className={edu.icon} />
       </div>
@@ -65,14 +65,14 @@ const AnimatedCertCard = ({ cert }: { cert: any }) => {
     
     const progress = Math.min(Math.max((windowHeight - rect.top) / (windowHeight * 0.3), 0), 1);
     
-    // Slide in from right (100px to 0)
-    const x = 100 * (1 - progress);
-    ref.current.style.transform = `translateX(${x}px)`;
+    // Slide in from bottom (40px to 0)
+    const y = 40 * (1 - progress);
+    ref.current.style.transform = `translateY(${y}px)`;
     ref.current.style.opacity = progress.toString();
   });
 
   return (
-    <div ref={ref} className="cert-card opacity-0 translate-x-[100px] will-change-transform">
+    <div ref={ref} className="cert-card opacity-0 translate-y-[40px] will-change-transform">
       <div
         className="cert-icon"
         style={cert.iconColor ? { color: cert.iconColor } : undefined}

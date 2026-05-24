@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { NAV_LINKS } from "@/data/portfolio";
 import { FaBriefcase } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Magnetic from "./Magnetic";
 
 function smoothScroll(href: string) {
@@ -45,7 +45,7 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className="fixed top-0 w-full z-[100] backdrop-blur-xl"
+        className="fixed top-0 w-full z-[100] backdrop-blur-xl transition-all duration-300"
         style={{ background: "var(--nav-bg)", borderBottom: "1px solid var(--border)" }}
       >
         <div className="max-w-[1200px] mx-auto px-6 h-[68px] flex items-center justify-between">
