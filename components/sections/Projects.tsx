@@ -112,6 +112,7 @@ export default function Projects() {
             {paginatedProjects.map((project) => (
               <motion.div
                 layout
+                whileHover={{ y: -5 }}
                 exit={{ opacity: 0, scale: 0.9, y: -20 }}
                 transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
                 key={`${project.title}-${project.originalIdx}`}
@@ -142,24 +143,34 @@ export default function Projects() {
                       ))}
                     </div>
                     
-                    <i
-                      className={`${project.icon} relative z-[1] text-[3rem] text-white/90 transition-transform duration-500 group-hover:scale-110`}
-                      style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.5))" }}
-                    />
+                    {project.image ? (
+                      <img
+                        src={project.image}
+                        alt={project.title}
+                        className="absolute inset-0 w-full h-full object-fit z-[1] transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <i
+                        className={`${project.icon} relative z-[1] text-[3rem] text-white/90 transition-transform duration-500 group-hover:scale-110`}
+                        style={{ filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.5))" }}
+                      />
+                    )}
                   </div>
 
                   {/* Info */}
-                  <div className="p-[20px] bg-[var(--card-bg)] border-t border-[var(--border)] transition-colors duration-300 group-hover:bg-[var(--tag-bg)] rounded-b-[14px]">
-                    <h3
-                      className="font-syne text-[1.1rem] font-bold mb-[8px] transition-colors duration-300 group-hover:text-[var(--accent)]"
-                      style={{ color: "var(--text-primary)" }}
-                    >
-                      {project.title}
-                    </h3>
-                    <p className="text-[0.85rem] mb-[16px] line-clamp-2 leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                      {project.desc}
-                    </p>
-                    <div className="flex gap-[8px] flex-wrap">
+                  <div className="p-[20px] bg-[var(--card-bg)] border-t border-[var(--border)] transition-colors duration-300 group-hover:bg-[var(--tag-bg)] rounded-b-[14px] flex-1 flex flex-col justify-between">
+                    <div>
+                      <h3
+                        className="font-syne text-[1.1rem] font-bold mb-[8px] transition-colors duration-300 group-hover:text-[var(--accent)]"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        {project.title}
+                      </h3>
+                      <p className="text-[0.85rem] mb-[16px] line-clamp-2 leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                        {project.desc}
+                      </p>
+                    </div>
+                    <div className="flex gap-[8px] flex-wrap mt-auto">
                       {project.chips.map((chip) => (
                         <span
                           key={chip}

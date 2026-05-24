@@ -61,15 +61,23 @@ export default function ProjectModal() {
               >
                 {/* LEFT: Fixed large image on desktop */}
                 <div
-                  className={`flex-shrink-0 rounded-2xl flex items-center justify-center text-[6rem] text-white/90 ${project.grad} md:sticky md:top-0`}
+                  className={`flex-shrink-0 rounded-2xl flex items-center justify-center overflow-hidden text-[6rem] text-white/90 ${project.grad} md:sticky md:top-0`}
                   style={{ width: "100%", maxWidth: "320px", height: "320px", margin: "0 auto" }}
                 >
-                  <i
-                    className={project.icon}
-                    style={{
-                      filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))",
-                    }}
-                  />
+                  {project.image ? (
+                    <img
+                      src={project.image}
+                      alt={project.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <i
+                      className={project.icon}
+                      style={{
+                        filter: "drop-shadow(0 4px 12px rgba(0,0,0,0.4))",
+                      }}
+                    />
+                  )}
                 </div>
 
                 {/* RIGHT: Scrollable content on desktop */}
