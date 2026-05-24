@@ -229,20 +229,28 @@ export default function ProjectModal() {
                     className="flex gap-3 pt-4 mt-auto sticky bottom-0 bg-[var(--bg-card)] pb-2"
                     style={{ borderTop: "1px solid var(--border)" }}
                   >
-                    <a
-                      href="#"
-                      className="btn-primary-custom"
-                      style={{ fontSize: "0.85rem", padding: "10px 20px" }}
-                    >
-                      <i className="fab fa-github" /> View Code
-                    </a>
-                    <a
-                      href="#"
-                      className="btn-outline-custom"
-                      style={{ fontSize: "0.85rem", padding: "10px 20px" }}
-                    >
-                      <i className="fas fa-external-link-alt" /> Live Demo
-                    </a>
+                    {project.codeLink && (
+                      <a
+                        href={project.codeLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-primary-custom"
+                        style={{ fontSize: "0.85rem", padding: "10px 20px" }}
+                      >
+                        <i className="fab fa-github" /> View Code
+                      </a>
+                    )}
+                    {project.liveDemo && (
+                      <a
+                        href={project.liveDemo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-outline-custom"
+                        style={{ fontSize: "0.85rem", padding: "10px 20px" }}
+                      >
+                        <i className="fas fa-external-link-alt" /> Live Demo
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
