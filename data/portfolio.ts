@@ -129,8 +129,7 @@ export const PROJECTS: Project[] = [
   {
     title: "PetNest - Pet Adopiton",
     icon: "fas fa-chart-line",
-    // image: "https://i.ibb.co.com/bMLpTRF9/Petnest.png",
-    image: "https://i.ibb.co.com/9kHq9jD3/Pet-Net-final.png",
+    image: "https://i.ibb.co.com/Y7k615gR/Pet-Nest.png",
     grad: "g1",
     tags: "Next.js Express.js React JWT BetterAuth",
     tagBadges: ["Next.js", "Express.js"],
@@ -155,7 +154,7 @@ export const PROJECTS: Project[] = [
   {
     title: "Mentora LMS Platform",
     icon: "fas fa-graduation-cap",
-    image: "https://i.ibb.co.com/YFnrhYzp/Mentora.png",
+    image: "https://i.ibb.co.com/Fkx3c0y3/Mentora.png",
     grad: "g2",
     tags: "Next.js MongoDB React Express.js JWT BetterAuth",
     tagBadges: ["Express.js", "Next.js"],
@@ -183,7 +182,7 @@ export const PROJECTS: Project[] = [
   {
     title: "SunCart Summer Store",
     icon: "fas fa-sun",
-    image: "https://i.ibb.co.com/hJmY5Fm2/Sun-Cart.png",
+    image: "https://i.ibb.co.com/qYT0zd2s/Sun-Cart.png",
     grad: "g3",
     tags: "Next.js MongoDB React BetterAuth",
     tagBadges: ["Next.js", "BetterAuth"],
@@ -237,7 +236,6 @@ export const PROJECTS: Project[] = [
     liveDemo: "https://pixgen-wheat.vercel.app",
     codeLink: "https://github.com/nihalxofficial/PixGen-Ai-Image-Gallery",
   },
-  ,
   {
     title: "Dragon News",
     icon: "fas fa-newspaper",
