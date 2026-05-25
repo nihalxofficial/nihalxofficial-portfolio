@@ -212,7 +212,7 @@ export const PROJECTS: Project[] = [
   {
     title: "PixGen AI Gallery",
     icon: "fas fa-image",
-    image: "https://i.ibb.co.com/H3hs3Gw/Pix-Gen.png",
+    image: "https://i.ibb.co.com/CsJdgjq4/Pix-Gen-final.png",
     grad: "g4",
     tags: "Next.js MongoDB React BetterAuth",
     tagBadges: ["Next.js", "MongoDB"],
