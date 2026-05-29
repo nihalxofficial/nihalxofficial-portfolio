@@ -118,6 +118,7 @@ export const FILTER_TAGS = [
   // "JWT",
   // "BetterAuth",
   "Golang",
+  "Docker",
 ];
 
 export interface Project {
@@ -143,9 +144,9 @@ export const PROJECTS: Project[] = [
     icon: "fas fa-chart-line",
     image: "https://i.ibb.co.com/Y7k615gR/Pet-Nest.png",
     grad: "g1",
-    tags: "Next.js Express.js JWT BetterAuth",
+    tags: "Next.js Express.js JWT BetterAuth Docker",
     tagBadges: ["Next.js", "Express.js"],
-    chips: ["Next.js", "Express", "React", "JWT", "Framer Motion"],
+    chips: ["Next.js", "Express", "JWT", "Framer Motion", "Docker"],
     desc: "PetNest is a real-world pet adoption portal that connects animal lovers with shelters and individual pet owners. Users can browse available pets, view detailed profiles and submit adoption requests. Pet owners/shelters can manage their listings and handle incoming adoption requests — all within a clean, secure and responsive interface.",
     features: [
       "Advanced Pet Browsing & Search",
@@ -157,7 +158,7 @@ export const PROJECTS: Project[] = [
       "RESTful Backend Architecture",
       "Real-Time User Feedback",
     ],
-    tech: ["React", "Next.js", "Express.js", "Node.js", "MongoDB", "BetterAuth", "JWT"],
+    tech: ["Next.js", "Express.js", "Node.js", "MongoDB", "BetterAuth", "JWT", "Docker"],
     challenges: "Some major challenges included implementing secure authentication with persistent login sessions, managing protected routes without unwanted redirects, handling complex adoption request logic, preventing duplicate approvals, designing a fully responsive UI across devices and maintaining smooth state management between the frontend and backend.",
     improvements: "Future plans include role based operations, chat features, AI-based recommendations, wishlist support, location-based search, secure payments, admin controls, enhanced security, multi-language support and overall performance improvements for a better user experience.",
     liveDemo: "https://petnest-olive.vercel.app",
@@ -168,9 +169,9 @@ export const PROJECTS: Project[] = [
     icon: "fas fa-graduation-cap",
     image: "https://i.ibb.co.com/Fkx3c0y3/Mentora.png",
     grad: "g2",
-    tags: "Next.js MongoDB Express.js JWT BetterAuth",
+    tags: "Next.js MongoDB Express.js JWT BetterAuth Docker",
     tagBadges: ["Express.js", "Next.js"],
-    chips: ["Next.js", "MongoDB", "JWT", "BetterAuth", "Atlas"],
+    chips: ["Next.js", "MongoDB", "JWT", "BetterAuth", "Docker", "Atlas"],
     desc: "A full-stack Learning Management System where students can browse, enroll in and track courses while instructors can create and manage educational content through a modern and responsive dashboard.",
     features: [
       "Role-based dashboards for students & instructors",
@@ -179,12 +180,12 @@ export const PROJECTS: Project[] = [
       "Responsive UI with modern course management system",
     ],
     tech: [
-      "React",
       "Next.js",
-      "Tailwind CSS",
       "MongoDB",
       "BetterAuth",
       "JWT",
+      "Docekr",
+      "Tailwind",
       "Hero UI",
       "Swiper.js",
     ],
