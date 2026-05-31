@@ -9,8 +9,45 @@ import * as SiIcons from "react-icons/si";
 import * as FaIcons from "react-icons/fa";
 import * as Fa6Icons from "react-icons/fa6";
 
+// Custom SVG: Neon Database logo (stylized N)
+function NeonIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
+  const color = (style?.color as string) ?? "#00E5BF";
+  return (
+    <svg
+      className={className}
+      style={{ ...style, color: undefined }}
+      viewBox="0 0 25 25"
+      width="1em"
+      height="1em"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Neon"
+    >
+      {/* Neon "N" logomark */}
+      <path
+        d="M2 2h5.5L20 18.5V23H14.5L2 6.5V2Z"
+        fill={color}
+      />
+      <path
+        d="M14.5 2H20v15.5L14.5 12V2Z"
+        fill={color}
+        opacity="0.45"
+      />
+      <path
+        d="M2 8.5 7.5 14V23H2V8.5Z"
+        fill={color}
+        opacity="0.45"
+      />
+    </svg>
+  );
+}
+
 // A safe dynamic dispatcher for technology icons supporting Simple Icons, FontAwesome, and standard classes
 function SkillIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
+  // Custom icon overrides
+  if (name === "NeonCustom") {
+    return <NeonIcon className={className} style={style} />;
+  }
   if (name.startsWith("Si")) {
     const Icon = (SiIcons as any)[name];
     if (Icon) return <Icon className={className} style={style} />;
