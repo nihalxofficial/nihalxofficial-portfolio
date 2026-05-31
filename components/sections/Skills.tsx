@@ -1,13 +1,12 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
 import { motion, AnimatePresence } from "framer-motion";
 import { SKILL_CATEGORIES } from "@/data/portfolio";
 import * as SiIcons from "react-icons/si";
 import * as FaIcons from "react-icons/fa";
 import * as Fa6Icons from "react-icons/fa6";
+import { useLenisReveal } from "@/hooks/useLenisReveal";
 
 // Custom SVG: Neon Database logo (stylized N)
 function NeonIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
@@ -139,27 +138,13 @@ export default function Skills() {
     }
   };
 
-  useGSAP(() => {
-    // Elegant slide-up reveal on scroll for section components
-    gsap.from(".skills-reveal", {
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: "top 85%",
-        end: "top 55%",
-        scrub: 1,
-      },
-      y: 35,
-      opacity: 0,
-      stagger: 0.1,
-      ease: "power2.out",
-    });
-  }, { scope: containerRef });
+  const tabsRef = useLenisReveal<HTMLDivElement>({ distance: 30, viewportFraction: 0.35, staggerIndex: 0 });
+  const gridRef = useLenisReveal<HTMLDivElement>({ distance: 40, viewportFraction: 0.35, staggerIndex: 1 });
 
   return (
     <section 
       id="skills" 
       className="py-[100px] section-secondary overflow-hidden" 
-      ref={containerRef}
     >
       <div className="max-w-[1200px] mx-auto px-6">
         <div className="skills-reveal">
@@ -172,7 +157,7 @@ export default function Skills() {
         </div>
 
         {/* Dynamic Category Filtering Tabs */}
-        <div className="flex flex-wrap gap-3 justify-center mb-12 skills-reveal">
+        <div ref={tabsRef} className="flex flex-wrap gap-3 justify-center mb-12 will-change-transform" style={{ opacity: 0 }}>
           {["All Stack", "Frontend", "Backend", "Tools"].map((tab) => (
             <button
               key={tab}
@@ -186,8 +171,10 @@ export default function Skills() {
 
         {/* Visual Interactive High-Density Grid */}
         <motion.div 
+          ref={gridRef}
           layout 
-          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4 skills-reveal"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4 will-change-transform"
+          style={{ opacity: 0 }}
         >
           <AnimatePresence mode="popLayout">
             {paginatedSkills.map((skill) => {

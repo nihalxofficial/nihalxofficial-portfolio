@@ -1,9 +1,7 @@
 "use client";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { useRef } from "react";
 import { TESTIMONIALS } from "@/data/portfolio";
+import { useLenisReveal } from "@/hooks/useLenisReveal";
 
 function Stars({ count }: { count: number }) {
   return (
@@ -23,29 +21,53 @@ function Stars({ count }: { count: number }) {
   );
 }
 
+function TestimonialCard({ t, index }: { t: any; index: number }) {
+  const cardRef = useLenisReveal<HTMLDivElement>({
+    distance: 40,
+    viewportFraction: 0.35,
+    staggerIndex: index,
+  });
+
+  return (
+    <div ref={cardRef} className="testimonial-card will-change-transform" style={{ opacity: 0 }}>
+      <Stars count={t.stars} />
+
+      <p
+        className="text-[0.9rem] leading-[1.72] mb-6 relative z-[1]"
+        style={{ color: "var(--text-secondary)" }}
+      >
+        {t.text}
+      </p>
+
+      <div className="flex items-center gap-3">
+        <div
+          className="testimonial-avatar"
+          style={t.avatarGrad ? { background: t.avatarGrad } : undefined}
+        >
+          {t.initials}
+        </div>
+        <div>
+          <p
+            className="font-syne font-bold text-[0.9rem]"
+            style={{ color: "var(--text-primary)" }}
+          >
+            {t.name}
+          </p>
+          <p className="text-[0.78rem]" style={{ color: "var(--text-muted)" }}>
+            {t.role}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Testimonials() {
-  const ref = useRef<HTMLElement>(null);
-
-  useGSAP(() => {
-    gsap.from(".testimonial-card-stagger", {
-      scrollTrigger: {
-        trigger: ".testimonials-grid",
-        start: "top 90%",
-        end: "top 40%",
-        scrub: 1,
-      },
-      y: 40,
-      opacity: 0,
-      stagger: 0.1,
-    });
-  }, { scope: ref });
-
   return (
     <section
       id="testimonials"
       className="py-[100px]"
       style={{ background: "var(--bg-primary)" }}
-      ref={ref}
     >
       <div className="max-w-[1200px] mx-auto px-6">
         <SectionHeader
@@ -56,37 +78,8 @@ export default function Testimonials() {
         />
 
         <div className="testimonials-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {TESTIMONIALS.map((t) => (
-            <div key={t.name} className="testimonial-card testimonial-card-stagger will-change-transform">
-              <Stars count={t.stars} />
-
-              <p
-                className="text-[0.9rem] leading-[1.72] mb-6 relative z-[1]"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {t.text}
-              </p>
-
-              <div className="flex items-center gap-3">
-                <div
-                  className="testimonial-avatar"
-                  style={t.avatarGrad ? { background: t.avatarGrad } : undefined}
-                >
-                  {t.initials}
-                </div>
-                <div>
-                  <p
-                    className="font-syne font-bold text-[0.9rem]"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    {t.name}
-                  </p>
-                  <p className="text-[0.78rem]" style={{ color: "var(--text-muted)" }}>
-                    {t.role}
-                  </p>
-                </div>
-              </div>
-            </div>
+          {TESTIMONIALS.map((t, i) => (
+            <TestimonialCard key={t.name} t={t} index={i} />
           ))}
         </div>
       </div>

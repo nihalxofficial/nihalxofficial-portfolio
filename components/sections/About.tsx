@@ -43,7 +43,7 @@ function LenisRevealEl({
 export default function About({ onDownload }: AboutProps) {
   const avatarRef = useLenisReveal<HTMLDivElement>({ distance: 60, viewportFraction: 0.35, direction: "up" });
   const text1Ref  = useLenisReveal<HTMLDivElement>({ distance: 40, viewportFraction: 0.3, staggerIndex: 0 });
-  const text2Ref  = useLenisReveal<HTMLDivElement>({ distance: 40, viewportFraction: 0.3, staggerIndex: 1 });
+  const text2Ref  = useLenisReveal<HTMLUListElement>({ distance: 40, viewportFraction: 0.3, staggerIndex: 1 });
   const text3Ref  = useLenisReveal<HTMLDivElement>({ distance: 40, viewportFraction: 0.3, staggerIndex: 2 });
 
   return (
