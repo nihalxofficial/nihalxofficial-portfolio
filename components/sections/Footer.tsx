@@ -1,37 +1,27 @@
 "use client";
 
 import { NAV_LINKS } from "@/data/portfolio";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { useRef } from "react";
+import { useLenisReveal } from "@/hooks/useLenisReveal";
 
 export default function Footer() {
-  const footerRef = useRef<HTMLElement>(null);
-
-  useGSAP(() => {
-    gsap.from(".footer-content", {
-      scrollTrigger: {
-        trigger: footerRef.current,
-        start: "top 95%",
-        end: "bottom bottom",
-        scrub: 1,
-      },
-      y: 50,
-      opacity: 0,
-      scale: 0.95,
-    });
-  }, { scope: footerRef });
+  const contentRef = useLenisReveal<HTMLDivElement>({
+    distance: 50,
+    viewportFraction: 0.4,
+  });
 
   return (
     <footer
-      ref={footerRef}
       className="py-12 overflow-hidden"
       style={{
         background: "var(--bg-primary)",
         borderTop: "1px solid var(--border)",
       }}
     >
-      <div className="footer-content max-w-[1200px] mx-auto px-6 flex flex-col items-center gap-6 will-change-transform">
+      <div
+        ref={contentRef}
+        className="max-w-[1200px] mx-auto px-6 flex flex-col items-center gap-6 will-change-transform"
+        style={{ opacity: 0 }}
+      >
         <div className="font-syne text-[1.5rem] font-extrabold gradient-text">
           Nihal Uddin
         </div>

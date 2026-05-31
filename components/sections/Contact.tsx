@@ -1,43 +1,16 @@
 "use client";
 import { useState } from "react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
-import { useRef } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { SOCIAL_LINKS } from "@/data/portfolio";
 import SuccessModal from "@/components/ui/SuccessModal";
 import Toast from "@/components/ui/Toast";
 import { useToast } from "@/hooks/useScroll";
+import { useLenisReveal } from "@/hooks/useLenisReveal";
 
 export default function Contact() {
-  const ref = useRef<HTMLElement>(null);
+  const infoRef = useLenisReveal<HTMLDivElement>({ distance: 60, viewportFraction: 0.35, staggerIndex: 0 });
+  const formRef = useLenisReveal<HTMLDivElement>({ distance: 80, viewportFraction: 0.35, staggerIndex: 1 });
 
-  useGSAP(() => {
-
-    // 2. Info Card Scrub (from bottom)
-    gsap.from(".contact-info-card", {
-      scrollTrigger: {
-        trigger: ".contact-info-card",
-        start: "top 90%",
-        end: "top 50%",
-        scrub: 1,
-      },
-      y: 60,
-      opacity: 0,
-    });
-
-    // 3. Form Card Scrub (from bottom)
-    gsap.from(".contact-form-card", {
-      scrollTrigger: {
-        trigger: ".contact-form-card",
-        start: "top 90%",
-        end: "top 50%",
-        scrub: 1,
-      },
-      y: 80,
-      opacity: 0,
-    });
-  }, { scope: ref });
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -84,7 +57,6 @@ export default function Contact() {
       id="contact"
       className="py-[100px]"
       style={{ background: "var(--bg-primary)" }}
-      ref={ref}
     >
       <div className="max-w-[1200px] mx-auto px-6">
         <SectionHeader
@@ -96,7 +68,7 @@ export default function Contact() {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-12 items-stretch">
           {/* Info card */}
-          <div className="contact-card h-full flex flex-col contact-info-card will-change-transform">
+          <div ref={infoRef} className="contact-card h-full flex flex-col will-change-transform" style={{ opacity: 0 }}>
             <h3
               className="font-syne text-[1.3rem] font-bold mb-7"
               style={{ color: "var(--text-primary)" }}
@@ -153,7 +125,7 @@ export default function Contact() {
           </div>
 
           {/* Form card */}
-          <div className="contact-card h-full flex flex-col contact-form-card will-change-transform">
+          <div ref={formRef} className="contact-card h-full flex flex-col will-change-transform" style={{ opacity: 0 }}>
             <h3
               className="font-syne text-[1.3rem] font-bold mb-7"
               style={{ color: "var(--text-primary)" }}
