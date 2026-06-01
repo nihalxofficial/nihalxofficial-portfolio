@@ -1,12 +1,11 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SKILL_CATEGORIES } from "@/data/portfolio";
 import * as SiIcons from "react-icons/si";
 import * as FaIcons from "react-icons/fa";
 import * as Fa6Icons from "react-icons/fa6";
-import { useLenisReveal } from "@/hooks/useLenisReveal";
 
 // Custom SVG: Neon Database logo (stylized N)
 function NeonIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
@@ -62,7 +61,6 @@ export default function Skills() {
   const [activeTab, setActiveTab] = useState("All Stack");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(16);
-  const containerRef = useRef<HTMLElement>(null);
 
   // Flatten and deduplicate skills for the "All Stack" view
   const allSkills = Array.from(
@@ -138,9 +136,6 @@ export default function Skills() {
     }
   };
 
-  const tabsRef = useLenisReveal<HTMLDivElement>({ distance: 30, viewportFraction: 0.35, staggerIndex: 0 });
-  const gridRef = useLenisReveal<HTMLDivElement>({ distance: 40, viewportFraction: 0.35, staggerIndex: 1 });
-
   return (
     <section 
       id="skills" 
@@ -157,7 +152,13 @@ export default function Skills() {
         </div>
 
         {/* Dynamic Category Filtering Tabs */}
-        <div ref={tabsRef} className="flex flex-wrap gap-3 justify-center mb-12 will-change-transform" style={{ opacity: 0 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="flex flex-wrap gap-3 justify-center mb-12"
+        >
           {["All Stack", "Frontend", "Backend", "Tools"].map((tab) => (
             <button
               key={tab}
@@ -167,81 +168,77 @@ export default function Skills() {
               {tab}
             </button>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Visual Interactive High-Density Grid */}
-        <motion.div 
-          ref={gridRef}
-          layout 
-          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4 will-change-transform"
-          style={{ opacity: 0 }}
+        {/* Visual Interactive High-Density Grid
+            key= forces full remount on filter/page change → each card restarts its whileInView animation
+            giving a smooth staggered cascade both on filtering AND on scroll reveal */}
+        <motion.div
+          key={`${activeTab}-${currentPage}`}
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4"
         >
-          <AnimatePresence mode="popLayout">
-            {paginatedSkills.map((skill) => {
-              const accentColor = skill.color || "var(--accent)";
-              return (
-                <motion.div
-                  layout
-                  key={skill.name}
-                  initial={{ opacity: 0, scale: 0.85, y: 15 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.85, y: -15 }}
-                  whileHover={{ 
-                    y: -5, 
-                    scale: 1.03,
-                    transition: { duration: 0.2, ease: "easeOut" }
-                  }}
-                  transition={{ 
-                    duration: 0.35, 
-                    type: "spring", 
-                    bounce: 0.15,
-                    layout: { type: "spring", stiffness: 220, damping: 26 }
-                  }}
-                  className="skill-logo-card group relative p-2.5 sm:p-4 rounded-[12px] sm:rounded-[16px] bg-[var(--bg-card)] border border-[var(--border)] flex flex-col items-center justify-center cursor-pointer will-change-transform"
+          {paginatedSkills.map((skill, index) => {
+            const accentColor = skill.color || "var(--accent)";
+            return (
+              <motion.div
+                key={skill.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.05, margin: "0px 0px -20px 0px" }}
+                transition={{
+                  duration: 0.4,
+                  ease: "easeOut",
+                }}
+                whileHover={{
+                  y: -5,
+                  transition: { duration: 0.2, ease: "easeInOut" },
+                }}
+                className="skill-logo-card group relative p-2.5 sm:p-4 rounded-[12px] sm:rounded-[16px] bg-[var(--bg-card)] border border-[var(--border)] flex flex-col items-center justify-center cursor-pointer"
+                style={{
+                  "--brand-color": accentColor,
+                  "--brand-glow": `${accentColor}26`,
+                } as React.CSSProperties}
+              >
+                {/* Decorative glowing background layer */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[12px] sm:rounded-[16px] pointer-events-none"
                   style={{
-                    "--brand-color": accentColor,
-                    "--brand-glow": `${accentColor}26`, // 15% opacity hex
-                  } as React.CSSProperties}
-                >
-                  {/* Decorative glowing background layer */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[12px] sm:rounded-[16px] pointer-events-none"
+                    background: `radial-gradient(circle 50px at 50% 50%, ${accentColor}10, transparent 70%)`,
+                  }}
+                />
+
+                {/* Icon Container */}
+                <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] transition-all duration-300 group-hover:border-[var(--brand-color)] group-hover:scale-105 group-hover:shadow-[0_0_12px_var(--brand-glow)]">
+                  <SkillIcon
+                    name={skill.icon || "FaCode"}
+                    className="text-[1.2rem] sm:text-[1.5rem] transition-transform duration-500 group-hover:rotate-[8deg]"
+                    style={{ color: accentColor }}
+                  />
+                </div>
+
+                {/* Technology Title */}
+                <h3 className="font-syne text-[0.72rem] sm:text-[0.85rem] font-bold text-center tracking-wide mb-1.5 sm:mb-2.5 transition-colors duration-300 group-hover:text-[var(--brand-color)]">
+                  {skill.name}
+                </h3>
+
+                {/* Proficiency Level Indicator */}
+                <div className="flex items-center gap-1.5 mt-auto">
+                  <span
+                    className="w-[4.5px] h-[4.5px] sm:w-[5.5px] sm:h-[5.5px] rounded-full transition-transform duration-300 group-hover:scale-125"
                     style={{
-                      background: `radial-gradient(circle 50px at 50% 50%, ${accentColor}10, transparent 70%)`
+                      backgroundColor: getLevelColor(skill.level),
+                      boxShadow: `0 0 6px ${getLevelColor(skill.level)}`,
                     }}
                   />
-
-                  {/* Icon Container */}
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-2.5 bg-[var(--bg-secondary)] border border-[var(--border)] transition-all duration-300 group-hover:border-[var(--brand-color)] group-hover:scale-105 group-hover:shadow-[0_0_12px_var(--brand-glow)]">
-                    <SkillIcon 
-                      name={skill.icon || "FaCode"} 
-                      className="text-[1.2rem] sm:text-[1.5rem] transition-transform duration-500 group-hover:rotate-[8deg]" 
-                      style={{ color: accentColor }}
-                    />
-                  </div>
-
-                  {/* Technology Title */}
-                  <h3 className="font-syne text-[0.72rem] sm:text-[0.85rem] font-bold text-center tracking-wide mb-1.5 sm:mb-2.5 transition-colors duration-300 group-hover:text-[var(--brand-color)]">
-                    {skill.name}
-                  </h3>
-
-                  {/* Proficiency Level Indicator */}
-                  <div className="flex items-center gap-1.2 sm:gap-1.5 mt-auto">
-                    <span 
-                      className="w-[4.5px] h-[4.5px] sm:w-[5.5px] h-[5.5px] rounded-full transition-transform duration-300 group-hover:scale-125"
-                      style={{ 
-                        backgroundColor: getLevelColor(skill.level),
-                        boxShadow: `0 0 6px ${getLevelColor(skill.level)}`
-                      }}
-                    />
-                    <span className="text-[0.58rem] sm:text-[0.65rem] font-bold text-[var(--text-secondary)] uppercase tracking-wider group-hover:text-[var(--text-primary)] transition-colors duration-300">
-                      {skill.level}
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+                  <span className="text-[0.58rem] sm:text-[0.65rem] font-bold text-[var(--text-secondary)] uppercase tracking-wider group-hover:text-[var(--text-primary)] transition-colors duration-300">
+                    {skill.level}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
         </motion.div>
+
 
         {/* Dynamic Pagination Controls */}
         {totalPages > 1 && (

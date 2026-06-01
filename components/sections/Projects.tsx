@@ -6,21 +6,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLenisReveal } from "@/hooks/useLenisReveal";
 
 function ProjectCard({ project, index, openModal }: { project: any; index: number; openModal: any }) {
-  const cardRef = useLenisReveal<HTMLDivElement>({
-    distance: 60,
-    viewportFraction: 0.35,
-    staggerIndex: index,
-  });
-
   return (
     <motion.div
-      ref={cardRef}
       layout
-      whileHover={{ y: -5 }}
-      exit={{ opacity: 0, scale: 0.9, y: -20 }}
-      transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-      className="project-card group cursor-pointer will-change-transform"
-      style={{ opacity: 0 }}
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.1, margin: "0px 0px -40px 0px" }}
+      whileHover={{ y: -6, transition: { duration: 0.2, ease: "easeInOut" } }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{
+        duration: 0.5,
+        ease: "easeOut",
+      }}
+      className="project-card group cursor-pointer"
       onClick={() => openModal(project.originalIdx)}
     >
       {/* Thumbnail */}

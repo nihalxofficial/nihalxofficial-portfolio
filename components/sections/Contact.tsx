@@ -14,6 +14,8 @@ export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalIsFallback, setModalIsFallback] = useState(false);
+  const [modalMessageText, setModalMessageText] = useState("");
   const { toast, showToast } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -35,17 +37,42 @@ export default function Contact() {
         })
       });
 
-      if (response.ok) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // Direct Resend success
+        setModalIsFallback(false);
+        setModalMessageText("");
         setIsModalOpen(true);
         setForm({ name: "", email: "", subject: "", message: "" });
+      } else if (response.ok && result.fallback) {
+        // API fallback mode (e.g. missing API key)
+        setModalIsFallback(true);
+        setModalMessageText(`Name: ${form.name}\nEmail: ${form.email}\nSubject: ${form.subject}\n\nMessage:\n${form.message}`);
+        setIsModalOpen(true);
       } else {
-        showToast("Oops! Something went wrong. Please try again.", "error");
+        // Non-200 or API failure response
+        setModalIsFallback(true);
+        setModalMessageText(`Name: ${form.name}\nEmail: ${form.email}\nSubject: ${form.subject}\n\nMessage:\n${form.message}`);
+        setIsModalOpen(true);
       }
     } catch (error) {
-      showToast("Network error. Please try again later.", "error");
+      // Complete network offline or CORS failure response
+      setModalIsFallback(true);
+      setModalMessageText(`Name: ${form.name}\nEmail: ${form.email}\nSubject: ${form.subject}\n\nMessage:\n${form.message}`);
+      setIsModalOpen(true);
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  function openMailtoFallback() {
+    const fallbackName = form.name || "Visitor";
+    const fallbackSubject = encodeURIComponent(`[Portfolio] ${form.subject || "New Message"} — from ${fallbackName}`);
+    const body = encodeURIComponent(
+      `Name: ${form.name}\nEmail: ${form.email}\nSubject: ${form.subject}\n\nMessage:\n${form.message}`
+    );
+    window.open(`mailto:mdnihaluddinbijoy@gmail.com?subject=${fallbackSubject}&body=${body}`, "_blank");
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -225,12 +252,18 @@ export default function Contact() {
                   </>
                 )}
               </button>
+
             </form>
           </div>
         </div>
       </div>
-      
-      <SuccessModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <SuccessModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        isFallback={modalIsFallback}
+        onPrimaryAction={openMailtoFallback}
+        messageText={modalMessageText}
+      />
       <Toast show={toast.show} msg={toast.msg} type={toast.type} />
     </section>
   );
