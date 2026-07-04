@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import Image from "next/image";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { PROJECTS, FILTER_TAGS } from "@/data/portfolio";
 import { useModal } from "@/context/ModalContext";
@@ -46,10 +47,13 @@ function ProjectCard({ project, index, openModal }: { project: any; index: numbe
         </div>
         
         {project.image ? (
-          <img
+          <Image
             src={project.image}
             alt={project.title}
-            className="absolute inset-0 w-full h-full object-fit z-[1] transition-transform duration-500 group-hover:scale-110"
+            fill
+            className="object-cover z-[1] transition-transform duration-500 group-hover:scale-110"
+            placeholder="blur"
+            unoptimized
           />
         ) : (
           <i

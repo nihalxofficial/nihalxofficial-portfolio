@@ -1,5 +1,6 @@
 // ─── Portfolio Data ───────────────────────────────────────────────────────────
 import { IconType } from "react-icons";
+import { StaticImageData } from "next/image";
 import {
   FaHome,
   FaUser,
@@ -10,6 +11,16 @@ import {
   FaBlog,
   FaEnvelope
 } from "react-icons/fa";
+
+import hireLoopShowcase from "@/assets/project-images/HireLoop-showcase.png";
+import bookVibeShowcase from "@/assets/project-images/BookVibe-showcase.png";
+import appStoreShowcase from "@/assets/project-images/AppStore-showcase.png";
+import petNestShowcase from "@/assets/project-images/PetNest-showcase.png";
+import mentoraShowcase from "@/assets/project-images/Mentora-showcase.png";
+import sunCartShowcase from "@/assets/project-images/SunCart-showcase.png";
+import dragonNewsShowcase from "@/assets/project-images/DragonNews-showcase.png";
+import pixGenShowcase from "@/assets/project-images/PixGen-showcase.png";
+import rentEaseShowcase from "@/assets/project-images/RentEase-showcase.png";
 
 
 export const TYPEWRITER_ROLES = [
@@ -116,7 +127,7 @@ export const SKILL_CATEGORIES = [
       { name: "Render", level: "advanced", icon: "SiRender", color: "#46E3B7" },
       // { name: "Kubernetes", level: "basic", icon: "SiKubernetes", color: "#326CE5" },
       // { name: "Kafka", level: "basic", icon: "SiApachekafka", color: "#FF6B35" },
-     
+
     ],
   },
 ];
@@ -128,14 +139,15 @@ export const FILTER_TAGS = [
   "Express.js",
   // "JWT",
   // "BetterAuth",
-  "Golang",
+  // "Golang",
   "Docker",
+  "Stripe"
 ];
 
 export interface Project {
   title: string;
   icon: string;
-  image?: string;
+  image?: StaticImageData;
   grad: string;
   tags: string;
   tagBadges: string[];
@@ -151,9 +163,98 @@ export interface Project {
 
 export const PROJECTS: Project[] = [
   {
-    title: "PetNest - Pet Adopiton",
+    title: "RentEase - Property Listing",
+    icon: "fas fa-house",
+    image: rentEaseShowcase,
+    grad: "g6",
+    tags: "Next.js Stripe Docker",
+    tagBadges: ["Next.js", "Stripe"],
+    chips: [
+      "Next.js",
+      "MongoDB",
+      // "Better Auth",
+      "Stripe",
+      "Recharts",
+      "Redis",
+      "Docker"
+    ],
+    desc: "A production-ready full-stack property rental and booking platform where tenants can discover and book rental properties, save to whishlig, give review, owners can manage listings and bookings and admins can moderate the entire marketplace through dedicated role-based dashboards.",
+    features: [
+      "Role-based dashboards for Tenant, Owner & Admin",
+      "Advanced property search, filtering, pagination and favourites",
+      "Property booking system with Stripe payment integration",
+      "Property listing management with approval workflow",
+      "Booking request management and status tracking",
+      "Owner analytics dashboard with earnings charts",
+      "Review and rating system for properties",
+      "JWT secured authentication and responsive UI",
+    ],
+    tech: [
+      "Next.js",
+      "MongoDB",
+      "Better Auth",
+      "Stripe",
+      "Recharts",
+      "Framer Motion",
+      "Redis",
+      "JWT",
+      "Docker",
+      "Vercel",
+    ],
+    challenges:
+      "Major challenges included implementing secure role-based authentication, designing complex booking and approval workflows, integrating Stripe payments, managing property moderation and booking status updates, building backend-driven search and filtering, synchronizing dashboard analytics, maintaining responsive UI consistency, and deploying the application with proper environment configuration.",
+    improvements:
+      "Future improvements include real-time messaging between tenants and owners, interactive property maps, availability calendar, AI-powered property recommendations, notification center, advanced analytics, multilingual support and further performance optimization.",
+    liveDemo: "https://rentease-flash.vercel.app",
+    codeLink: "https://github.com/nihalxofficial/RentEase-Client",
+  },
+  {
+    title: "HireLoop - Job Marektplace",
+    icon: "fas fa-briefcase",
+    image: hireLoopShowcase,
+    grad: "g6",
+    tags: "Next.js Stripe Better Auth",
+    tagBadges: ["Next.js", "JWT"],
+    chips: [
+      "Next.js",
+      "Express.js",
+      "Stripe",
+      "MongoDB",
+      "Recharts",
+      "JWT",
+    ],
+    desc: "A production-ready full-stack job portal connecting job seekers, recruiters and administrators through role-based dashboards, smart job search, company management, subscription billing and complete recruitment workflows.",
+    features: [
+      "Role-based dashboards for Seeker, Recruiter & Admin",
+      "Advanced job search with filters, pagination and saved jobs",
+      "Job application tracking with status updates",
+      "Company registration and admin approval workflow",
+      "Subscription plans with Stripe payments",
+      "Recruiter applicant management with email notifications",
+      "Platform analytics using interactive charts",
+      "Authentication, responsive UI and secure role-based access",
+    ],
+    tech: [
+      "Next.js",
+      "MongoDB",
+      "Better Auth",
+      "Stripe",
+      "HeroUI",
+      "Recharts",
+      "JWT",
+      "Vercel",
+    ],
+    challenges:
+      "Major challenges included designing a scalable role-based architecture, implementing authentication and authorization, managing complex recruiter and seeker workflows, integrating Stripe subscriptions, synchronizing application and company approval statuses, handling dynamic dashboard data, optimizing search, filtering, pagination and deploying the application with proper environment configuration.",
+    improvements:
+      "Future improvements include real-time messaging, AI-powered job recommendations, resume parsing, interview scheduling, advanced recruiter analytics, multilingual support, notification center, Redis caching, Docker deployment and performance optimization for larger-scale usage.",
+    liveDemo: "https://hireloop-client-theta.vercel.app",
+    codeLink: "https://github.com/nihalxofficial/HireLoop-client",
+  },
+  {
+    title: "PetNest - Pet Adopiton Platform",
     icon: "fas fa-chart-line",
-    image: "https://i.ibb.co.com/Y7k615gR/Pet-Nest.png",
+    image: petNestShowcase,
     grad: "g1",
     tags: "Next.js Express.js JWT BetterAuth Docker",
     tagBadges: ["Next.js", "Express.js"],
@@ -176,9 +277,9 @@ export const PROJECTS: Project[] = [
     codeLink: "https://github.com/nihalxofficial/PetNest-Client",
   },
   {
-    title: "Mentora LMS Platform",
+    title: "Mentora - LMS Platform",
     icon: "fas fa-graduation-cap",
-    image: "https://i.ibb.co.com/Fkx3c0y3/Mentora.png",
+    image: mentoraShowcase,
     grad: "g2",
     tags: "Next.js MongoDB Express.js JWT BetterAuth Docker",
     tagBadges: ["Express.js", "Next.js"],
@@ -204,9 +305,9 @@ export const PROJECTS: Project[] = [
     codeLink: "https://github.com/nihalxofficial/Mentora-Client",
   },
   {
-    title: "SunCart Summer Store",
+    title: "SunCart - Summer Essentials Store",
     icon: "fas fa-sun",
-    image: "https://i.ibb.co.com/qYT0zd2s/Sun-Cart.png",
+    image: sunCartShowcase,
     grad: "g3",
     tags: "Next.js MongoDB BetterAuth",
     tagBadges: ["Next.js", "BetterAuth"],
@@ -233,9 +334,9 @@ export const PROJECTS: Project[] = [
     codeLink: "https://github.com/nihalxofficial/A8-SunCart",
   },
   {
-    title: "PixGen AI Gallery",
+    title: "PixGen - AI Image Gallery",
     icon: "fas fa-image",
-    image: "https://i.ibb.co.com/S7Pj2thR/Pix-Gen.png",
+    image: pixGenShowcase,
     grad: "g4",
     tags: "Next.js MongoDB BetterAuth",
     tagBadges: ["Next.js", "MongoDB"],
@@ -261,9 +362,9 @@ export const PROJECTS: Project[] = [
     codeLink: "https://github.com/nihalxofficial/PixGen-Ai-Image-Gallery",
   },
   {
-    title: "Dragon News",
+    title: "Dragon News - News Portal Site",
     icon: "fas fa-newspaper",
-    image: "https://i.ibb.co.com/zVbH3jrb/Dragon-News.png",
+    image: dragonNewsShowcase,
     grad: "g6",
     tags: "Next.js React BetterAuth",
     tagBadges: ["Next.js", "BetterAuth"],
@@ -291,43 +392,43 @@ export const PROJECTS: Project[] = [
     liveDemo: "https://dragon-news-blush-eight.vercel.app",
     codeLink: "https://github.com/nihalxofficial/Dragon-News",
   },
+  // {
+  //   title: "Student Manager",
+  //   icon: "fas fa-user-graduate",
+  //   image: "https://i.ibb.co.com/xSVs5L5L/Student-Manager.png",
+  //   grad: "g6",
+  //   tags: "Golang Fiber PostgreSQL",
+  //   tagBadges: ["Fiber", "Neon"],
+  //   chips: ["Golang", "Fiber", "PostgreSQL", "GORM", "ES6", "Neon"],
+  //   desc: "A full-stack student management dashboard for handling students, classes, marks and attendance with real-time statistics, advanced filtering and complete CRUD functionality through a RESTful API.",
+  //   features: [
+  //     "Student & class management system",
+  //     "Real-time statistics dashboard",
+  //     "Advanced search & filtering",
+  //     "RESTful API with full CRUD operations",
+  //     "Responsive UI with Tailwind CSS & DaisyUI",
+  //     "Safe class deletion with dependency handling",
+  //     "Marks & attendance management",
+  //     "Fast backend powered by Golang Fiber",
+  //   ],
+  //   tech: [
+  //     "Golang",
+  //     "Fiber",
+  //     "GORM",
+  //     "PostgreSQL",
+  //     "Neon",
+  //     "Tailwind CSS",
+  //     "DaisyUI",
+  //   ],
+  //   challenges: "Major challenges included managing relational database dependencies, connecting to cloud databases, implementing advanced filtering logic, handling dynamic form updates, maintaining accurate real-time statistics ensuring smooth communication between the frontend and backend APIs and deploying on Render.",
+  //   improvements: "Future improvements include frontend frameworks, authentication & role-based access, pagination, exportable reports, analytics dashboards, real-time updates, performance optimization and enhanced UI/UX for better scalability and usability.",
+  //   liveDemo: "https://student-management-k9us.onrender.com",
+  //   codeLink: "https://github.com/nihalxofficial/FullStack-Student-Manager",
+  // },
   {
-    title: "Student Manager",
-    icon: "fas fa-user-graduate",
-    image: "https://i.ibb.co.com/xSVs5L5L/Student-Manager.png",
-    grad: "g6",
-    tags: "Golang Fiber PostgreSQL",
-    tagBadges: ["Fiber", "Neon"],
-    chips: ["Golang", "Fiber", "PostgreSQL", "GORM", "ES6", "Neon"],
-    desc: "A full-stack student management dashboard for handling students, classes, marks and attendance with real-time statistics, advanced filtering and complete CRUD functionality through a RESTful API.",
-    features: [
-      "Student & class management system",
-      "Real-time statistics dashboard",
-      "Advanced search & filtering",
-      "RESTful API with full CRUD operations",
-      "Responsive UI with Tailwind CSS & DaisyUI",
-      "Safe class deletion with dependency handling",
-      "Marks & attendance management",
-      "Fast backend powered by Golang Fiber",
-    ],
-    tech: [
-      "Golang",
-      "Fiber",
-      "GORM",
-      "PostgreSQL",
-      "Neon",
-      "Tailwind CSS",
-      "DaisyUI",
-    ],
-    challenges: "Major challenges included managing relational database dependencies, connecting to cloud databases, implementing advanced filtering logic, handling dynamic form updates, maintaining accurate real-time statistics ensuring smooth communication between the frontend and backend APIs and deploying on Render.",
-    improvements: "Future improvements include frontend frameworks, authentication & role-based access, pagination, exportable reports, analytics dashboards, real-time updates, performance optimization and enhanced UI/UX for better scalability and usability.",
-    liveDemo: "https://student-management-k9us.onrender.com",
-    codeLink: "https://github.com/nihalxofficial/FullStack-Student-Manager",
-  },
-  {
-    title: "App Store",
+    title: "App Store - App Downloading Platform",
     icon: "fab fa-google-play",
-    image: "https://i.ibb.co.com/ns8wDyrD/App-Store.png",
+    image: appStoreShowcase,
     grad: "g7",
     tags: "React",
     tagBadges: ["Next.js", "React"],
@@ -351,31 +452,31 @@ export const PROJECTS: Project[] = [
     codeLink: "https://github.com/nihalxofficial/Next-app-store",
   },
   {
-  title: "BookVibe",
-  icon: "fas fa-book-open",
-  image: "https://i.ibb.co.com/FkRrZMh2/Book-Vibe.png",
-  grad: "g8",
-  tags: "React Recharts",
-  tagBadges: ["React", "Recharts"],
-  chips: ["React", "React-Router", "Tailwind CSS", "DaisyUI"],
-  desc: "A modern responsive book listing and tracking web application where users can explore books, manage personal reading lists and visualize reading statistics through interactive charts powered by Recharts.",
-  features: [
-    "Read list & wishlist management",
-    "Interactive reading statistics charts",
-    "Sortable books by rating & pages",
-    "Detailed book information pages",
-  ],
-  tech: [
-    "React",
-    "React Router DOM",
-    "DaisyUI",
-    "Recharts",
-    "React Toastify",
-    "React Icons",
-  ],
-  liveDemo: "https://book-vibe-nihalxofficial.netlify.app",
-  codeLink: "https://github.com/nihalxofficial/Book-Vibe",
-},
+    title: "BookVibe - Book Listing & Tracking",
+    icon: "fas fa-book-open",
+    image: bookVibeShowcase,
+    grad: "g8",
+    tags: "React Recharts",
+    tagBadges: ["React", "Recharts"],
+    chips: ["React", "React-Router", "Tailwind CSS", "DaisyUI"],
+    desc: "A modern responsive book listing and tracking web application where users can explore books, manage personal reading lists and visualize reading statistics through interactive charts powered by Recharts.",
+    features: [
+      "Read list & wishlist management",
+      "Interactive reading statistics charts",
+      "Sortable books by rating & pages",
+      "Detailed book information pages",
+    ],
+    tech: [
+      "React",
+      "React Router DOM",
+      "DaisyUI",
+      "Recharts",
+      "React Toastify",
+      "React Icons",
+    ],
+    liveDemo: "https://book-vibe-nihalxofficial.netlify.app",
+    codeLink: "https://github.com/nihalxofficial/Book-Vibe",
+  },
   // {
   //   title: "Event Manager",
   //   icon: "fas fa-calendar-alt",

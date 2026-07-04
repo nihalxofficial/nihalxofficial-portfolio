@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import {
   Modal,
   ModalContent,
@@ -65,10 +66,13 @@ export default function ProjectModal() {
                   style={{ width: "100%", maxWidth: "320px", height: "320px", margin: "0 auto" }}
                 >
                   {project.image ? (
-                    <img
+                    <Image
                       src={project.image}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      placeholder="blur"
+                      unoptimized
                     />
                   ) : (
                     <i
