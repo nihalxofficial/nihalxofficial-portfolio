@@ -692,7 +692,11 @@ export const SOCIAL_LINKS = [
   // { icon: "fas fa-laptop-code", href: "#", label: "LeetCode" },
 ];
 
-export const NAV_LINKS = [
+export const NAV_LINKS: {
+  href: string;
+  label: string;
+  icon?: IconType;
+}[] = [
   { href: "#home", label: "Home", 
     // icon: FaHome 
   },
