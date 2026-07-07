@@ -29,7 +29,10 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <About onDownload={() => showToast("Resume download starting…")} />
+        <About onDownload={(success) => {
+            if (success) showToast("Resume downloaded!", "success");
+            else showToast("Download failed. Try again.", "error");
+          }} />
         <Services />
         <Skills />
         <Projects />

@@ -1,13 +1,13 @@
 "use client";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { useRef } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import aboutImg from "@/assets/md-nihal-uddin-removebg-preview.png"
 import Magnetic from "@/components/ui/Magnetic";
 import { useLenisReveal } from "@/hooks/useLenisReveal";
 
 interface AboutProps {
-  onDownload: () => void;
+  onDownload: (success: boolean) => void;
 }
 
 // Individual animated wrappers driven by Lenis scroll tick
@@ -41,10 +41,32 @@ function LenisRevealEl({
 }
 
 export default function About({ onDownload }: AboutProps) {
+  const [downloading, setDownloading] = useState(false);
   const avatarRef = useLenisReveal<HTMLDivElement>({ distance: 60, viewportFraction: 0.35, direction: "up" });
   const text1Ref  = useLenisReveal<HTMLDivElement>({ distance: 40, viewportFraction: 0.3, staggerIndex: 0 });
   const text2Ref  = useLenisReveal<HTMLUListElement>({ distance: 40, viewportFraction: 0.3, staggerIndex: 1 });
   const text3Ref  = useLenisReveal<HTMLDivElement>({ distance: 40, viewportFraction: 0.3, staggerIndex: 2 });
+
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const res = await fetch("/Nihal_Full_Stack_Developer_Resume.pdf");
+      if (!res.ok) throw new Error("Not found");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Nihal_Full_Stack_Developer_Resume.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+      onDownload(true);
+    } catch {
+      onDownload(false);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <section id="about" className="py-[100px] section-secondary">
@@ -117,8 +139,20 @@ export default function About({ onDownload }: AboutProps) {
               style={{ opacity: 0 }}
             >
               <Magnetic>
-                <button onClick={onDownload} className="btn-primary-custom mt-2">
-                  <i className="fas fa-download" /> Download Resume
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="btn-primary-custom mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {downloading ? (
+                    <>
+                      <i className="fas fa-spinner fa-spin" /> Downloading…
+                    </>
+                  ) : (
+                    <>
+                      <i className="fas fa-download" /> Download Resume
+                    </>
+                  )}
                 </button>
               </Magnetic>
             </div>
