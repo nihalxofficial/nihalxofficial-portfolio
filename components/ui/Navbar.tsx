@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "@/context/ThemeContext";
 import { NAV_LINKS } from "@/data/portfolio";
-import { FaBriefcase } from "react-icons/fa";
+
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Magnetic from "./Magnetic";
 
@@ -63,7 +63,6 @@ export default function Navbar() {
           {/* Desktop links */}
           <ul className="hidden lg:flex items-center gap-1 list-none m-0 p-0">
             {NAV_LINKS.map((link) => {
-              const Icon = link.icon;
               return (
                 <li key={link.href}>
                   <Magnetic>
@@ -88,7 +87,7 @@ export default function Navbar() {
                         }
                       }}
                     >
-                      <Icon size={14} />
+                      {link.icon && <link.icon size={14} />}
                       {link.label}
                     </a>
                   </Magnetic>
@@ -102,7 +101,7 @@ export default function Navbar() {
                   onClick={(e) => handleNavClick(e, "#contact")}
                   className="nav-cta no-underline flex items-center gap-2 ml-2 block"
                 >
-                  <FaBriefcase size={14} /> Hire Me
+                  Hire Me
                 </a>
               </Magnetic>
             </li>
@@ -146,7 +145,6 @@ export default function Navbar() {
       {/* Mobile nav */}
       <div className={`mobile-nav ${mobileOpen ? "open" : ""}`}>
         {NAV_LINKS.map((link) => {
-          const Icon = link.icon;
           return (
             <a
               key={link.href}
@@ -158,11 +156,18 @@ export default function Navbar() {
                 background: activeSection === link.href ? "var(--tag-bg)" : "transparent",
               }}
             >
-              <Icon size={16} />
+              {link.icon && <link.icon size={16} />}
               {link.label}
             </a>
           );
         })}
+        <a
+          href="#contact"
+          onClick={(e) => handleNavClick(e, "#contact")}
+          className="nav-cta no-underline block text-center mt-2"
+        >
+          Hire Me
+        </a>
       </div>
     </>
   );

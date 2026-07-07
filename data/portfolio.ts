@@ -687,18 +687,28 @@ export const BLOG_POSTS = [
 export const SOCIAL_LINKS = [
   { icon: "fab fa-github", href: "https://github.com/nihalxofficial", label: "GitHub" },
   { icon: "fab fa-linkedin-in", href: "https://www.linkedin.com/in/md-nihal-uddin/", label: "LinkedIn" },
-  { icon: "fab fa-twitter", href: "https://x.com/nihalxofficial", label: "Twitter" },
+  // { icon: "fab fa-twitter", href: "https://x.com/nihalxofficial", label: "Twitter" },
   { icon: "fab fa-facebook-f", href: "#", label: "Facebook" },
   // { icon: "fas fa-laptop-code", href: "#", label: "LeetCode" },
 ];
 
 export const NAV_LINKS = [
-  { href: "#home", label: "Home", icon: FaHome },
-  { href: "#about", label: "About", icon: FaUser },
+  { href: "#home", label: "Home", 
+    // icon: FaHome 
+  },
+  { href: "#about", label: "About", 
+    // icon: FaUser 
+  },
   // { href: "#services", label: "Services", icon: FaServicestack },
-  { href: "#skills", label: "Skills", icon: FaCode },
-  { href: "#projects", label: "Projects", icon: FaProjectDiagram },
-  { href: "#education", label: "Education", icon: FaGraduationCap },
+  { href: "#skills", label: "Skills", 
+    // icon: FaCode 
+  },
+  { href: "#projects", label: "Projects", 
+    // icon: FaProjectDiagram
+   },
+  { href: "#education", label: "Education", 
+    // icon: FaGraduationCap 
+  },
   // { href: "#blog", label: "Blog", icon: FaBlog },
   // { href: "#contact", label: "Contact", icon: FaEnvelope },
 ];
