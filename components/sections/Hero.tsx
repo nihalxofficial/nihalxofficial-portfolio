@@ -195,26 +195,7 @@ export default function Hero() {
               alt="heroImg"
               ></Image>
             </div>
-            <div
-              className="floating-badge animate-float"
-              style={{ bottom: -16, left: -20 }}
-            >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ background: "#22c55e" }}
-              />
-              Open to work
-            </div>
-            <div
-              className="floating-badge animate-float-delay"
-              style={{ top: -16, right: -20 }}
-            >
-              <i
-                className="fas fa-star"
-                style={{ color: "#f59e0b", fontSize: 12 }}
-              />
-              Top Rated Dev
-            </div>
+
           </div>
         </div>
       </div>

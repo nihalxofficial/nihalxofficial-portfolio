@@ -66,13 +66,6 @@ export default function About({ onDownload }: AboutProps) {
             <div className="about-avatar">
               <Image src={aboutImg} alt="aboutImg"></Image>
             </div>
-            <div
-              className="absolute -bottom-5 -right-5 gradient-bg text-white p-4 rounded-2xl text-center"
-              style={{ boxShadow: "0 8px 24px var(--accent-glow)" }}
-            >
-              <div className="font-syne text-[2rem] font-extrabold leading-none">3+</div>
-              <div className="text-[0.72rem] opacity-90 mt-[2px]">Years Experience</div>
-            </div>
           </div>
 
           {/* Text */}
@@ -101,8 +94,6 @@ export default function About({ onDownload }: AboutProps) {
               style={{ opacity: 0 }}
             >
               {[
-                ["3+ years", "professional developer"],
-                ["20+ projects", "for clients worldwide"],
                 ["React & Next.js", "Expert in"],
                 ["UI/UX principles", "Strong"],
                 ["Backend", "Strong"],
