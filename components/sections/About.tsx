@@ -2,7 +2,7 @@
 import SectionHeader from "@/components/ui/SectionHeader";
 import { useState } from "react";
 import Image from "next/image";
-import aboutImg from "@/assets/md-nihal-uddin-removebg-preview.png"
+import aboutImg from "@/assets/bijoy.png"
 import Magnetic from "@/components/ui/Magnetic";
 import { useLenisReveal } from "@/hooks/useLenisReveal";
 
