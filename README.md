@@ -2,7 +2,7 @@
 
 A high-performance, cinematic personal portfolio built to showcase Full-Stack development skills, projects, and professional experience. Designed with a focus on immersive user experience, it features butter-smooth scroll animations, glassmorphism UI elements, and a fully functional serverless contact system.
 
-![Portfolio Preview](./public/preview.png) *(Note: Add a screenshot of the portfolio to `/public/preview.png`)*
+![Portfolio Preview](./public/preview.png)
 
 ## ✨ Key Features
 
