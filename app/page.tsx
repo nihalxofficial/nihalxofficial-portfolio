@@ -28,11 +28,11 @@ export default function Home() {
       <ScrollProgress />
       <Navbar />
       <main>
-        <Hero />
-        <About onDownload={(success) => {
+        <Hero onDownload={(success) => {
             if (success) showToast("Resume downloaded!", "success");
             else showToast("Download failed. Try again.", "error");
           }} />
+        <About />
         <Services />
         <Skills />
         <Projects />

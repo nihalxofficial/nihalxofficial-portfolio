@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import { TYPEWRITER_ROLES, SOCIAL_LINKS } from "@/data/portfolio";
 import Image from "next/image";
@@ -17,9 +17,35 @@ function smoothScroll(href: string) {
   if (el) window.scrollTo({ top: (el as HTMLElement).offsetTop - 68, behavior: "smooth" });
 }
 
-export default function Hero() {
+interface HeroProps {
+  onDownload: (success: boolean) => void;
+}
+
+export default function Hero({ onDownload }: HeroProps) {
+  const [downloading, setDownloading] = useState(false);
   const typedText = useTypewriter(TYPEWRITER_ROLES);
   const heroRef = useRef<HTMLElement>(null);
+
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const res = await fetch("/Nihal_Full_Stack_Developer_Resume.pdf");
+      if (!res.ok) throw new Error("Not found");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Nihal_Full_Stack_Developer_Resume.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+      onDownload(true);
+    } catch {
+      onDownload(false);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   useEffect(() => {
     const el = heroRef.current;
@@ -154,13 +180,21 @@ export default function Hero() {
               </a>
             </Magnetic>
             <Magnetic>
-              <a
-                href="#contact"
-                onClick={(e) => { e.preventDefault(); smoothScroll("#contact"); }}
-                className="btn-outline-custom"
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="btn-outline-custom disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <i className="fas fa-paper-plane" /> Contact Me
-              </a>
+                {downloading ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin" /> Downloading…
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-download" /> Download Resume
+                  </>
+                )}
+              </button>
             </Magnetic>
           </div>
 
