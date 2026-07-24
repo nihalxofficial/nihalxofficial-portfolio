@@ -1,15 +1,41 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 export async function POST(req: Request) {
   try {
-    const { name, email, subject, message } = await req.json();
+    const { name, email, subject, message, clientLocation } = await req.json();
 
     if (!name || !email || !message) {
       return NextResponse.json(
         { error: 'Missing required fields: name, email, and message are required' },
         { status: 400 }
       );
+    }
+
+    const md5Hash = crypto.createHash('md5').update(email.trim().toLowerCase()).digest('hex');
+    const avatarUrl = `https://unavatar.io/${email}?fallback=https://www.gravatar.com/avatar/${md5Hash}?s=96&d=mp`;
+
+    let location = clientLocation || 'Unknown';
+    if (location === 'Unknown' || !location) {
+      const vercelCity = req.headers.get('x-vercel-ip-city');
+      const vercelCountry = req.headers.get('x-vercel-ip-country');
+      
+      if (vercelCity && vercelCountry) {
+        location = `${decodeURIComponent(vercelCity)}, ${vercelCountry}`;
+      } else {
+        const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.headers.get('x-real-ip') || '';
+        if (ip && ip !== '127.0.0.1' && ip !== '::1') {
+          try {
+            const geoRes = await fetch(`http://ip-api.com/json/${ip}`).then(r => r.json());
+            if (geoRes && geoRes.status === 'success') {
+              location = `${geoRes.city}, ${geoRes.country}`;
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
     }
 
     const gmailUser = process.env.GMAIL_USER;
@@ -31,9 +57,13 @@ export async function POST(req: Request) {
       },
     });
 
+    const fromEmail = gmailUser && gmailUser.includes('@')
+      ? gmailUser.replace('@', '+portfolio@')
+      : gmailUser;
+
     // ── Email 1: Notify admin (you) ──────────────────────────────────────
     await transporter.sendMail({
-      from: `"NihalxOfficial" <${gmailUser}>`,
+      from: `"${name}" <${fromEmail}>`,
       to: gmailUser,
       replyTo: email,
       subject: `${name} — Portfolio Inquiry`,
@@ -50,7 +80,7 @@ export async function POST(req: Request) {
             <tr>
               <td align="center">
                 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-
+ 
                   <!-- Header Bar -->
                   <tr>
                     <td style="background:#0a1628;border-radius:12px 12px 0 0;padding:32px 36px 28px;">
@@ -70,16 +100,14 @@ export async function POST(req: Request) {
                       <div style="margin-top:20px;height:1px;background:linear-gradient(90deg,#1e3a5f,transparent);"></div>
                     </td>
                   </tr>
-
+ 
                   <!-- Sender Profile Block -->
                   <tr>
                     <td style="background:#0d1f38;padding:28px 36px 20px;">
                       <table width="100%" cellpadding="0" cellspacing="0">
                         <tr>
                           <td valign="middle" style="width:52px;">
-                            <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#1e56a0,#4a9eff);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;text-align:center;line-height:48px;">
-                              ${name.charAt(0).toUpperCase()}
-                            </div>
+                            <img src="${avatarUrl}" alt="${name}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:1px solid #1e3a5f;display:block;" />
                           </td>
                           <td valign="middle" style="padding-left:16px;">
                             <p style="margin:0;color:#ffffff;font-size:18px;font-weight:700;">${name}</p>
@@ -94,7 +122,7 @@ export async function POST(req: Request) {
                       </table>
                     </td>
                   </tr>
-
+ 
                   <!-- Details Table -->
                   <tr>
                     <td style="background:#0d1f38;padding:0 36px 24px;">
@@ -124,17 +152,25 @@ export async function POST(req: Request) {
                           </td>
                         </tr>
                         <tr>
-                          <td style="padding:14px 18px;">
+                          <td style="padding:14px 18px;border-bottom:1px solid #162033;">
                             <p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Subject</p>
                           </td>
-                          <td style="padding:14px 18px;">
+                          <td style="padding:14px 18px;border-bottom:1px solid #162033;">
                             <p style="margin:0;color:#e2e8f0;font-size:14px;font-weight:600;">${subject || 'No Subject Provided'}</p>
+                          </td>
+                        </tr>
+                        <tr style="background:#0a1628;">
+                          <td style="padding:14px 18px;">
+                            <p style="margin:0;color:#64748b;font-size:13px;font-weight:600;">Location</p>
+                          </td>
+                          <td style="padding:14px 18px;">
+                            <p style="margin:0;color:#e2e8f0;font-size:14px;font-weight:600;">${location}</p>
                           </td>
                         </tr>
                       </table>
                     </td>
                   </tr>
-
+ 
                   <!-- Message Block -->
                   <tr>
                     <td style="background:#0d1f38;padding:0 36px 28px;">
@@ -144,7 +180,7 @@ export async function POST(req: Request) {
                       </div>
                     </td>
                   </tr>
-
+ 
                   <!-- CTA -->
                   <tr>
                     <td style="background:#0a1628;padding:24px 36px;border-top:1px solid #1e3a5f;border-radius:0 0 12px 12px;">
@@ -160,7 +196,7 @@ export async function POST(req: Request) {
                       </table>
                     </td>
                   </tr>
-
+ 
                   <!-- Footer -->
                   <tr>
                     <td style="padding:20px 0;text-align:center;">
@@ -168,7 +204,7 @@ export async function POST(req: Request) {
                       <p style="margin:4px 0 0;color:#475569;font-size:11px;">Do not forward or share this email.</p>
                     </td>
                   </tr>
-
+ 
                 </table>
               </td>
             </tr>

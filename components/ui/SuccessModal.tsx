@@ -189,7 +189,7 @@ export default function SuccessModal({
                     className="btn-outline-custom w-full justify-center py-[14px]"
                     style={{ borderRadius: "14px", cursor: "pointer" }}
                   >
-                    Ok, Got It!
+                    Got It!
                   </button>
                 )}
               </div>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { SOCIAL_LINKS } from "@/data/portfolio";
 import SuccessModal from "@/components/ui/SuccessModal";
@@ -17,6 +17,24 @@ export default function Contact() {
   const [modalIsFallback, setModalIsFallback] = useState(false);
   const [modalMessageText, setModalMessageText] = useState("");
   const { toast, showToast } = useToast();
+  const [clientLocation, setClientLocation] = useState("Unknown");
+
+  useEffect(() => {
+    async function detectLocation() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.city && data.country_name) {
+            setClientLocation(`${data.city}, ${data.country_name}`);
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    detectLocation();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +51,8 @@ export default function Contact() {
             name: form.name,
             email: form.email,
             subject: form.subject,
-            message: form.message
+            message: form.message,
+            clientLocation: clientLocation
         })
       });
 
