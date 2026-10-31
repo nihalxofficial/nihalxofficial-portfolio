@@ -6,7 +6,7 @@ page can be changed from the private dashboard without a deploy.
 
 - Public site — gradient dark/light theme, 9 project case studies, an AI assistant that answers
   for Nihal.
-- Dashboard — hidden route (`/control-9k4x`), Firebase sign-in with email/password, Google or
+- Dashboard — hidden route (`/control-centre`), Firebase sign-in with email/password, Google or
   GitHub plus a server side UID allowlist, generic CRUD for 14 content types, a contact inbox,
   an ImgBB media library, a "Fill with AI" button that drafts any form with Gemini, and a Site
   settings page for theme-aware logos, the favicon and per-section visibility.
@@ -48,17 +48,17 @@ colour, only for the few cases where contrast demands it.
 | `/projects/[slug]` | server, ISR | case study: gallery, features, challenges, stack, related work |
 | `/blog/[slug]` | server, ISR | post body rendered from a small block parser |
 | `/robots.txt`, `/sitemap.xml` | server | disallow the dashboard, add projects and posts |
-| `/control-9k4x/login` | client | sign in with email/password, Google or GitHub |
-| `/control-9k4x/register` | client | create a Firebase account (access still needs the allowlist) |
-| `/control-9k4x` | client, gated | overview: counts, latest messages, recent projects |
-| `/control-9k4x/site-settings` | client, gated | brand logos per theme, favicon, component visibility |
-| `/control-9k4x/[entity]` | client, gated | generic CRUD (table + drawer, or one form for singletons) |
-| `/control-9k4x/messages` | client, gated | inbox with status workflow |
-| `/control-9k4x/media` | client, gated | upload, import from URL, copy URL, delete |
+| `/control-centre/login` | client | sign in with email/password, Google or GitHub |
+| `/control-centre/register` | client | create a Firebase account (access still needs the allowlist) |
+| `/control-centre` | client, gated | overview: counts, latest messages, recent projects |
+| `/control-centre/site-settings` | client, gated | brand logos per theme, favicon, component visibility |
+| `/control-centre/[entity]` | client, gated | generic CRUD (table + drawer, or one form for singletons) |
+| `/control-centre/messages` | client, gated | inbox with status workflow |
+| `/control-centre/media` | client, gated | upload, import from URL, copy URL, delete |
 
 The dashboard base path lives in `lib/admin-routes.ts` (`ADMIN_BASE`). It is deliberately not
 `/admin`, so scanning for the conventional path finds nothing — renaming it means renaming
-`app/control-9k4x` and the constant together.
+`app/control-centre` and the constant together.
 
 Section visibility comes from the `sections` collection, so hiding a component in the dashboard
 removes it from the page (and the numbering closes the gap automatically).
@@ -70,7 +70,7 @@ app/
 ├── page.tsx                  public home: fetch once, render visible sections
 ├── projects/[slug]/          case study page
 ├── blog/[slug]/              post page
-├── control-9k4x/             private dashboard (auth, gate, entity CRUD, site settings,
+├── control-centre/           private dashboard (auth, gate, entity CRUD, site settings,
 │                             inbox, media)
 ├── robots.ts / sitemap.ts    SEO routes
 └── globals.css               tokens, gradients, utilities, keyframes
@@ -151,9 +151,9 @@ docker compose ps          # both services should report healthy
 
 ## Dashboard
 
-1. Open `/control-9k4x/login` — email/password, Google or GitHub (enable both providers in
+1. Open `/control-centre/login` — email/password, Google or GitHub (enable both providers in
    Firebase → Authentication → Sign-in method).
-2. No account yet? `/control-9k4x/register` creates one. Registration only creates the Firebase
+2. No account yet? `/control-centre/register` creates one. Registration only creates the Firebase
    user: the rejected sign-in message prints the exact UID to paste into `ADMIN_UIDS`.
 3. The browser keeps the ID token; the API verifies it and checks the allowlist
    (`GET /api/v1/auth/session`). `GET /api/v1/auth/status` reports the identity *without* the
@@ -166,7 +166,7 @@ docker compose ps          # both services should report healthy
 
 ### Site settings
 
-`/control-9k4x/site-settings` holds what the generic form cannot express:
+`/control-centre/site-settings` holds what the generic form cannot express:
 
 - **Brand logos** — separate navbar and footer images for the light and dark theme, plus the
   favicon and the logo `alt` text. Each slot uploads through the media API and stores only the
@@ -177,7 +177,7 @@ docker compose ps          # both services should report healthy
   education, certifications, blog and contact blocks can be hidden without deleting content.
 
 The base path is unlisted: it is not linked from the public site, excluded from `robots.txt`
-and the sitemap, and `noindex` is set in `app/control-9k4x/layout.tsx`.
+and the sitemap, and `noindex` is set in `app/control-centre/layout.tsx`.
 
 ## Release tags
 
