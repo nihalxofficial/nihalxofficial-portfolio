@@ -66,7 +66,7 @@ export default async function HomePage() {
     { key: "projects", visible: data.projects.length > 0 },
     { key: "showcase", visible: data.projects.length > 1 },
     { key: "journey", visible: data.experience.length > 0 },
-    { key: "education", visible: data.education.length > 0 || data.certifications.length > 0 },
+    { key: "education", visible: data.education.length > 0 },
     { key: "testimonials", visible: data.testimonials.length > 0 },
     { key: "blog", visible: data.posts.length > 0 },
     { key: "contact", visible: true },
@@ -142,10 +142,8 @@ export default async function HomePage() {
           <ExperienceEducation
             experience={shown("journey") ? data.experience : []}
             education={shown("education") ? data.education : []}
-            certifications={shown("education") ? data.certifications : []}
             journeySection={meta("journey")}
             educationSection={meta("education")}
-            certificationsSection={meta("certifications")}
             journeyIndex={at("journey")}
             educationIndex={at("education")}
           />

@@ -2,7 +2,7 @@ import { JourneyTimeline } from "@/components/site/journey";
 import { EducationCards } from "@/components/site/education";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
-import type { Certification, Education as EducationEntry, Experience, SectionMeta } from "@/lib/types";
+import type { Education as EducationEntry, Experience, SectionMeta } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 /**
@@ -11,30 +11,27 @@ import { cn } from "@/lib/utils";
  * Both halves keep their own heading and their own anchor, so the nav pill and
  * the mobile dock still highlight them separately. Whichever side has no data
  * (or is hidden in the dashboard) simply gives its width to the other.
+ *
+ * The grid stretches by default, so both columns end on the same line: the
+ * shorter one grows its cards instead of leaving a ragged edge.
  */
 export function ExperienceEducation({
   experience,
   education,
-  certifications,
   journeySection,
   educationSection,
-  certificationsSection,
   journeyIndex,
   educationIndex,
 }: {
   experience: Experience[];
   education: EducationEntry[];
-  certifications: Certification[];
   journeySection?: SectionMeta;
   educationSection?: SectionMeta;
-  certificationsSection?: SectionMeta;
   journeyIndex: number;
   educationIndex: number;
 }) {
   const showJourney = experience.length > 0;
-  const showEducation =
-    education.length > 0 ||
-    (certifications.length > 0 && (certificationsSection?.isVisible ?? true));
+  const showEducation = education.length > 0;
 
   if (!showJourney && !showEducation) return null;
 
@@ -50,12 +47,12 @@ export function ExperienceEducation({
       <div className="container-page">
         <div
           className={cn(
-            "grid items-start gap-12 lg:gap-10",
+            "grid gap-12 lg:gap-10",
             twoColumns ? "lg:grid-cols-2" : "lg:grid-cols-1",
           )}
         >
           {showJourney ? (
-            <div>
+            <div className="flex h-full flex-col">
               <Reveal>
                 <SectionHeading
                   index={journeyIndex}
@@ -73,7 +70,10 @@ export function ExperienceEducation({
           ) : null}
 
           {showEducation ? (
-            <div id={showJourney ? "education" : undefined} className="scroll-mt-24">
+            <div
+              id={showJourney ? "education" : undefined}
+              className="flex h-full scroll-mt-24 flex-col"
+            >
               <Reveal>
                 <SectionHeading
                   index={educationIndex}
@@ -86,7 +86,7 @@ export function ExperienceEducation({
                 />
               </Reveal>
 
-              <EducationCards education={education} certifications={certifications} />
+              <EducationCards education={education} />
             </div>
           ) : null}
         </div>
