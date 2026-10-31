@@ -1,7 +1,10 @@
+"use client";
+
+import { useRef } from "react";
+import { motion, useScroll } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
 import { Reveal } from "@/components/ui/reveal";
-import { SectionHeading } from "@/components/ui/section-heading";
-import type { Experience, SectionMeta } from "@/lib/types";
+import type { Experience } from "@/lib/types";
 import { cn, formatMonth } from "@/lib/utils";
 
 const STATUS: Record<string, { label: string; className: string }> = {
@@ -18,127 +21,107 @@ function period(entry: Experience): string {
   return [start, end].filter(Boolean).join(" — ");
 }
 
-/** Journey — vertical timeline of roles, internships and milestones. */
-export function Journey({
-  experience,
-  section,
-  index,
-}: {
-  experience: Experience[];
-  section?: SectionMeta;
-  index: number;
-}) {
-  if (experience.length === 0) return null;
+/**
+ * Experience timeline column.
+ *
+ * Rows stay unframed like the reference: the rail carries the structure, so a
+ * card around every entry would only add weight. The rail fills as the visitor
+ * scrolls it into view, which is what `useScroll` on the list container is for.
+ */
+export function JourneyTimeline({ experience }: { experience: Experience[] }) {
+  const listRef = useRef<HTMLOListElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ["start 75%", "end 55%"],
+  });
 
   return (
-    <section id="journey" className="relative section-pad">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px rule-grad" />
+    <div className="relative mt-8 pl-6 sm:pl-7">
+      {/* Track, then the scroll-linked fill on top of it. */}
+      <span aria-hidden className="absolute left-[6px] top-2 bottom-2 w-px bg-line" />
+      <motion.span
+        aria-hidden
+        style={{ scaleY: scrollYProgress }}
+        className="absolute left-[6px] top-2 bottom-2 w-px origin-top bg-gradient-to-b from-accent via-accent/70 to-accent/25"
+      />
 
-      <div className="container-page">
-        <Reveal>
-          <SectionHeading
-            index={index}
-            label={section?.label || "Experience"}
-            title={section?.heading || "My Journey"}
-            description={
-              section?.description ||
-              "Where I have worked, what I shipped there and what I am working on now."
-            }
-          />
-        </Reveal>
+      <ol ref={listRef} className="space-y-6">
+        {experience.map((entry, position) => {
+          const status = STATUS[entry.status] ?? STATUS.completed;
+          const range = period(entry);
 
-        <div className="relative mt-10 pl-6 sm:pl-8">
-          {/* Rail */}
-          <span
-            aria-hidden
-            className="absolute left-[7px] top-2 bottom-2 w-px bg-gradient-to-b from-accent/60 via-line to-transparent sm:left-[11px]"
-          />
+          return (
+            <li key={entry._id} className="relative">
+              <span
+                aria-hidden
+                className="absolute -left-6 top-1 grid h-3.5 w-3.5 place-items-center rounded-full border border-accent/50 bg-page sm:-left-7"
+              >
+                <span className="h-1.5 w-1.5 rounded-full grad-accent" />
+              </span>
 
-          <ol className="space-y-5">
-            {experience.map((entry, position) => {
-              const status = STATUS[entry.status] ?? STATUS.completed;
-              const range = period(entry);
+              <Reveal delay={position * 70}>
+                <div className="group">
+                  <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
+                    <h3 className="text-[14.5px] font-semibold leading-snug text-ink">
+                      {entry.role}
+                    </h3>
+                    <span
+                      className={cn(
+                        "mono shrink-0 rounded-full border px-2.5 py-0.5 text-[9.5px] uppercase tracking-[0.14em]",
+                        status.className,
+                      )}
+                    >
+                      {status.label}
+                    </span>
+                  </div>
 
-              return (
-                <li key={entry._id} className="relative">
-                  <span
-                    aria-hidden
-                    className="absolute -left-6 top-5 grid h-3.5 w-3.5 place-items-center rounded-full border border-accent/50 bg-page sm:-left-8"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full grad-accent" />
-                  </span>
+                  <p className="mt-1 text-[13px] text-accent">{entry.organization}</p>
 
-                  <Reveal delay={position * 70}>
-                    <div className="panel panel-hover p-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="text-[15px] font-semibold text-ink">{entry.role}</h3>
-                          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-accent">
-                            <span className="inline-flex items-center gap-1.5">
-                              <Icon name="Building" className="h-3.5 w-3.5" />
-                              {entry.organization}
-                            </span>
-                            {entry.location ? (
-                              <span className="inline-flex items-center gap-1.5 text-faint">
-                                <Icon name="MapPin" className="h-3 w-3" />
-                                {entry.location}
-                              </span>
-                            ) : null}
-                          </p>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1.5">
-                          <span
-                            className={cn(
-                              "mono rounded-full border px-2.5 py-0.5 text-[10px] uppercase tracking-[0.16em]",
-                              status.className,
-                            )}
-                          >
-                            {status.label}
-                          </span>
-                          {range ? (
-                            <span className="mono text-[10.5px] text-faint">{range}</span>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      {entry.description ? (
-                        <p className="mt-3 text-[13px] leading-relaxed text-muted">
-                          {entry.description}
-                        </p>
+                  {range || entry.location ? (
+                    <p className="mono mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] text-faint">
+                      {range ? <span>{range}</span> : null}
+                      {range && entry.location ? <span className="text-line">•</span> : null}
+                      {entry.location ? (
+                        <span className="inline-flex items-center gap-1">
+                          <Icon name="MapPin" className="h-2.5 w-2.5" />
+                          {entry.location}
+                        </span>
                       ) : null}
+                    </p>
+                  ) : null}
 
-                      {entry.responsibilities.length > 0 ? (
-                        <ul className="mt-3 space-y-1.5">
-                          {entry.responsibilities.map((item) => (
-                            <li key={item} className="flex gap-2 text-[12.5px] text-muted">
-                              <span className="mt-[3px] text-accent">▹</span>
-                              <span>{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
+                  {entry.description ? (
+                    <p className="mt-2 max-w-prose text-[12.5px] leading-relaxed text-muted">
+                      {entry.description}
+                    </p>
+                  ) : null}
 
-                      {entry.technologies.length > 0 ? (
-                        <div className="mt-4 flex flex-wrap gap-1.5">
-                          {entry.technologies.map((tech) => (
-                            <span
-                              key={tech}
-                              className="rounded-md border border-line bg-accent/5 px-2 py-0.5 text-[10.5px] text-accent/90"
-                            >
-                              {tech}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
+                  {entry.responsibilities.length > 0 ? (
+                    <ul className="mt-2 space-y-1">
+                      {entry.responsibilities.map((item) => (
+                        <li key={item} className="flex gap-2 text-[12.5px] leading-snug text-muted">
+                          <span className="mt-[1px] text-accent">▹</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+
+                  {entry.technologies.length > 0 ? (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {entry.technologies.map((tech) => (
+                        <span key={tech} className="chip">
+                          {tech}
+                        </span>
+                      ))}
                     </div>
-                  </Reveal>
-                </li>
-              );
-            })}
-          </ol>
-        </div>
-      </div>
-    </section>
+                  ) : null}
+                </div>
+              </Reveal>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

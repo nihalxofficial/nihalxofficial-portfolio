@@ -7,9 +7,8 @@ import { Navbar } from "@/components/site/navbar";
 import { About } from "@/components/site/about";
 import { Blog } from "@/components/site/blog";
 import { Contact } from "@/components/site/contact";
-import { Education } from "@/components/site/education";
+import { ExperienceEducation } from "@/components/site/experience-education";
 import { Hero } from "@/components/site/hero";
-import { Journey } from "@/components/site/journey";
 import { Projects } from "@/components/site/projects";
 import { Services } from "@/components/site/services";
 import { Showcase } from "@/components/site/showcase";
@@ -139,17 +138,16 @@ export default async function HomePage() {
           />
         ) : null}
 
-        {shown("journey") ? (
-          <Journey experience={data.experience} section={meta("journey")} index={at("journey")} />
-        ) : null}
-
-        {shown("education") ? (
-          <Education
-            education={data.education}
-            certifications={data.certifications}
-            section={meta("education")}
+        {shown("journey") || shown("education") ? (
+          <ExperienceEducation
+            experience={shown("journey") ? data.experience : []}
+            education={shown("education") ? data.education : []}
+            certifications={shown("education") ? data.certifications : []}
+            journeySection={meta("journey")}
+            educationSection={meta("education")}
             certificationsSection={meta("certifications")}
-            index={at("education")}
+            journeyIndex={at("journey")}
+            educationIndex={at("education")}
           />
         ) : null}
 
