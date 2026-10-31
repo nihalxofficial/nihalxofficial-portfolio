@@ -155,6 +155,8 @@
   --animate-marquee: marquee 38s linear infinite;
   --animate-blink: blink 1.1s steps(2, start) infinite;
   --animate-rise: rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-shimmer: shimmer 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  --animate-sweep: sweep 1.5s ease-in-out infinite;
 }
 
 @keyframes float {
@@ -211,6 +213,26 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Skeleton sweep — the light that travels across a loading placeholder. */
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Indeterminate progress line under a "still working" readout. */
+@keyframes sweep {
+  0% {
+    transform: translateX(-110%);
+  }
+  100% {
+    transform: translateX(320%);
   }
 }
 
@@ -490,6 +512,46 @@
       transparent 0 3px,
       rgba(255, 255, 255, 0.02) 3px 4px
     );
+  }
+
+  /* Loading placeholders. The sweep reads as glass in the light theme and as
+     a faint cyan scan in the dark one, because both derive from the tokens. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: var(--surface-secondary);
+    border: 1px solid var(--separator);
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--accent) 14%, transparent),
+      transparent
+    );
+    animation: var(--animate-shimmer);
+  }
+
+  /* Indeterminate progress rule, sat under a "loading" readout. */
+  .load-line {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .load-line::after {
+    content: "";
+    position: absolute;
+    inset-block-end: 0;
+    left: 0;
+    width: 34%;
+    height: 1px;
+    background-image: var(--grad-accent);
+    animation: var(--animate-sweep);
   }
 
   .scrollbar-none {
