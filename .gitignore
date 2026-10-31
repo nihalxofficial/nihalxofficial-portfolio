@@ -44,3 +44,7 @@ next-env.d.ts
 
 # throwaway verification scripts
 tmp-*.mjs
+
+# local dev logs and throwaway commit messages
+*.log
+tmp-commit-msg.txt

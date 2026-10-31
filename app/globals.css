@@ -39,6 +39,15 @@
   --warning: #b45309;
   --danger: #b91c1c;
 
+  /* Syntax-highlighting palette for the code panels (light). */
+  --code-key: #0369a1;
+  --code-prop: #075985;
+  --code-str: #0f766e;
+  --code-num: #b45309;
+  --code-type: #0891b2;
+  --code-com: #7791a9;
+  --code-punc: #46617a;
+
   --field-background: #ffffff;
   --field-foreground: var(--foreground);
   --field-placeholder: var(--faint);
@@ -97,6 +106,15 @@
   --success: #34d399;
   --warning: #fbbf24;
   --danger: #f87171;
+
+  /* Syntax-highlighting palette for the code panels (dark). */
+  --code-key: #38bdf8;
+  --code-prop: #7dd3fc;
+  --code-str: #34d399;
+  --code-num: #fbbf24;
+  --code-type: #22d3ee;
+  --code-com: #5f7b93;
+  --code-punc: #8fa6bd;
 
   --field-background: #05101c;
   --field-foreground: var(--foreground);
@@ -456,6 +474,30 @@
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: var(--accent);
+  }
+
+  /* Syntax tokens for the code panels — colours follow the active theme. */
+  .tk-key {
+    color: var(--code-key);
+  }
+  .tk-prop {
+    color: var(--code-prop);
+  }
+  .tk-str {
+    color: var(--code-str);
+  }
+  .tk-num {
+    color: var(--code-num);
+  }
+  .tk-type {
+    color: var(--code-type);
+  }
+  .tk-com {
+    color: var(--code-com);
+    font-style: italic;
+  }
+  .tk-punc {
+    color: var(--code-punc);
   }
 
   .gradient-text {

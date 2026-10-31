@@ -1,9 +1,93 @@
 ﻿import { Icon } from "@/components/ui/icon";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
+import { AboutEditor, type CodeFile, type Token } from "@/components/site/about-editor";
 import type { About as AboutContent, SectionMeta } from "@/lib/types";
 
-/** About: narrative on the left, a syntax-coloured "profile object" on the right. */
+/** Token helpers keep the compiled source below readable. */
+const k = (text: string): Token => ({ text, kind: "key" });
+const ty = (text: string): Token => ({ text, kind: "type" });
+const pr = (text: string): Token => ({ text, kind: "prop" });
+const st = (text: string): Token => ({ text, kind: "str" });
+const pu = (text: string): Token => ({ text, kind: "punc" });
+const cm = (text: string): Token => ({ text, kind: "com" });
+const pl = (text: string): Token => ({ text });
+
+/**
+ * Turns the About document into two source files: a typed object with the
+ * profile facts and a JSON list with the highlight rows.
+ */
+function toSourceFiles(about: AboutContent): CodeFile[] {
+  const card = about.codeCard ?? {};
+  const files: CodeFile[] = [];
+
+  const entries: Array<[string, string | string[]]> = [
+    ["name", card.name ?? ""],
+    ["role", card.role ?? ""],
+    ["location", card.location ?? ""],
+    ["education", card.education ?? ""],
+    ["experience", card.experience ?? ""],
+    ["passion", card.passion ?? []],
+  ].filter((entry): entry is [string, string | string[]] => Boolean(entry[1]));
+
+  if (entries.length > 0) {
+    const lines: Token[][] = [
+      [cm("// Compiled from the About entry in the dashboard.")],
+      [],
+      [k("const"), pl(" developer"), pu(": "), ty("Profile"), pl(" "), pu("= {")],
+    ];
+
+    for (const [key, value] of entries) {
+      if (Array.isArray(value)) {
+        lines.push([
+          pl("  "),
+          pr(key),
+          pu(": ["),
+          ...value.flatMap((item, position) => [
+            st(`"${item}"`),
+            ...(position < value.length - 1 ? [pu(", ")] : []),
+          ]),
+          pu("],"),
+        ]);
+      } else {
+        lines.push([pl("  "), pr(key), pu(": "), st(`"${value}"`), pu(",")]);
+      }
+    }
+
+    lines.push([pu("};")], [], [k("export"), pl(" default"), pl(" developer"), pu(";")]);
+    files.push({ name: "whoami.ts", lang: "TypeScript", lines });
+  }
+
+  if (about.highlights.length > 0) {
+    const json: Token[][] = [[pu("{")], [pl("  "), pr('"highlights"'), pu(": [")]];
+
+    about.highlights.forEach((item, position) => {
+      json.push([
+        pl("    "),
+        pu("{ "),
+        pr('"label"'),
+        pu(": "),
+        st(`"${item.label}"`),
+        pu(", "),
+        pr('"icon"'),
+        pu(": "),
+        st(`"${item.icon}"`),
+        pu(", "),
+        pr('"value"'),
+        pu(": "),
+        st(`"${item.value}"`),
+        pu(` }${position < about.highlights.length - 1 ? "," : ""}`),
+      ]);
+    });
+
+    json.push([pl("  "), pu("]")], [pu("}")]);
+    files.push({ name: "highlights.json", lang: "JSON", lines: json });
+  }
+
+  return files;
+}
+
+/** About: narrative on the left, a tabbed code editor of the same facts on the right. */
 export function About({
   about,
   section,
@@ -13,17 +97,7 @@ export function About({
   section?: SectionMeta;
   index: number;
 }) {
-  const card = about.codeCard ?? {};
-  const passion = card.passion ?? [];
-
-  // Rendered as a JSON-ish object: keys in sky, values in cyan.
-  const entries = [
-    ["name", card.name],
-    ["role", card.role],
-    ["location", card.location],
-    ["education", card.education],
-    ["experience", card.experience],
-  ].filter((entry): entry is [string, string] => Boolean(entry[1]));
+  const files = toSourceFiles(about);
 
   return (
     <section id="about" className="relative section-pad">
@@ -52,9 +126,9 @@ export function About({
                   {about.highlights.map((item) => (
                     <li
                       key={item.label}
-                      className="flex items-start gap-3 rounded-xl border border-line bg-surface/40 px-3.5 py-3"
+                      className="group flex items-start gap-3 rounded-xl border border-line bg-surface/40 px-3.5 py-3 transition-colors hover:border-accent/45 hover:bg-accent/[0.04]"
                     >
-                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-accent/10 text-accent">
+                      <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-accent/10 text-accent transition-transform group-hover:scale-110">
                         <Icon name={item.icon} className="h-3.5 w-3.5" />
                       </span>
                       <span className="min-w-0">
@@ -70,55 +144,22 @@ export function About({
                 </ul>
               </Reveal>
             ) : null}
+
+            {about.signature ? (
+              <Reveal delay={200}>
+                <p className="script mt-8 -rotate-2 text-2xl text-accent sm:text-[1.7rem]">
+                  {about.signature}
+                </p>
+              </Reveal>
+            ) : null}
           </div>
 
           <Reveal delay={120} className="relative">
-            <div aria-hidden className="absolute -inset-5 -z-10 rounded-[2rem] glow-soft opacity-70" />
-
-            <div className="overflow-hidden rounded-2xl border border-line bg-surface/70 backdrop-blur">
-              <div className="flex items-center gap-1.5 border-b border-line px-4 py-3">
-                <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-                <span className="mono ml-auto text-[10px] uppercase tracking-[0.18em] text-faint">
-                  profile.ts
-                </span>
-              </div>
-
-              <pre className="mono overflow-x-auto p-5 text-[12px] leading-[1.9] text-muted">
-                {entries.map(([key, value]) => (
-                  <span key={key}>
-                    {"\n  "}
-                    <span className="text-sky-400">&quot;{key}&quot;</span>
-                    <span className="text-faint">: </span>
-                    <span className="text-accent">&quot;{value}&quot;</span>
-                    <span className="text-faint">,</span>
-                  </span>
-                ))}
-                {passion.length > 0 ? (
-                  <>
-                    {"\n  "}
-                    <span className="text-sky-400">&quot;passion&quot;</span>
-                    <span className="text-faint">: [</span>
-                    {passion.map((item, position) => (
-                      <span key={item}>
-                        <span className="text-accent">&quot;{item}&quot;</span>
-                        {position < passion.length - 1 ? <span className="text-faint">, </span> : null}
-                      </span>
-                    ))}
-                    <span className="text-faint">]</span>
-                  </>
-                ) : null}
-                {"\n"}
-                <span className="text-faint">{"}"}</span>
-              </pre>
-            </div>
-
-            {about.signature ? (
-              <p className="absolute -bottom-8 right-2 -rotate-3 font-[cursive] text-lg text-accent/80">
-                {about.signature}
-              </p>
-            ) : null}
+            <div
+              aria-hidden
+              className="absolute -inset-5 -z-10 rounded-[2rem] glow-soft opacity-70"
+            />
+            <AboutEditor files={files} />
           </Reveal>
         </div>
       </div>
