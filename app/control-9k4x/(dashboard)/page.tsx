@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useAdminData } from "@/components/admin/admin-context";
 import { Icon } from "@/components/ui/icon";
 import { fetchOverview, type Overview } from "@/lib/admin";
+import { adminHref } from "@/lib/admin-routes";
 import { bytesToSize, formatDate } from "@/lib/utils";
 
 export default function AdminOverviewPage() {
@@ -37,28 +38,28 @@ export default function AdminOverviewPage() {
           value: String(counts.projects),
           hint: `${counts.publishedProjects} published · ${counts.featuredProjects} featured`,
           icon: "FolderCode",
-          href: "/admin/projects",
+          href: adminHref("projects"),
         },
         {
           label: "Skills",
           value: String(counts.skills),
           hint: "across all categories",
           icon: "Zap",
-          href: "/admin/skills",
+          href: adminHref("skills"),
         },
         {
           label: "Messages",
           value: String(counts.messages),
           hint: `${counts.unreadMessages} unread`,
           icon: "Inbox",
-          href: "/admin/messages",
+          href: adminHref("messages"),
         },
         {
           label: "Media",
           value: String(counts.media),
           hint: bytesToSize(counts.mediaBytes) + " hosted",
           icon: "Image",
-          href: "/admin/media",
+          href: adminHref("media"),
         },
       ]
     : [];
@@ -122,7 +123,7 @@ export default function AdminOverviewPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-[13.5px] font-semibold text-ink">Latest messages</h2>
             <Link
-              href="/admin/messages"
+              href={adminHref("messages")}
               className="mono text-[10px] uppercase tracking-[0.16em] text-faint hover:text-accent"
             >
               Open inbox
@@ -166,7 +167,7 @@ export default function AdminOverviewPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-[13.5px] font-semibold text-ink">Recently updated projects</h2>
             <Link
-              href="/admin/projects"
+              href={adminHref("projects")}
               className="mono text-[10px] uppercase tracking-[0.16em] text-faint hover:text-accent"
             >
               Manage
@@ -178,7 +179,7 @@ export default function AdminOverviewPage() {
               overview.recentProjects.map((project) => (
                 <Link
                   key={project._id}
-                  href="/admin/projects"
+                  href={adminHref("projects")}
                   className="flex items-center justify-between gap-3 rounded-xl border border-line bg-surface-2/40 px-3 py-2.5 transition-colors hover:border-line-strong"
                 >
                   <span className="min-w-0">
@@ -209,7 +210,7 @@ export default function AdminOverviewPage() {
           {types.map((type) => (
             <Link
               key={type.key}
-              href={`/admin/${type.key}`}
+              href={adminHref(type.key)}
               className="flex items-center gap-2.5 rounded-xl border border-line bg-surface-2/40 px-3 py-2.5 text-[12.5px] text-muted transition-colors hover:border-line-strong hover:text-accent"
             >
               <Icon

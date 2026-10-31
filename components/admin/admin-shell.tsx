@@ -6,13 +6,18 @@ import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/admin/auth-provider";
 import { useAdminData } from "@/components/admin/admin-context";
 import { Icon } from "@/components/ui/icon";
+import { ADMIN_BASE, adminHref } from "@/lib/admin-routes";
 import { initials } from "@/lib/utils";
 
 const FIXED_LINKS = [
-  { href: "/admin", label: "Overview", icon: "LayoutDashboard" },
-  { href: "/admin/messages", label: "Messages", icon: "Inbox" },
-  { href: "/admin/media", label: "Media", icon: "Image" },
+  { href: ADMIN_BASE, label: "Overview", icon: "LayoutDashboard" },
+  { href: adminHref("site-settings"), label: "Site settings", icon: "Settings" },
+  { href: adminHref("messages"), label: "Messages", icon: "Inbox" },
+  { href: adminHref("media"), label: "Media", icon: "Image" },
 ];
+
+/** Edited from the Site settings page instead of the generic form. */
+const HIDDEN_ENTITIES = ["settings"];
 
 /**
  * Dashboard chrome and access gate.
@@ -28,7 +33,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && !session && !configError) router.replace("/admin/login");
+    if (!loading && !session && !configError) router.replace(adminHref("login"));
   }, [loading, session, configError, router]);
 
   useEffect(() => {
@@ -62,19 +67,21 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const nav = [
     ...FIXED_LINKS,
-    ...types.map((type) => ({
-      href: `/admin/${type.key}`,
-      label: type.label,
-      icon: type.singleton ? "Settings" : "FolderKanban",
-    })),
+    ...types
+      .filter((type) => !HIDDEN_ENTITIES.includes(type.key))
+      .map((type) => ({
+        href: adminHref(type.key),
+        label: type.label,
+        icon: type.singleton ? "Settings" : "FolderKanban",
+      })),
   ];
 
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname === href;
+    href === ADMIN_BASE ? pathname === ADMIN_BASE : pathname === href;
 
   const sidebar = (
     <div className="flex h-full flex-col">
-      <Link href="/admin" className="flex items-center gap-3 px-4 py-4">
+      <Link href={ADMIN_BASE} className="flex items-center gap-3 px-4 py-4">
         <span className="grid h-9 w-9 place-items-center rounded-lg grad-accent text-[12px] font-bold text-accent-ink">
           {initials(session.name || session.email || "Admin")}
         </span>

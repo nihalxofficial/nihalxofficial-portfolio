@@ -181,6 +181,15 @@ export interface SocialLink {
   icon: string;
 }
 
+export interface SiteBranding {
+  navLogoLight?: string;
+  navLogoDark?: string;
+  footerLogoLight?: string;
+  footerLogoDark?: string;
+  faviconUrl?: string;
+  logoAlt?: string;
+}
+
 export interface SiteSettings extends DocMeta {
   siteName: string;
   siteUrl: string;
@@ -188,6 +197,7 @@ export interface SiteSettings extends DocMeta {
   metaDescription: string;
   keywords: string[];
   ogImageUrl: string;
+  branding?: SiteBranding;
   contact: {
     email?: string;
     phone?: string;

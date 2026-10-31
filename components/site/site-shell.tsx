@@ -18,6 +18,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
       <Navbar
         navigation={navigation}
         siteName={data?.settings?.siteName ?? "Md. Nihal Uddin Bijoy"}
+        branding={data?.settings?.branding}
       />
 
       <main className="pb-20 pt-24 sm:pt-28">{children}</main>

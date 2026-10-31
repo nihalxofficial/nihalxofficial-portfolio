@@ -30,6 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = settings?.metaTitle || FALLBACK.metaTitle;
   const description = settings?.metaDescription || FALLBACK.metaDescription;
   const ogImage = absoluteUrl(settings?.ogImageUrl || FALLBACK.ogImageUrl, siteUrl);
+  // The favicon is a dashboard asset: uploaded to ImgBB or kept in /public.
+  const favicon = settings?.branding?.faviconUrl || "/favicon.png";
 
   return {
     metadataBase: new URL(siteUrl),
@@ -42,6 +44,11 @@ export async function generateMetadata(): Promise<Metadata> {
     authors: [{ name: settings?.siteName || FALLBACK.siteName }],
     creator: settings?.siteName || FALLBACK.siteName,
     alternates: { canonical: "/" },
+    icons: {
+      icon: [{ url: favicon }],
+      shortcut: [{ url: favicon }],
+      apple: [{ url: favicon }],
+    },
     openGraph: {
       type: "website",
       url: siteUrl,

@@ -109,6 +109,26 @@ export async function verifySession(): Promise<AdminSession> {
   return data;
 }
 
+/**
+ * Identity of the signed-in Firebase account, *without* the allowlist check.
+ *
+ * Used only to explain a rejected sign-in ("your UID is …"), so a fresh
+ * registration can be pointed at ADMIN_UIDS instead of a generic error.
+ */
+export interface AuthStatus {
+  uid: string;
+  email: string | null;
+  name: string | null;
+  isAdmin: boolean;
+  firebaseConfigured: boolean;
+  adminCount: number;
+}
+
+export async function fetchAuthStatus(): Promise<AuthStatus> {
+  const { data } = await request<AuthStatus>("/auth/status", { method: "GET" });
+  return data;
+}
+
 export async function fetchContentTypes(): Promise<ContentType[]> {
   const { data } = await request<ContentType[]>("/admin/content/describe", { method: "GET" });
   return data;

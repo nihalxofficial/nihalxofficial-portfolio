@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { Icon } from "@/components/ui/icon";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 import { initials } from "@/lib/utils";
@@ -16,6 +17,8 @@ export function Footer({
 }) {
   const name = settings?.siteName ?? "Md. Nihal Uddin Bijoy";
   const socials = settings?.socialLinks ?? [];
+  const branding = settings?.branding;
+  const hasLogo = Boolean(branding?.footerLogoLight || branding?.footerLogoDark);
 
   return (
     <footer className="relative mt-8 border-t border-line">
@@ -25,15 +28,20 @@ export function Footer({
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-lg grad-accent text-sm font-bold text-accent-ink">
-                {initials(name)}
-              </span>
-              <div>
-                <p className="text-sm font-semibold text-ink">{name}</p>
-                <p className="mono text-[11px] uppercase tracking-[0.16em] text-faint">
-                  Full-Stack Developer
-                </p>
-              </div>
+              <BrandLogo
+                branding={branding}
+                variant="footer"
+                fallback={initials(name)}
+                alt={name}
+              />
+              {hasLogo ? null : (
+                <div>
+                  <p className="text-sm font-semibold text-ink">{name}</p>
+                  <p className="mono text-[11px] uppercase tracking-[0.16em] text-faint">
+                    Full-Stack Developer
+                  </p>
+                </div>
+              )}
             </div>
 
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted">

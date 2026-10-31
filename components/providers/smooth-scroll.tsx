@@ -3,6 +3,7 @@
 import Lenis from "lenis";
 import { usePathname } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
+import { ADMIN_BASE } from "@/lib/admin-routes";
 
 /**
  * Inertial scrolling for the marketing pages only.
@@ -12,7 +13,7 @@ import { useEffect, type ReactNode } from "react";
  */
 export function SmoothScroll({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const enabled = !pathname?.startsWith("/admin");
+  const enabled = !pathname?.startsWith(ADMIN_BASE);
 
   useEffect(() => {
     if (!enabled) return;

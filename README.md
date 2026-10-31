@@ -1,103 +1,188 @@
-# Nihal Uddin | Professional Developer Portfolio
+# Nihal Portfolio — web
 
-A high-performance, cinematic personal portfolio built to showcase Full-Stack development skills, projects, and professional experience. Designed with a focus on immersive user experience, it features butter-smooth scroll animations, glassmorphism UI elements, and a fully functional serverless contact system.
+The public site and the private dashboard for **Md. Nihal Uddin Bijoy**, built as a real
+full stack application: every section is rendered from MongoDB content, and everything on the
+page can be changed from the private dashboard without a deploy.
 
-![Portfolio Preview](./public/preview.png)
+- Public site — gradient dark/light theme, 9 project case studies, an AI assistant that answers
+  for Nihal.
+- Dashboard — hidden route (`/control-9k4x`), Firebase sign-in with email/password, Google or
+  GitHub plus a server side UID allowlist, generic CRUD for 14 content types, a contact inbox,
+  an ImgBB media library, a "Fill with AI" button that drafts any form with Gemini, and a Site
+  settings page for theme-aware logos, the favicon and per-section visibility.
 
-## ✨ Key Features
+## Stack
 
-- **Cinematic Scroll Experience:** Uses `Lenis` for premium smooth scrolling physics combined with `GSAP` ScrollTriggers for stunning parallax and fade-up animations.
-- **Dynamic Theming:** Seamless Dark and Light mode toggling with persistent state and custom CSS variables mapping to a refined color palette.
-- **Micro-Interactions:** Magnetic buttons, interactive custom cursors, and fluid state transitions powered by `Framer Motion`.
-- **Working Contact System:** Secure, server-side email processing using Next.js App Router API routes (`/api/contact`) and the **Resend API**.
-- **Project Filtering Gallery:** Dynamically filterable project grid (All, Frontend, Full Stack, Next.js) with synchronized GSAP scrub animations.
-- **Developer-Centric Typography:** Implements `Fira Code` for a realistic terminal typing effect in the hero section, alongside `Syne` and `Inter` for modern readability.
-- **Interactive Location Map:** Theme-aware Google Maps embed precisely pinpointing the developer's location in Mirsarai, Chattogram.
-- **Fully Responsive:** Mobile-first approach using Tailwind CSS, ensuring pixel-perfect layouts from smartphones to ultra-wide desktop monitors.
+| Concern | Choice |
+| --- | --- |
+| Framework | Next.js 16 (App Router, Turbopack) with `output: "standalone"` |
+| UI runtime | React 19 |
+| Styling | Tailwind CSS 4 (`@theme inline` tokens, no config file) |
+| Components | HeroUI v3 (`@heroui/react` + `@heroui/styles`) |
+| Theming | `next-themes` with `class` + `data-theme`, dark by default |
+| Motion | Lenis smooth scroll, IntersectionObserver reveals, CSS gradients |
+| Auth (client) | Firebase Web SDK |
+| Data | `lib/api.ts` (server reads) and `lib/admin.ts` (authenticated dashboard) |
 
-## 🛠️ Technology Stack
+## Design system
 
-This project is built using modern web development standards and bleeding-edge libraries:
+The palette is sampled from the reference screenshots and lives in `app/globals.css`:
 
-**Core Frameworks**
-- [Next.js (App Router)](https://nextjs.org/) - React framework for SSR and API routes
-- [React 19](https://react.dev/) - UI library
-- [TypeScript](https://www.typescriptlang.org/) - Static typing for robust code
-- [Tailwind CSS](https://tailwindcss.com/) - Utility-first styling framework
+- dark theme `#030A12` / light theme `#EEF4FA`
+- accent gradient `#22D3EE → #38BDF8 → #0EA5E9` exposed as `.grad-accent`, `.text-gradient`,
+  `.rule-grad`, `.border-grad`
+- surface, border and text tokens are bridged into Tailwind with `@theme inline`, and into
+  HeroUI through the same CSS variables — so plain Tailwind classes and HeroUI components
+  share one palette
+- page background is a fixed radial + linear gradient (`.panel`, `.panel-alt`, `.grid-backdrop`,
+  `.glow-soft`, `.reveal` are the shared building blocks)
 
-**Animation & Motion**
-- [GSAP (@gsap/react)](https://gsap.com/) - High-performance scroll-linked animations and parallax timelines
-- [Framer Motion](https://www.framer.com/motion/) - Fluid layout animations and UI transitions
-- [Lenis](https://studiofreight.github.io/lenis/) - Vanilla smooth scroll physics engine
+Both themes are driven by the same tokens, so a component never needs a `dark:` variant for
+colour, only for the few cases where contrast demands it.
 
-**Backend & Integrations**
-- [Resend](https://resend.com/) - Reliable API for sending emails directly from the contact form
-- Google Fonts (`next/font/google`)
+## Routes
 
-## 🚀 Getting Started
+| Route | Type | Notes |
+| --- | --- | --- |
+| `/` | server, ISR | assembles every visible section from `/api/v1/portfolio` |
+| `/projects/[slug]` | server, ISR | case study: gallery, features, challenges, stack, related work |
+| `/blog/[slug]` | server, ISR | post body rendered from a small block parser |
+| `/robots.txt`, `/sitemap.xml` | server | disallow the dashboard, add projects and posts |
+| `/control-9k4x/login` | client | sign in with email/password, Google or GitHub |
+| `/control-9k4x/register` | client | create a Firebase account (access still needs the allowlist) |
+| `/control-9k4x` | client, gated | overview: counts, latest messages, recent projects |
+| `/control-9k4x/site-settings` | client, gated | brand logos per theme, favicon, component visibility |
+| `/control-9k4x/[entity]` | client, gated | generic CRUD (table + drawer, or one form for singletons) |
+| `/control-9k4x/messages` | client, gated | inbox with status workflow |
+| `/control-9k4x/media` | client, gated | upload, import from URL, copy URL, delete |
 
-Follow these steps to run the portfolio locally on your machine.
+The dashboard base path lives in `lib/admin-routes.ts` (`ADMIN_BASE`). It is deliberately not
+`/admin`, so scanning for the conventional path finds nothing — renaming it means renaming
+`app/control-9k4x` and the constant together.
 
-### Prerequisites
-- Node.js (v18 or higher recommended)
-- npm, yarn, or pnpm
-- A free [Resend API](https://resend.com) key for the contact form
+Section visibility comes from the `sections` collection, so hiding a component in the dashboard
+removes it from the page (and the numbering closes the gap automatically).
 
-### Installation
+## Structure
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/nihalxofficial/nihalxofficial-portfolio.git
-   cd nihalxofficial-portfolio
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Environment Setup**
-   Create a `.env.local` file in the root of the project and add your Resend API key:
-   ```env
-   RESEND_API_KEY=your_resend_api_key_here
-   ```
-
-4. **Run the Development Server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-5. **View the site**
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## 📂 Project Structure
-
-```text
-├── app/
-│   ├── api/contact/route.ts  # Serverless email handler (Resend)
-│   ├── globals.css           # Global styles and theme tokens
-│   ├── layout.tsx            # Root layout & providers
-│   └── page.tsx              # Main entry point
-├── components/
-│   ├── providers/            # Theme & Smooth Scroll context providers
-│   ├── sections/             # Hero, About, Projects, Education, Contact
-│   └── ui/                   # Reusable components (Navbar, Toast, Modal)
-├── context/
-│   └── ThemeContext.tsx      # Dark/Light mode state management
-├── data/
-│   └── portfolio.ts          # Centralized data (Projects, Skills, Info)
-└── hooks/
-    └── useScroll.ts          # Custom hooks for UI state
+```
+app/
+├── page.tsx                  public home: fetch once, render visible sections
+├── projects/[slug]/          case study page
+├── blog/[slug]/              post page
+├── control-9k4x/             private dashboard (auth, gate, entity CRUD, site settings,
+│                             inbox, media)
+├── robots.ts / sitemap.ts    SEO routes
+└── globals.css               tokens, gradients, utilities, keyframes
+components/
+├── site/                     navbar, hero, about, stats, skills, services, projects,
+│                             showcase, journey, education, testimonials, blog, contact,
+│                             footer, chat widget
+├── admin/                    auth provider, data provider, shell, field editor,
+│                             auth card, ai fill panel, entity manager
+└── ui/                       icon registry, reveal, theme toggle, back to top, ...
+lib/
+├── api.ts                    public reads (server), overridable via API_URL_INTERNAL
+├── admin.ts                  authenticated admin client
+├── admin-routes.ts           ADMIN_BASE + adminHref()
+├── firebase.ts               lazy web SDK init
+├── types.ts                  API types
+└── utils.ts                  cn, dates, slugify, bytes, ...
 ```
 
-## 📧 Contact & Support
+## Environment
 
-Designed and Developed by **Md. Nihal Uddin**
-- **Email:** mdnihaluddinbijoy@gmail.com
-- **GitHub:** [nihalxofficial](https://github.com/nihalxofficial)
+Create `portfolio/.env.local`:
 
-Feel free to fork this repository but please attribute the original design and code if you use it for your own portfolio.
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | yes | public API origin, `http://localhost:5000/api/v1` |
+| `NEXT_PUBLIC_SITE_URL` | yes | canonical origin used by metadata, sitemap and robots |
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | for dashboard | Firebase Web API key |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | for dashboard | `<project>.firebaseapp.com` |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | for dashboard | Firebase project id |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | for dashboard | Web app id (`1:…:web:…`) |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | no | only needed for push |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | no | only needed for storage |
+| `API_URL_INTERNAL` | Docker only | server-side API origin inside the compose network |
+
+The public site keeps working without any Firebase value; only the dashboard needs them, and the
+login page explains exactly which variables are missing. The API must also list your Firebase
+UID in `ADMIN_UIDS` — the browser is never the authority on who is an admin.
+
+`API_URL_INTERNAL` exists because a container cannot reach `localhost:5000` of the host:
+server rendering uses the compose service name (`http://api:5000/api/v1`) while the browser
+keeps using the public `NEXT_PUBLIC_API_URL`.
+
+## Local development
+
+```bash
+npm install
+npm run dev        # http://localhost:3000 (API expected on :5000)
+npm run typecheck
+npm run build && npm start
+```
+
+The API must be running first (`portfolio-server`, `npm run dev`, then `npm run seed` once) or
+the home page shows a styled "Content API unreachable" panel instead of failing.
+
+## Docker
+
+```bash
+docker build -t nihalxofficial/portfolio-web:release-2 \
+  --build-arg NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1 \
+  --build-arg NEXT_PUBLIC_SITE_URL=http://localhost:3000 \
+  --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=… \
+  .
+docker push nihalxofficial/portfolio-web:release-2
+```
+
+`NEXT_PUBLIC_*` values are inlined at build time, so changing them requires a rebuild. The
+runtime image is the Next.js standalone output: `node server.js`, non-root user, no dev
+dependencies.
+
+Orchestration lives in the repository root:
+
+```bash
+docker compose --env-file portfolio/.env.local build
+docker compose up -d
+docker compose ps          # both services should report healthy
+```
+
+## Dashboard
+
+1. Open `/control-9k4x/login` — email/password, Google or GitHub (enable both providers in
+   Firebase → Authentication → Sign-in method).
+2. No account yet? `/control-9k4x/register` creates one. Registration only creates the Firebase
+   user: the rejected sign-in message prints the exact UID to paste into `ADMIN_UIDS`.
+3. The browser keeps the ID token; the API verifies it and checks the allowlist
+   (`GET /api/v1/auth/session`). `GET /api/v1/auth/status` reports the identity *without* the
+   allowlist so the login screen can explain a rejection.
+4. Everything else follows the schema returned by `/api/v1/admin/content/describe`: the
+   sidebar, the tables and the forms are generated from the registry, including nested
+   objects, string lists and repeatable rows.
+5. "Fill with AI" sends rough notes plus the current draft to Gemini and merges the result
+   into the form — nothing is saved until you press Save.
+
+### Site settings
+
+`/control-9k4x/site-settings` holds what the generic form cannot express:
+
+- **Brand logos** — separate navbar and footer images for the light and dark theme, plus the
+  favicon and the logo `alt` text. Each slot uploads through the media API and stores only the
+  URL; empty slots fall back to the gradient initials mark, and the navbar/footer text block
+  hides itself as soon as a logo exists.
+- **Homepage components** — one switch per row of the `sections` collection. Toggling writes
+  `isVisible` immediately, so the hero, about, stats, skills, projects, showcase, journey,
+  education, certifications, blog and contact blocks can be hidden without deleting content.
+
+The base path is unlisted: it is not linked from the public site, excluded from `robots.txt`
+and the sitemap, and `noindex` is set in `app/control-9k4x/layout.tsx`.
+
+## Release tags
+
+| Image | Contents |
+| --- | --- |
+| `nihalxofficial/portfolio:release-1` | original single page portfolio (frontend only) |
+| `nihalxofficial/portfolio-api:release-2` | backend API |
+| `nihalxofficial/portfolio-web:release-2` | this app (public site + dashboard) |

@@ -54,6 +54,10 @@ export default async function HomePage() {
 
   const shown = (key: string) => meta(key)?.isVisible ?? true;
 
+  // The hero has no numbered heading, but hiding it makes "About" the first
+  // block, so the section numbers have to start at 01 instead of 02.
+  const heroVisible = Boolean(data.hero) && shown("hero");
+
   const blocks: Array<{ key: string; visible: boolean }> = [
     { key: "about", visible: Boolean(data.about) },
     { key: "stats", visible: data.statistics.length > 0 },
@@ -73,7 +77,7 @@ export default async function HomePage() {
   const order = new Map<string, number>();
   blocks
     .filter((block) => block.visible && shown(block.key))
-    .forEach((block, position) => order.set(block.key, position + 2));
+    .forEach((block, position) => order.set(block.key, position + (heroVisible ? 2 : 1)));
 
   const at = (key: string) => order.get(key) ?? 1;
 
@@ -83,10 +87,11 @@ export default async function HomePage() {
       <Navbar
         navigation={data.navigation.filter((item) => item.isVisible)}
         siteName={data.settings?.siteName ?? "Md. Nihal Uddin Bijoy"}
+        branding={data.settings?.branding}
       />
 
       <main>
-        {data.hero ? <Hero hero={data.hero} settings={data.settings} /> : null}
+        {data.hero && heroVisible ? <Hero hero={data.hero} settings={data.settings} /> : null}
 
         {data.about && shown("about") ? (
           <About about={data.about} section={meta("about")} index={at("about")} />

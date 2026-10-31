@@ -3,8 +3,9 @@
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import type { NavigationItem } from "@/lib/types";
+import type { NavigationItem, SiteBranding } from "@/lib/types";
 import { cn, initials } from "@/lib/utils";
 
 /**
@@ -14,13 +15,17 @@ import { cn, initials } from "@/lib/utils";
 export function Navbar({
   navigation,
   siteName,
+  branding,
 }: {
   navigation: NavigationItem[];
   siteName: string;
+  branding?: SiteBranding | null;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("");
+
+  const hasLogo = Boolean(branding?.navLogoLight || branding?.navLogoDark);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -73,15 +78,21 @@ export function Navbar({
     >
       <nav className="container-page flex h-16 items-center justify-between gap-6 md:h-[72px]">
         <Link href="/" className="group flex items-center gap-3" onClick={() => setOpen(false)}>
-          <span className="relative grid h-9 w-9 place-items-center rounded-lg grad-accent text-[13px] font-bold tracking-tight text-accent-ink shadow-[0_0_22px_var(--accent-glow)]">
-            {initials(siteName)}
-          </span>
-          <span className="hidden flex-col leading-none sm:flex">
-            <span className="text-sm font-semibold text-ink">{siteName}</span>
-            <span className="mono mt-1 text-[10px] uppercase tracking-[0.18em] text-faint">
-              full-stack developer
+          <BrandLogo
+            branding={branding}
+            variant="nav"
+            fallback={initials(siteName)}
+            alt={siteName}
+            className="transition-transform group-hover:scale-[1.02]"
+          />
+          {hasLogo ? null : (
+            <span className="hidden flex-col leading-none sm:flex">
+              <span className="text-sm font-semibold text-ink">{siteName}</span>
+              <span className="mono mt-1 text-[10px] uppercase tracking-[0.18em] text-faint">
+                full-stack developer
+              </span>
             </span>
-          </span>
+          )}
         </Link>
 
         <div className="hidden items-center gap-1 md:flex">

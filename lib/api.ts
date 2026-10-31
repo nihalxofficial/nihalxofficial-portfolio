@@ -17,6 +17,13 @@ export const API_URL = (
   process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api/v1"
 ).replace(/\/$/, "");
 
+/**
+ * Server rendering runs inside the web container, where the API is reachable by
+ * its compose service name. Browsers need the public origin instead, so only
+ * server side calls use this fallback and `NEXT_PUBLIC_API_URL` stays untouched.
+ */
+export const SERVER_API_URL = (process.env.API_URL_INTERNAL ?? API_URL).replace(/\/$/, "");
+
 export interface Envelope<T> {
   success: boolean;
   message: string;
@@ -36,7 +43,7 @@ export async function apiGet<T>(path: string, revalidate = 60): Promise<T> {
   let response: Response;
 
   try {
-    response = await fetch(`${API_URL}${path}`, {
+    response = await fetch(`${SERVER_API_URL}${path}`, {
       headers: { Accept: "application/json" },
       next: { revalidate },
     });

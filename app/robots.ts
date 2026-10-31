@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getSiteSettings } from "@/lib/api";
+import { ADMIN_BASE } from "@/lib/admin-routes";
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const settings = await getSiteSettings();
@@ -13,7 +14,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
       userAgent: "*",
       allow: "/",
       // The dashboard is private and additionally guarded by Firebase auth.
-      disallow: ["/admin", "/admin/"],
+      disallow: [ADMIN_BASE, `${ADMIN_BASE}/`],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl,
