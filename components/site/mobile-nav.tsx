@@ -104,7 +104,7 @@ export function MobileNav({ navigation }: { navigation: NavigationItem[] }) {
 
       <nav
         aria-label="Sections"
-        className="dock fixed inset-x-0 bottom-0 z-[66] lg:hidden"
+        className="dock fixed inset-x-0 bottom-0 z-[66] grid items-center gap-[0.15rem] lg:hidden"
         style={{ gridTemplateColumns: `repeat(${cells}, minmax(0, 1fr))` }}
       >
         {primary.map((item) => {

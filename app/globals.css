@@ -640,11 +640,12 @@
     animation: var(--animate-sweep);
   }
 
-  /* Mobile bottom dock: glass surface, cyan hairline, safe-area aware. */
+  /* Mobile bottom dock: glass surface, cyan hairline, safe-area aware.
+     Deliberately carries no `display` — this block is emitted after Tailwind's
+     own utilities, so a `display: grid` here would beat the `lg:hidden` on the
+     element and leave the dock on screen at desktop widths. The grid layout
+     lives in the element's classes instead. */
   .dock {
-    display: grid;
-    align-items: center;
-    gap: 0.15rem;
     padding: 0.3rem 0.5rem calc(env(safe-area-inset-bottom) + 0.3rem);
     background-color: color-mix(in oklab, var(--surface) 80%, transparent);
     backdrop-filter: blur(20px) saturate(150%);
