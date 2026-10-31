@@ -79,9 +79,9 @@ export function Contact({
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-72 glow-soft opacity-60" />
 
       <div className="container-page">
-        <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-6">
+        <div className="grid gap-8 lg:grid-cols-12 lg:gap-6">
           {/* ── Details ─────────────────────────────────────────────────── */}
-          <div className="lg:col-span-4">
+          <div className="flex h-full flex-col lg:col-span-4">
             <Reveal>
               <SectionHeading
                 index={index}
@@ -131,8 +131,8 @@ export function Contact({
             ) : null}
 
             {socials.length > 0 ? (
-              <Reveal delay={110}>
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+              <Reveal delay={110} className="mt-auto pt-4">
+                <div className="flex flex-wrap items-center gap-2">
                   {socials.map((link) => (
                     <a
                       key={link.platform}
@@ -152,13 +152,13 @@ export function Contact({
           </div>
 
           {/* ── Terminal + map ──────────────────────────────────────────── */}
-          <div className="order-3 space-y-4 lg:order-2 lg:col-span-4">
-            <Reveal delay={120}>
-              <div className="code-window relative overflow-hidden">
+          <div className="order-3 flex flex-col gap-4 lg:order-2 lg:col-span-4">
+            <Reveal delay={120} className={cn("flex flex-col", mapSrc ? null : "flex-1")}>
+              <div className="code-window relative flex h-full flex-col overflow-hidden">
                 <PlusMarks className="z-10" />
                 <WindowBar title="bash — contact" />
 
-                <div className="space-y-1.5 p-4">
+                <div className="flex-1 space-y-1.5 p-4">
                   {session.map((line) => (
                     <div key={line.cmd}>
                       <p className="mono text-[11.5px] leading-relaxed">
@@ -178,8 +178,8 @@ export function Contact({
             </Reveal>
 
             {mapSrc ? (
-              <Reveal delay={150}>
-                <div className="code-window relative overflow-hidden">
+              <Reveal delay={150} className="flex flex-1 flex-col">
+                <div className="code-window relative flex h-full flex-col overflow-hidden">
                   <PlusMarks className="z-10" />
                   <WindowBar title="location · live map">
                     {externalMap ? (
@@ -200,7 +200,7 @@ export function Contact({
                     title={`Map of ${contact.location || "my location"}`}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    className="block h-48 w-full border-0 grayscale-[45%] contrast-[1.05] dark:invert dark:hue-rotate-180 dark:grayscale-[65%] dark:contrast-[0.92]"
+                    className="block min-h-48 w-full flex-1 border-0 grayscale-[45%] contrast-[1.05] dark:invert dark:hue-rotate-180 dark:grayscale-[65%] dark:contrast-[0.92]"
                   />
 
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-4 py-2">
@@ -220,11 +220,11 @@ export function Contact({
           </div>
 
           {/* ── Form ────────────────────────────────────────────────────── */}
-          <Reveal delay={100} className="order-2 lg:order-3 lg:col-span-4">
+          <Reveal delay={100} className="order-2 flex lg:order-3 lg:col-span-4">
             <form
               onSubmit={handleSubmit}
               aria-label="Contact form"
-              className="glass-panel relative overflow-hidden p-4 sm:p-5"
+              className="glass-panel relative flex h-full w-full flex-col overflow-hidden p-4 sm:p-5"
             >
               <p className="mono text-[10px] uppercase tracking-[0.2em] text-accent">
                 Send me a message
@@ -266,15 +266,15 @@ export function Contact({
                 </Field>
               </div>
 
-              <div className="mt-3">
-                <Field id="contact-message" label="Message">
+              <div className="mt-3 flex flex-1 flex-col">
+                <Field id="contact-message" label="Message" className="flex-1">
                   <textarea
                     id="contact-message"
                     name="message"
                     required
                     rows={4}
                     placeholder="What you're building, the timeline and what you need from me."
-                    className="field"
+                    className="field flex-1"
                   />
                 </Field>
               </div>
@@ -328,14 +328,16 @@ export function Contact({
 function Field({
   id,
   label,
+  className,
   children,
 }: {
   id: string;
   label: string;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <label htmlFor={id} className="block">
+    <label htmlFor={id} className={cn("flex flex-col", className)}>
       <span className="mono mb-1.5 block text-[9.5px] uppercase tracking-[0.18em] text-faint">
         {label}
       </span>
