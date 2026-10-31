@@ -57,6 +57,12 @@
   --grad-surface: linear-gradient(165deg, #ffffff 0%, #f4f9fe 100%);
   --grad-surface-2: linear-gradient(165deg, #f7fbff 0%, #edf4fb 100%);
   --grad-line: linear-gradient(90deg, transparent, rgba(8, 145, 178, 0.45), transparent);
+
+  /* Typography — overridden per request by the root layout from site settings. */
+  --site-font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --site-font-display: "Space Grotesk", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --site-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --site-font-script: "Caveat", "Segoe Script", cursive;
 }
 
 .dark,
@@ -133,9 +139,10 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--site-font-sans);
+  --font-display: var(--site-font-display);
+  --font-mono: var(--site-font-mono);
+  --font-script: var(--site-font-script);
 
   --radius-card: 18px;
   --radius-panel: 24px;
@@ -320,6 +327,47 @@
     background-image: var(--grad-surface-2);
     border: 1px solid var(--border);
     border-radius: var(--radius-card);
+  }
+
+  /* Code / terminal chrome: the windowed cards in the reference design. */
+  .code-window {
+    background-color: var(--surface);
+    background-image: var(--grad-surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* Small tech label, used by projects, showcase, journey and education. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid color-mix(in oklab, var(--accent) 26%, var(--border));
+    background-color: color-mix(in oklab, var(--accent) 8%, transparent);
+    border-radius: 8px;
+    padding: 0.15rem 0.5rem;
+    font-size: 10.5px;
+    line-height: 1.5;
+    color: color-mix(in oklab, var(--accent) 82%, var(--foreground));
+    white-space: nowrap;
+  }
+
+  /* Emphasis ring around the highlighted card of a group. */
+  .glow-ring {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 55%, transparent),
+      0 22px 60px -28px var(--accent-glow);
+  }
+
+  /* Dotted connector between two blocks, as in the stats → goals link. */
+  .dot-rail {
+    background-image: radial-gradient(circle, var(--border-strong) 1px, transparent 1px);
+    background-size: 7px 1px;
+    background-repeat: repeat-x;
+  }
+
+  .script {
+    font-family: var(--site-font-script);
+    letter-spacing: 0.01em;
   }
 
   .grad-accent {

@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { getSiteSettings } from "@/lib/api";
+import { resolveTypography } from "@/lib/fonts";
 import { absoluteUrl } from "@/lib/utils";
 
 const FALLBACK = {
@@ -67,18 +68,28 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings();
+  const type = resolveTypography(settings?.typography);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500..700&display=swap"
-        />
+        {/* Only the families chosen in Site settings are requested. */}
+        <link rel="stylesheet" href={type.href} />
       </head>
-      <body>
+      <body
+        style={
+          {
+            "--site-font-sans": type.sans,
+            "--site-font-display": type.display,
+            "--site-font-mono": type.mono,
+            "--site-font-script": type.script,
+          } as React.CSSProperties
+        }
+      >
         <ThemeProvider>
           <SmoothScroll>{children}</SmoothScroll>
         </ThemeProvider>

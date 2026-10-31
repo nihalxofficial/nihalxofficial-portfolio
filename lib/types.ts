@@ -26,6 +26,8 @@ export interface Hero extends DocMeta {
   secondaryCta: CtaLink;
   terminal: { command: string; lines: string[] };
   portraitUrl: string;
+  /** Handwritten-style note floating beside the portrait. */
+  tagline?: string;
   order: number;
   isVisible: boolean;
 }
@@ -171,6 +173,8 @@ export interface BlogPost extends DocMeta {
 export interface NavigationItem extends DocMeta {
   label: string;
   href: string;
+  /** Lucide icon name shown before the label in the header pill. */
+  icon?: string;
   order: number;
   isVisible: boolean;
 }
@@ -188,6 +192,15 @@ export interface SiteBranding {
   footerLogoDark?: string;
   faviconUrl?: string;
   logoAlt?: string;
+  /** Text wordmark shown next to the mark in the header and footer. */
+  wordmark?: string;
+}
+
+/** Font keys resolved by `lib/fonts.ts`; empty values fall back to the defaults. */
+export interface SiteTypography {
+  sans?: string;
+  display?: string;
+  mono?: string;
 }
 
 export interface SiteSettings extends DocMeta {
@@ -198,6 +211,7 @@ export interface SiteSettings extends DocMeta {
   keywords: string[];
   ogImageUrl: string;
   branding?: SiteBranding;
+  typography?: SiteTypography;
   contact: {
     email?: string;
     phone?: string;
@@ -213,6 +227,8 @@ export interface SectionMeta extends DocMeta {
   label: string;
   heading: string;
   description: string;
+  /** Optional extra lines a section renders as a list (e.g. the goals card). */
+  items?: string[];
   order: number;
   isVisible: boolean;
 }
