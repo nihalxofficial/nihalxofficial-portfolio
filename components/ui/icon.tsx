@@ -1,0 +1,215 @@
+﻿import type { ComponentType } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Award,
+  Briefcase,
+  Building2,
+  CalendarDays,
+  Check,
+  CheckCheck,
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  CircleDot,
+  Clock,
+  Code2,
+  Container,
+  Copy,
+  Database,
+  Download,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  FolderCode,
+  FolderKanban,
+  Gauge,
+  Github,
+  Globe,
+  GraduationCap,
+  ImageIcon,
+  Inbox,
+  Infinity as InfinityGlyph,
+  Laptop,
+  LayoutDashboard,
+  Linkedin,
+  Loader2,
+  LogOut,
+  Mail,
+  MapPin,
+  Menu,
+  MessageSquare,
+  Moon,
+  Newspaper,
+  Pencil,
+  Phone,
+  Plus,
+  Quote,
+  Save,
+  Search,
+  Send,
+  Server,
+  Settings,
+  Smartphone,
+  Sparkles,
+  Star,
+  Sun,
+  Terminal,
+  Trash2,
+  Upload,
+  Users,
+  Wand2,
+  X,
+  Zap,
+  type LucideProps,
+} from "lucide-react";
+import type { IconType as BrandIconType } from "react-icons";
+import {
+  SiDocker,
+  SiExpress,
+  SiFigma,
+  SiGit,
+  SiGo,
+  SiGithub,
+  SiHeroui,
+  SiJavascript,
+  SiLinux,
+  SiMongodb,
+  SiNeon,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiPostgresql,
+  SiPostman,
+  SiPrisma,
+  SiReact,
+  SiRedis,
+  SiRender,
+  SiSocketdotio,
+  SiTailwindcss,
+  SiTypescript,
+  SiVercel,
+} from "react-icons/si";
+
+/**
+ * Small icon registry.
+ *
+ * Content documents store icon *names* (lucide names for UI concepts, simple
+ * icons keys for brands), so only the icons actually used by the seed data are
+ * bundled instead of an entire icon pack.
+ */
+
+const LUCIDE: Record<string, ComponentType<LucideProps>> = {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Award,
+  Briefcase,
+  Building: Building2,
+  Calendar: CalendarDays,
+  Check,
+  CheckCheck,
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  CircleDot,
+  Clock,
+  Code2,
+  Container,
+  Copy,
+  Database,
+  Download,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  FolderCode,
+  FolderKanban,
+  Gauge,
+  Github,
+  Globe,
+  GraduationCap,
+  Image: ImageIcon,
+  Inbox,
+  Infinity: InfinityGlyph,
+  Laptop,
+  LayoutDashboard,
+  Linkedin,
+  Loader: Loader2,
+  LogOut,
+  Mail,
+  MapPin,
+  Menu,
+  MessageSquare,
+  Moon,
+  Newspaper,
+  Pencil,
+  Phone,
+  Plus,
+  Quote,
+  Save,
+  Search,
+  Send,
+  Server,
+  Settings,
+  Smartphone,
+  // simple-icons dropped the VS Code mark; the editor is still in the seed data.
+  SiVisualstudiocode: Code2,
+  Sparkles,
+  Star,
+  Sun,
+  Terminal,
+  Trash: Trash2,
+  Upload,
+  Users,
+  Wand: Wand2,
+  X,
+  Zap,
+};
+
+const BRANDS: Record<string, BrandIconType> = {
+  SiDocker,
+  SiExpress,
+  SiFigma,
+  SiGit,
+  SiGo,
+  SiGithub,
+  SiHeroui,
+  SiJavascript,
+  SiLinux,
+  SiMongodb,
+  SiNeon,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiPostgresql,
+  SiPostman,
+  SiPrisma,
+  SiReact,
+  SiRedis,
+  SiRender,
+  SiSocketdotio,
+  SiTailwindcss,
+  SiTypescript,
+  SiVercel,
+};
+
+export interface IconProps extends Omit<LucideProps, "name"> {
+  name?: string | null;
+  /** Rendered when the name is unknown. */
+  fallback?: ComponentType<LucideProps>;
+}
+
+export function Icon({ name, fallback: Fallback = Sparkles, ...props }: IconProps) {
+  if (!name) return <Fallback {...props} />;
+
+  const Lucide = LUCIDE[name];
+  if (Lucide) return <Lucide {...props} />;
+
+  const Brand = BRANDS[name];
+  if (Brand) return <Brand {...props} />;
+
+  return <Fallback {...props} />;
+}
+
+export function isBrandIcon(name?: string | null): boolean {
+  return Boolean(name && BRANDS[name]);
+}

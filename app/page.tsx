@@ -1,49 +1,162 @@
-"use client";
+import { BackToTop } from "@/components/ui/back-to-top";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { ChatWidget } from "@/components/site/chat-widget";
+import { Footer } from "@/components/site/footer";
+import { Navbar } from "@/components/site/navbar";
+import { About } from "@/components/site/about";
+import { Blog } from "@/components/site/blog";
+import { Contact } from "@/components/site/contact";
+import { Education } from "@/components/site/education";
+import { Hero } from "@/components/site/hero";
+import { Journey } from "@/components/site/journey";
+import { Projects } from "@/components/site/projects";
+import { Services } from "@/components/site/services";
+import { Showcase } from "@/components/site/showcase";
+import { Skills } from "@/components/site/skills";
+import { Stats } from "@/components/site/stats";
+import { Testimonials } from "@/components/site/testimonials";
+import { getPortfolio } from "@/lib/api";
+import type { SectionMeta } from "@/lib/types";
 
-import { HeroUIProvider } from "@heroui/react";
-import { useToast } from "@/hooks/useScroll";
+export const revalidate = 60;
 
-import ScrollProgress from "@/components/ui/ScrollProgress";
-import BackToTop from "@/components/ui/BackToTop";
-import Toast from "@/components/ui/Toast";
-import ProjectModal from "@/components/ui/ProjectModal";
-import Navbar from "@/components/ui/Navbar";
+/**
+ * The public portfolio.
+ *
+ * Every string, image and ordering decision comes from the API, which reads
+ * MongoDB — the dashboard writes the same documents, so nothing here is
+ * hardcoded.
+ */
+export default async function HomePage() {
+  const data = await getPortfolio();
 
-import Hero from "@/components/sections/Hero";
-import About from "@/components/sections/About";
-import Services from "@/components/sections/Services";
-import Skills from "@/components/sections/Skills";
-import Projects from "@/components/sections/Projects";
-import Education from "@/components/sections/Education";
-import Testimonials from "@/components/sections/Testimonials";
-import Blog from "@/components/sections/Blog";
-import Contact from "@/components/sections/Contact";
-import Footer from "@/components/sections/Footer";
+  if (!data) {
+    return (
+      <main className="grid min-h-screen place-items-center px-6">
+        <div className="panel max-w-md p-8 text-center">
+          <p className="mono text-[11px] uppercase tracking-[0.22em] text-accent">Offline</p>
+          <h1 className="mt-3 text-2xl font-semibold text-ink">Content API unreachable</h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            The portfolio is rendered from the API, so this page needs{" "}
+            <span className="mono text-accent">portfolio-server</span> to be running. Start it and
+            refresh.
+          </p>
+          <p className="mono mt-5 rounded-lg border border-line bg-surface-2 px-3 py-2 text-[11px] text-faint">
+            docker compose up -d portfolio-server
+          </p>
+        </div>
+      </main>
+    );
+  }
 
-export default function Home() {
-  const { toast, showToast } = useToast();
+  const meta = (key: string): SectionMeta | undefined =>
+    data.sections.find((section) => section.key === key);
+
+  const shown = (key: string) => meta(key)?.isVisible ?? true;
+
+  const blocks: Array<{ key: string; visible: boolean }> = [
+    { key: "about", visible: Boolean(data.about) },
+    { key: "stats", visible: data.statistics.length > 0 },
+    { key: "services", visible: data.services.length > 0 },
+    { key: "skills", visible: data.skills.length > 0 },
+    { key: "projects", visible: data.projects.length > 0 },
+    { key: "showcase", visible: data.projects.length > 1 },
+    { key: "journey", visible: data.experience.length > 0 },
+    { key: "education", visible: data.education.length > 0 || data.certifications.length > 0 },
+    { key: "testimonials", visible: data.testimonials.length > 0 },
+    { key: "blog", visible: data.posts.length > 0 },
+    { key: "contact", visible: true },
+  ];
+
+  // Section numbers are derived from what actually renders, so hiding an entry
+  // in the dashboard never leaves a gap in the "[ 01. … ]" labels.
+  const order = new Map<string, number>();
+  blocks
+    .filter((block) => block.visible && shown(block.key))
+    .forEach((block, position) => order.set(block.key, position + 2));
+
+  const at = (key: string) => order.get(key) ?? 1;
 
   return (
-    <HeroUIProvider>
+    <>
       <ScrollProgress />
-      <Navbar />
+      <Navbar
+        navigation={data.navigation.filter((item) => item.isVisible)}
+        siteName={data.settings?.siteName ?? "Md. Nihal Uddin Bijoy"}
+      />
+
       <main>
-        <Hero onDownload={(success) => {
-            if (success) showToast("Resume downloaded!", "success");
-            else showToast("Download failed. Try again.", "error");
-          }} />
-        <About />
-        <Services />
-        <Skills />
-        <Projects />
-        <Education />
-        {/* <Testimonials /> */}
-        <Contact />
-        <Footer />
+        {data.hero ? <Hero hero={data.hero} settings={data.settings} /> : null}
+
+        {data.about && shown("about") ? (
+          <About about={data.about} section={meta("about")} index={at("about")} />
+        ) : null}
+
+        {shown("stats") ? (
+          <Stats statistics={data.statistics} section={meta("stats")} index={at("stats")} />
+        ) : null}
+
+        {shown("services") ? (
+          <Services
+            services={data.services}
+            section={meta("services")}
+            index={at("services")}
+          />
+        ) : null}
+
+        {shown("skills") ? (
+          <Skills groups={data.skills} section={meta("skills")} index={at("skills")} />
+        ) : null}
+
+        {shown("projects") ? (
+          <Projects projects={data.projects} section={meta("projects")} index={at("projects")} />
+        ) : null}
+
+        {shown("showcase") ? (
+          <Showcase
+            projects={data.projects.filter((project) => project.isFeatured)}
+            section={meta("showcase")}
+            index={at("showcase")}
+          />
+        ) : null}
+
+        {shown("journey") ? (
+          <Journey experience={data.experience} section={meta("journey")} index={at("journey")} />
+        ) : null}
+
+        {shown("education") ? (
+          <Education
+            education={data.education}
+            certifications={data.certifications}
+            section={meta("education")}
+            certificationsSection={meta("certifications")}
+            index={at("education")}
+          />
+        ) : null}
+
+        {shown("testimonials") ? (
+          <Testimonials
+            testimonials={data.testimonials}
+            section={meta("testimonials")}
+            index={at("testimonials")}
+          />
+        ) : null}
+
+        {shown("blog") ? <Blog posts={data.posts} section={meta("blog")} index={at("blog")} /> : null}
+
+        {shown("contact") ? (
+          <Contact settings={data.settings} section={meta("contact")} index={at("contact")} />
+        ) : null}
       </main>
-      <ProjectModal />
+
+      <Footer
+        settings={data.settings}
+        navigation={data.navigation.filter((item) => item.isVisible)}
+        year={new Date().getFullYear()}
+      />
+
       <BackToTop />
-      <Toast show={toast.show} msg={toast.msg} />
-    </HeroUIProvider>
+      <ChatWidget />
+    </>
   );
 }

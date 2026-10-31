@@ -1,14 +1,21 @@
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+import { getSiteSettings } from "@/lib/api";
 
-export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://nihalxofficial.vercel.app';
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const settings = await getSiteSettings();
+  const baseUrl = (settings?.siteUrl || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(
+    /\/$/,
+    "",
+  );
 
   return {
     rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: '/private/',
+      userAgent: "*",
+      allow: "/",
+      // The dashboard is private and additionally guarded by Firebase auth.
+      disallow: ["/admin", "/admin/"],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }
