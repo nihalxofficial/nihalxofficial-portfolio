@@ -12,14 +12,18 @@ import {
   type EntityRecord,
 } from "@/lib/admin";
 import { adminHref } from "@/lib/admin-routes";
+import { DEFAULT_TYPOGRAPHY, fontOptions, type FontRole } from "@/lib/fonts";
+import { mapEmbedUrl } from "@/lib/map";
+import type { SiteSettings } from "@/lib/types";
 
 /**
  * Appearance settings.
  *
- * Two jobs the generic form cannot do well: uploading four theme-specific
- * logos plus a favicon, and flipping each public section on or off with one
- * click. Everything is stored on the `settings` / `sections` documents, so the
- * public site picks it up on its next revalidation.
+ * Jobs the generic form cannot do well: uploading four theme-specific logos
+ * plus a favicon, picking the Google Fonts the site loads, pointing the contact
+ * map, and flipping each public section on or off with one click. Everything is
+ * stored on the `settings` / `sections` documents, so the public site picks it up
+ * on its next revalidation.
  */
 
 type BrandingKey =
@@ -28,6 +32,8 @@ type BrandingKey =
   | "footerLogoLight"
   | "footerLogoDark"
   | "faviconUrl";
+
+type ContactMap = SiteSettings["contact"];
 
 const LOGO_SLOTS: Array<{ field: BrandingKey; label: string; hint: string }> = [
   {

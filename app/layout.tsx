@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { getSiteSettings } from "@/lib/api";
 import { resolveTypography } from "@/lib/fonts";
@@ -91,7 +92,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         }
       >
         <ThemeProvider>
-          <SmoothScroll>{children}</SmoothScroll>
+          <MotionProvider>
+            <SmoothScroll>{children}</SmoothScroll>
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>
