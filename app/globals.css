@@ -300,6 +300,15 @@
     text-wrap: pretty;
   }
 
+  /* Browsers leave the arrow cursor on <button> and Tailwind's preflight does
+     not change it, so every real control gets the pointer cursor here. A
+     utility on the element still wins — `cursor-default` on a non-clickable
+     row or a disabled control is untouched. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
   ::selection {
     background: var(--accent);
     color: var(--accent-foreground);
