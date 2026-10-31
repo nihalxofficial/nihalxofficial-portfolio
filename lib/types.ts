@@ -175,6 +175,8 @@ export interface NavigationItem extends DocMeta {
   href: string;
   /** Lucide icon name shown before the label in the header pill. */
   icon?: string;
+  /** Pinned to the mobile bottom dock; the rest fold into "More". */
+  isPrimary?: boolean;
   order: number;
   isVisible: boolean;
 }

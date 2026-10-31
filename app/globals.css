@@ -50,6 +50,10 @@
   --shadow-panel: 0 18px 50px -30px rgba(6, 30, 52, 0.38);
   --shadow-float: 0 26px 60px -32px rgba(6, 30, 52, 0.42);
 
+  /* Height of the mobile bottom dock, so floating buttons and the page gutter
+     can keep clear of it without repeating the number everywhere. */
+  --dock-h: 4.4rem;
+
   /* Gradients — the accent ramp always starts at the screenshot cyan. */
   --grad-accent: linear-gradient(135deg, #0891b2 0%, #0ea5e9 55%, #0369a1 100%);
   --grad-page: radial-gradient(60% 45% at 50% -8%, rgba(8, 145, 178, 0.16), transparent 70%),
@@ -554,11 +558,64 @@
     animation: var(--animate-sweep);
   }
 
+  /* Mobile bottom dock: glass surface, cyan hairline, safe-area aware. */
+  .dock {
+    display: grid;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.3rem 0.5rem calc(env(safe-area-inset-bottom) + 0.3rem);
+    background-color: color-mix(in oklab, var(--surface) 80%, transparent);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border-top: 1px solid var(--border-strong);
+    box-shadow: 0 -1px 0 0 var(--accent-soft), 0 -22px 46px -30px var(--accent-glow);
+  }
+
+  /* Page content clearance so the dock never covers the footer. */
+  .dock-gutter {
+    padding-bottom: calc(var(--dock-h) + env(safe-area-inset-bottom) + 1rem);
+  }
+
+  /* Floating buttons (assistant, back to top) lift above the dock. */
+  .dock-raised {
+    bottom: calc(var(--dock-h) + env(safe-area-inset-bottom) + 1rem);
+  }
+
+  @media (min-width: 1024px) {
+    .dock-gutter {
+      padding-bottom: 0;
+    }
+
+    .dock-raised {
+      bottom: 1.5rem;
+    }
+  }
+
   .scrollbar-none {
     scrollbar-width: none;
   }
   .scrollbar-none::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Slim, visible scrollbar for panels that hold a conversation history —
+     hiding the bar made the chat look unscrollable. */
+  .thin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  .thin-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .thin-scroll::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border-radius: 999px;
+  }
+
+  .thin-scroll::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .prose-portfolio {

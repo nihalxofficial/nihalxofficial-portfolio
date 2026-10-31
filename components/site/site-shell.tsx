@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { BackToTop } from "@/components/ui/back-to-top";
 import { Footer } from "@/components/site/footer";
+import { MobileNav } from "@/components/site/mobile-nav";
 import { Navbar } from "@/components/site/navbar";
 import { getPortfolio } from "@/lib/api";
 
@@ -20,6 +21,8 @@ export async function SiteShell({ children }: { children: ReactNode }) {
         siteName={data?.settings?.siteName ?? "Md. Nihal Uddin Bijoy"}
         branding={data?.settings?.branding}
       />
+      {/* Dock links point at the homepage sections from a detail page. */}
+      <MobileNav navigation={navigation} />
 
       <main className="pb-20 pt-24 sm:pt-28">{children}</main>
 

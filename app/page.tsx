@@ -2,6 +2,7 @@ import { BackToTop } from "@/components/ui/back-to-top";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { ChatWidget } from "@/components/site/chat-widget";
 import { Footer } from "@/components/site/footer";
+import { MobileNav } from "@/components/site/mobile-nav";
 import { Navbar } from "@/components/site/navbar";
 import { About } from "@/components/site/about";
 import { Blog } from "@/components/site/blog";
@@ -81,14 +82,17 @@ export default async function HomePage() {
 
   const at = (key: string) => order.get(key) ?? 1;
 
+  const nav = data.navigation.filter((item) => item.isVisible);
+
   return (
     <>
       <ScrollProgress />
       <Navbar
-        navigation={data.navigation.filter((item) => item.isVisible)}
+        navigation={nav}
         siteName={data.settings?.siteName ?? "Md. Nihal Uddin Bijoy"}
         branding={data.settings?.branding}
       />
+      <MobileNav navigation={nav} />
 
       <main>
         {data.hero && heroVisible ? <Hero hero={data.hero} settings={data.settings} /> : null}
@@ -156,7 +160,7 @@ export default async function HomePage() {
 
       <Footer
         settings={data.settings}
-        navigation={data.navigation.filter((item) => item.isVisible)}
+        navigation={nav}
         year={new Date().getFullYear()}
       />
 

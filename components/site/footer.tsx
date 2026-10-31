@@ -21,7 +21,7 @@ export function Footer({
   const hasLogo = Boolean(branding?.footerLogoLight || branding?.footerLogoDark);
 
   return (
-    <footer className="relative mt-8 border-t border-line">
+    <footer className="dock-gutter relative mt-8 border-t border-line">
       <div className="pointer-events-none absolute inset-x-0 -top-px mx-auto h-px w-2/3 rule-grad" />
 
       <div className="container-page py-14">

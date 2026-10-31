@@ -35,15 +35,36 @@ export function ChatWidget() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState("");
+  /** False while the visitor is reading older messages — stops the pull to bottom. */
+  const [atBottom, setAtBottom] = useState(true);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  /** Partial reply while the stream is still arriving. */
+  const answerRef = useRef("");
 
+  // Scrolling is a DOM write, not state, so a reply streaming in never yanks the
+  // view down when the reader has scrolled up.
   useEffect(() => {
     const node = scrollRef.current;
-    if (node) node.scrollTop = node.scrollHeight;
-  }, [messages, streaming, open]);
+    if (!node || !atBottom) return;
+    node.scrollTop = node.scrollHeight;
+  }, [messages, streaming, open, atBottom]);
+
+  function trackScroll() {
+    const node = scrollRef.current;
+    if (!node) return;
+    const distance = node.scrollHeight - node.scrollTop - node.clientHeight;
+    setAtBottom(distance < 56);
+  }
+
+  function jumpToLatest() {
+    const node = scrollRef.current;
+    if (!node) return;
+    node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+    setAtBottom(true);
+  }
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -62,6 +83,14 @@ export function ChatWidget() {
     setInput("");
     setError("");
     setStreaming(true);
+
+    // A new question always scrolls the reader back down, even if they were
+    // browsing older messages.
+    requestAnimationFrame(() => {
+      const node = scrollRef.current;
+      if (node) node.scrollTop = node.scrollHeight;
+      setAtBottom(true);
+    });
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -82,10 +111,9 @@ export function ChatWidget() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let answer = "";
+      answerRef.current = "";
 
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
+      for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
 
@@ -110,7 +138,9 @@ export function ChatWidget() {
           }
 
           if (event.type === "delta" && event.text) {
-            answer += event.text;
+            // The ref holds the partial answer; React state only sees snapshots.
+            answerRef.current += event.text;
+            const answer = answerRef.current;
             setMessages((current) => {
               const next = [...current];
               next[next.length - 1] = { role: "assistant", content: answer };
@@ -124,7 +154,7 @@ export function ChatWidget() {
         }
       }
 
-      if (!answer.trim()) {
+      if (!answerRef.current.trim()) {
         setError((previous) => previous || "No answer came back — please try again.");
       }
     } catch (cause) {
@@ -150,7 +180,7 @@ export function ChatWidget() {
         aria-label={open ? "Close assistant" : "Ask about Nihal"}
         aria-expanded={open}
         className={cn(
-          "fixed bottom-5 right-5 z-[70] grid h-12 w-12 place-items-center rounded-full grad-accent text-accent-ink shadow-[0_12px_36px_-10px_var(--accent-glow)] transition-transform hover:-translate-y-0.5",
+          "dock-raised fixed right-5 z-[70] grid h-12 w-12 place-items-center rounded-full grad-accent text-accent-ink shadow-[0_12px_36px_-10px_var(--accent-glow)] transition-transform hover:-translate-y-0.5 active:scale-95",
           open && "rotate-90",
         )}
       >
@@ -160,7 +190,7 @@ export function ChatWidget() {
       {/* Panel */}
       <div
         className={cn(
-          "fixed bottom-20 right-4 z-[70] w-[min(23rem,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl border border-line bg-page/95 shadow-[var(--shadow-float)] backdrop-blur-xl transition-all duration-200",
+          "fixed right-4 bottom-[calc(var(--dock-h)+env(safe-area-inset-bottom)+4.5rem)] z-[70] w-[min(23rem,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl border border-line bg-page/95 shadow-[var(--shadow-float)] backdrop-blur-xl transition-all duration-200 lg:bottom-20",
           open
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none translate-y-3 scale-95 opacity-0",
@@ -182,30 +212,43 @@ export function ChatWidget() {
           </div>
         </div>
 
-        <div
-          ref={scrollRef}
-          className="scrollbar-none max-h-[min(24rem,55vh)] min-h-[9rem] space-y-2.5 overflow-y-auto px-3.5 py-3.5"
-        >
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={cn(
-                "flex",
-                message.role === "user" ? "justify-end" : "justify-start",
-              )}
-            >
-              <p
+        <div className="relative">
+          <div
+            ref={scrollRef}
+            onScroll={trackScroll}
+            className="thin-scroll h-[min(24rem,52vh)] min-h-[12rem] space-y-2.5 overflow-y-auto overscroll-contain px-3.5 py-3.5"
+          >
+            {messages.map((message, index) => (
+              <div
+                key={index}
                 className={cn(
-                  "max-w-[85%] whitespace-pre-wrap rounded-xl px-3 py-2 text-[12.5px] leading-relaxed",
-                  message.role === "user"
-                    ? "bg-accent/15 text-ink"
-                    : "border border-line bg-surface/70 text-muted",
+                  "flex",
+                  message.role === "user" ? "justify-end" : "justify-start",
                 )}
               >
-                {message.content || (streaming ? "…" : "")}
-              </p>
-            </div>
-          ))}
+                <p
+                  className={cn(
+                    "max-w-[85%] whitespace-pre-wrap break-words rounded-xl px-3 py-2 text-[12.5px] leading-relaxed",
+                    message.role === "user"
+                      ? "bg-accent/15 text-ink"
+                      : "border border-line bg-surface/70 text-muted",
+                  )}
+                >
+                  {message.content || (streaming ? "…" : "")}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {atBottom || messages.length <= 1 ? null : (
+            <button
+              type="button"
+              onClick={jumpToLatest}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-accent/45 bg-surface/90 px-3 py-1 text-[11px] text-accent shadow-[0_10px_26px_-14px_var(--accent-glow)] backdrop-blur transition-transform hover:-translate-y-0.5"
+            >
+              Jump to latest ↓
+            </button>
+          )}
         </div>
 
         {error ? (
