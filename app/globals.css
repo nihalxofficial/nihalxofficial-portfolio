@@ -373,6 +373,46 @@
     border-radius: var(--radius-card);
   }
 
+  /* Translucent card for surfaces that should read as glass over the page. */
+  .glass-panel {
+    background-color: color-mix(in oklab, var(--surface) 72%, transparent);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-panel);
+  }
+
+  /* Form field with the accent glow on focus, used by the contact card. */
+  .field {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background-color: color-mix(in oklab, var(--surface-secondary) 55%, transparent);
+    padding: 0.6rem 0.8rem;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--foreground);
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+  }
+
+  .field::placeholder {
+    color: var(--faint);
+  }
+
+  .field:focus {
+    border-color: color-mix(in oklab, var(--accent) 60%, var(--border));
+    background-color: var(--surface);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 13%, transparent),
+      0 0 26px -8px var(--accent-glow);
+  }
+
+  textarea.field {
+    resize: vertical;
+    min-height: 5.5rem;
+  }
+
   /* Code / terminal chrome: the windowed cards in the reference design. */
   .code-window {
     background-color: var(--surface);

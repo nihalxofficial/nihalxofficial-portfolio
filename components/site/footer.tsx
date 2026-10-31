@@ -4,7 +4,7 @@ import { Icon } from "@/components/ui/icon";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 import { initials } from "@/lib/utils";
 
-const STACK = ["Next.js", "Node.js", "MongoDB", "Tailwind CSS", "HeroUI", "Gemini"];
+const STACK = ["Next.js", "Node.js", "MongoDB", "Tailwind CSS", "Framer Motion", "HeroUI", "Gemini"];
 
 export function Footer({
   settings,

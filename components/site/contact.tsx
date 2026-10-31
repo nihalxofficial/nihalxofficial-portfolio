@@ -1,7 +1,6 @@
 "use client";
 
-import { Button, Input, Label, TextArea, TextField } from "@heroui/react";
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
 import { PlusMarks, WindowBar } from "@/components/ui/panel-chrome";
 import { Reveal } from "@/components/ui/reveal";
@@ -13,13 +12,7 @@ import { cn } from "@/lib/utils";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
-const TERMINAL_LINES = [
-  { prompt: "status", value: "open to offers · ready to interview" },
-  { prompt: "response", value: "within 24 hours" },
-  { prompt: "remote", value: "preferred · worldwide" },
-];
-
-/** Contact — details and a terminal on the left, a working form on the right. */
+/** Contact — details, a live terminal/map column and a compact glass form. */
 export function Contact({
   settings,
   section,
@@ -33,6 +26,7 @@ export function Contact({
   const [message, setMessage] = useState("");
 
   const contact = settings?.contact ?? {};
+  const socials = (settings?.socialLinks ?? []).filter((link) => link.url);
   const mapSrc = mapEmbedUrl(contact);
   const coords = coordinatesOf(contact);
   const externalMap = mapsLink(contact);
@@ -71,14 +65,23 @@ export function Contact({
     contact.availability && { icon: "CircleDot", label: "Availability", value: contact.availability },
   ].filter(Boolean) as Array<{ icon: string; label: string; value: string; href?: string }>;
 
+  // The terminal reads like a shell session, and the last line is the promise
+  // the form makes to whoever is typing.
+  const session = [
+    { cmd: "ping creative_ideas", out: "Pinging your ideas…" },
+    { cmd: "whoami", out: contact.availability || "full-stack developer" },
+    { cmd: "./start-conversation.sh", out: "Building something awesome together!" },
+  ];
+
   return (
     <section id="contact" className="relative section-pad">
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px rule-grad" />
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-72 glow-soft opacity-60" />
 
       <div className="container-page">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
-          <div>
+        <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-6">
+          {/* ── Details ─────────────────────────────────────────────────── */}
+          <div className="lg:col-span-4">
             <Reveal>
               <SectionHeading
                 index={index}
@@ -93,31 +96,31 @@ export function Contact({
 
             {rows.length > 0 ? (
               <Reveal delay={80}>
-                <ul className="mt-8 space-y-2.5">
+                <ul className="mt-7 space-y-2">
                   {rows.map((row) => (
                     <li key={row.label}>
                       <a
                         href={row.href}
                         className={cn(
-                          "group flex items-center gap-3 rounded-xl border border-line bg-surface/50 px-4 py-3 transition-colors",
-                          row.href ? "hover:border-line-strong" : "pointer-events-none",
+                          "group flex items-center gap-3 rounded-xl border border-line bg-surface/40 px-3.5 py-2.5 transition-colors",
+                          row.href ? "hover:border-accent/45" : "cursor-default",
                         )}
                       >
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-accent/10 text-accent">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-accent/10 text-accent transition-shadow group-hover:shadow-[0_0_18px_-6px_var(--accent-glow)]">
                           <Icon name={row.icon} className="h-4 w-4" />
                         </span>
                         <span className="min-w-0">
-                          <span className="mono block text-[10px] uppercase tracking-[0.18em] text-faint">
+                          <span className="mono block text-[9.5px] uppercase tracking-[0.18em] text-faint">
                             {row.label}
                           </span>
-                          <span className="mt-0.5 block truncate text-[13px] text-ink">
+                          <span className="mt-0.5 block truncate text-[12.5px] text-ink">
                             {row.value}
                           </span>
                         </span>
                         {row.href ? (
                           <Icon
                             name="ArrowUpRight"
-                            className="ml-auto h-4 w-4 shrink-0 text-faint transition-transform group-hover:-translate-y-0.5 group-hover:text-accent"
+                            className="ml-auto h-3.5 w-3.5 shrink-0 text-faint transition-all group-hover:-translate-y-0.5 group-hover:text-accent"
                           />
                         ) : null}
                       </a>
@@ -127,9 +130,56 @@ export function Contact({
               </Reveal>
             ) : null}
 
+            {socials.length > 0 ? (
+              <Reveal delay={110}>
+                <div className="mt-4 flex flex-wrap items-center gap-2">
+                  {socials.map((link) => (
+                    <a
+                      key={link.platform}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={link.platform}
+                      title={link.platform}
+                      className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface/40 text-muted transition-colors hover:border-accent/45 hover:text-accent"
+                    >
+                      <Icon name={link.icon} className="h-4 w-4" />
+                    </a>
+                  ))}
+                </div>
+              </Reveal>
+            ) : null}
+          </div>
+
+          {/* ── Terminal + map ──────────────────────────────────────────── */}
+          <div className="order-3 space-y-4 lg:order-2 lg:col-span-4">
+            <Reveal delay={120}>
+              <div className="code-window relative overflow-hidden">
+                <PlusMarks className="z-10" />
+                <WindowBar title="bash — contact" />
+
+                <div className="space-y-1.5 p-4">
+                  {session.map((line) => (
+                    <div key={line.cmd}>
+                      <p className="mono text-[11.5px] leading-relaxed">
+                        <span className="text-accent">$</span>{" "}
+                        <span className="text-ink">{line.cmd}</span>
+                      </p>
+                      <p className="mono text-[11.5px] leading-relaxed text-muted">
+                        <span className="text-success">›</span> {line.out}
+                      </p>
+                    </div>
+                  ))}
+                  <p className="mono pt-0.5 text-[11.5px] text-accent">
+                    <span className="text-muted">$</span> <span className="animate-blink">▌</span>
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
             {mapSrc ? (
-              <Reveal delay={120}>
-                <div className="code-window relative mt-5 overflow-hidden">
+              <Reveal delay={150}>
+                <div className="code-window relative overflow-hidden">
                   <PlusMarks className="z-10" />
                   <WindowBar title="location · live map">
                     {externalMap ? (
@@ -150,11 +200,11 @@ export function Contact({
                     title={`Map of ${contact.location || "my location"}`}
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    className="block h-56 w-full border-0 grayscale-[45%] contrast-[1.05] dark:invert dark:hue-rotate-180 dark:grayscale-[65%] dark:contrast-[0.92] sm:h-64"
+                    className="block h-48 w-full border-0 grayscale-[45%] contrast-[1.05] dark:invert dark:hue-rotate-180 dark:grayscale-[65%] dark:contrast-[0.92]"
                   />
 
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-4 py-2.5">
-                    <span className="mono inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-faint">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-4 py-2">
+                    <span className="mono inline-flex items-center gap-1.5 text-[9.5px] uppercase tracking-[0.16em] text-faint">
                       <Icon name="MapPin" className="h-3 w-3 text-accent" />
                       {contact.location || "coordinates"}
                     </span>
@@ -167,98 +217,93 @@ export function Contact({
                 </div>
               </Reveal>
             ) : null}
-
-            <Reveal delay={140}>
-              <div className="mt-5 overflow-hidden rounded-xl border border-line bg-surface/60">
-                <div className="flex items-center gap-1.5 border-b border-line px-4 py-2.5">
-                  <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-                  <span className="mono ml-auto text-[10px] uppercase tracking-[0.18em] text-faint">
-                    whoami
-                  </span>
-                </div>
-                <div className="space-y-1.5 p-4">
-                  {TERMINAL_LINES.map((line) => (
-                    <p key={line.prompt} className="mono text-[11px] leading-relaxed">
-                      <span className="text-accent">$</span>{" "}
-                      <span className="text-muted">{line.prompt}</span>{" "}
-                      <span className="text-ink">{line.value}</span>
-                    </p>
-                  ))}
-                  <p className="mono text-[11px] text-accent">
-                    <span className="text-muted">$</span> <span className="animate-blink">▌</span>
-                  </p>
-                </div>
-              </div>
-            </Reveal>
           </div>
 
-          <Reveal delay={100}>
+          {/* ── Form ────────────────────────────────────────────────────── */}
+          <Reveal delay={100} className="order-2 lg:order-3 lg:col-span-4">
             <form
               onSubmit={handleSubmit}
-              className="panel h-full p-5 sm:p-6"
               aria-label="Contact form"
+              className="glass-panel relative overflow-hidden p-4 sm:p-5"
             >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <TextField name="name" isRequired className="flex flex-col gap-1.5">
-                  <Label className="mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                    Name
-                  </Label>
-                  <Input placeholder="Your name" autoComplete="name" />
-                </TextField>
+              <p className="mono text-[10px] uppercase tracking-[0.2em] text-accent">
+                Send me a message
+              </p>
 
-                <TextField name="email" type="email" isRequired className="flex flex-col gap-1.5">
-                  <Label className="mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                    Email
-                  </Label>
-                  <Input placeholder="you@company.com" autoComplete="email" />
-                </TextField>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <Field id="contact-name" label="Name">
+                  <input
+                    id="contact-name"
+                    name="name"
+                    required
+                    autoComplete="name"
+                    placeholder="Your name"
+                    className="field"
+                  />
+                </Field>
+
+                <Field id="contact-email" label="Email">
+                  <input
+                    id="contact-email"
+                    name="email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    className="field"
+                  />
+                </Field>
               </div>
 
-              <TextField name="subject" className="mt-4 flex flex-col gap-1.5">
-                <Label className="mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                  Subject
-                </Label>
-                <Input placeholder="Project, role or just a hello" />
-              </TextField>
+              <div className="mt-3">
+                <Field id="contact-subject" label="Subject">
+                  <input
+                    id="contact-subject"
+                    name="subject"
+                    placeholder="Project, role or just a hello"
+                    className="field"
+                  />
+                </Field>
+              </div>
 
-              <TextField name="message" isRequired className="mt-4 flex flex-col gap-1.5">
-                <Label className="mono text-[10px] uppercase tracking-[0.18em] text-faint">
-                  Message
-                </Label>
-                <TextArea
-                  rows={6}
-                  placeholder="Tell me what you're building, the timeline and what you need from me."
-                />
-              </TextField>
+              <div className="mt-3">
+                <Field id="contact-message" label="Message">
+                  <textarea
+                    id="contact-message"
+                    name="message"
+                    required
+                    rows={4}
+                    placeholder="What you're building, the timeline and what you need from me."
+                    className="field"
+                  />
+                </Field>
+              </div>
 
-              <Button
+              <button
                 type="submit"
-                fullWidth
-                isDisabled={status === "sending"}
-                className="mt-5 h-11 rounded-lg grad-accent text-[13px] font-semibold text-accent-ink"
+                disabled={status === "sending"}
+                className="mt-4 flex h-10 w-full items-center justify-center gap-2 rounded-lg grad-accent text-[12.5px] font-semibold text-accent-ink transition-shadow hover:shadow-[0_10px_34px_-12px_var(--accent-glow)] disabled:opacity-60"
               >
                 {status === "sending" ? (
                   <>
-                    <Icon name="Loader" className="h-4 w-4 animate-spin" />
+                    <Icon name="Loader" className="h-3.5 w-3.5 animate-spin" />
                     Sending…
                   </>
                 ) : (
                   <>
                     Send message
-                    <Icon name="Send" className="h-4 w-4" />
+                    <Icon name="Send" className="h-3.5 w-3.5" />
                   </>
                 )}
-              </Button>
+              </button>
 
               <p
                 role="status"
                 aria-live="polite"
                 className={cn(
-                  "mt-3 flex items-center justify-center gap-1.5 text-[12px]",
+                  "mt-2.5 flex min-h-5 items-center justify-center gap-1.5 text-[11.5px] transition-opacity",
                   status === "error" ? "text-danger" : "text-success",
-                  status === "idle" || status === "sending" ? "invisible" : "visible",
+                  status === "sent" || status === "error" ? "opacity-100" : "opacity-0",
                 )}
               >
                 {status === "error" ? (
@@ -269,13 +314,32 @@ export function Contact({
                 {message}
               </p>
 
-              <p className="mt-1 text-center text-[11px] text-faint">
-                Delivered straight to my inbox — no third-party forms.
+              <p className="mono mt-1 text-center text-[10px] uppercase tracking-[0.14em] text-faint">
+                straight to my inbox · no third-party forms
               </p>
             </form>
           </Reveal>
         </div>
       </div>
     </section>
+  );
+}
+
+function Field({
+  id,
+  label,
+  children,
+}: {
+  id: string;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <label htmlFor={id} className="block">
+      <span className="mono mb-1.5 block text-[9.5px] uppercase tracking-[0.18em] text-faint">
+        {label}
+      </span>
+      {children}
+    </label>
   );
 }

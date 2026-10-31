@@ -12,7 +12,13 @@ import {
   type EntityRecord,
 } from "@/lib/admin";
 import { adminHref } from "@/lib/admin-routes";
-import { DEFAULT_TYPOGRAPHY, fontOptions, type FontRole } from "@/lib/fonts";
+import {
+  DEFAULT_TYPOGRAPHY,
+  findFont,
+  fontOptions,
+  resolveTypography,
+  type FontRole,
+} from "@/lib/fonts";
 import { mapEmbedUrl } from "@/lib/map";
 import type { SiteSettings } from "@/lib/types";
 
@@ -66,6 +72,26 @@ const EMPTY_BRANDING: Record<BrandingKey, string> = {
   faviconUrl: "",
 };
 
+/** The three roles the public site resolves a typeface for. */
+const FONT_ROLES: Array<{ role: FontRole; label: string; hint: string }> = [
+  { role: "sans", label: "Body", hint: "Paragraphs, cards and form text" },
+  { role: "display", label: "Headings", hint: "Section titles and the hero name" },
+  { role: "mono", label: "Monospace", hint: "Terminal, code window and labels" },
+];
+
+const EMPTY_MAP: ContactMap = {
+  email: "",
+  phone: "",
+  location: "",
+  availability: "",
+  mapLat: "",
+  mapLng: "",
+  mapZoom: 13,
+  mapEmbedUrl: "",
+};
+
+type SavingSection = "branding" | "typography" | "map" | null;
+
 type Flash = { tone: "success" | "error"; text: string } | null;
 
 function toMessage(cause: unknown, fallback: string) {
@@ -75,9 +101,14 @@ function toMessage(cause: unknown, fallback: string) {
 export default function SiteSettingsPage() {
   const [branding, setBranding] = useState<Record<BrandingKey, string>>(EMPTY_BRANDING);
   const [logoAlt, setLogoAlt] = useState("");
+  const [wordmark, setWordmark] = useState("");
+  const [typography, setTypography] = useState<Record<FontRole, string>>({
+    ...DEFAULT_TYPOGRAPHY,
+  });
+  const [contact, setContact] = useState<ContactMap>(EMPTY_MAP);
   const [sections, setSections] = useState<EntityRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState<SavingSection>(null);
   const [uploading, setUploading] = useState<BrandingKey | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
   const [flash, setFlash] = useState<Flash>(null);
@@ -95,7 +126,9 @@ export default function SiteSettingsPage() {
         listContent("sections", { limit: 100 }),
       ]);
 
-      const stored = (settings.branding ?? {}) as Partial<Record<BrandingKey | "logoAlt", string>>;
+      const stored = (settings.branding ?? {}) as Partial<
+        Record<BrandingKey | "logoAlt" | "wordmark", string>
+      >;
 
       setBranding({
         navLogoLight: stored.navLogoLight ?? "",
@@ -105,6 +138,18 @@ export default function SiteSettingsPage() {
         faviconUrl: stored.faviconUrl ?? "",
       });
       setLogoAlt(stored.logoAlt ?? "");
+      setWordmark(stored.wordmark ?? "");
+
+      const type = (settings.typography ?? {}) as Partial<Record<FontRole, string>>;
+      setTypography({
+        sans: type.sans || DEFAULT_TYPOGRAPHY.sans,
+        display: type.display || DEFAULT_TYPOGRAPHY.display,
+        mono: type.mono || DEFAULT_TYPOGRAPHY.mono,
+      });
+
+      // The whole contact object is sent back on save, so keep the parts this
+      // page does not edit (email, phone, availability) exactly as stored.
+      setContact({ ...EMPTY_MAP, ...((settings.contact ?? {}) as ContactMap) });
 
       setSections(list.items);
       setFlash(null);
@@ -122,19 +167,50 @@ export default function SiteSettingsPage() {
   const patch = (field: BrandingKey, value: string) =>
     setBranding((current) => ({ ...current, [field]: value }));
 
+  const patchContact = (field: keyof ContactMap, value: string | number) =>
+    setContact((current) => ({ ...current, [field]: value }));
+
   async function saveBranding() {
-    setSaving(true);
+    setSaving("branding");
     setFlash(null);
 
     try {
       await updateContent("settings", "current", {
-        branding: { ...branding, logoAlt: logoAlt.trim() },
+        branding: { ...branding, logoAlt: logoAlt.trim(), wordmark: wordmark.trim() },
       });
       setFlash({ tone: "success", text: "Branding saved. The public site updates within a minute." });
     } catch (cause) {
       setFlash({ tone: "error", text: toMessage(cause, "Could not save the branding.") });
     } finally {
-      setSaving(false);
+      setSaving(null);
+    }
+  }
+
+  async function saveTypography() {
+    setSaving("typography");
+    setFlash(null);
+
+    try {
+      await updateContent("settings", "current", { typography });
+      setFlash({ tone: "success", text: "Fonts saved — the public site loads exactly these three." });
+    } catch (cause) {
+      setFlash({ tone: "error", text: toMessage(cause, "Could not save the typography.") });
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function saveMap() {
+    setSaving("map");
+    setFlash(null);
+
+    try {
+      await updateContent("settings", "current", { contact });
+      setFlash({ tone: "success", text: "Map saved. The contact section re-renders the pin." });
+    } catch (cause) {
+      setFlash({ tone: "error", text: toMessage(cause, "Could not save the map settings.") });
+    } finally {
+      setSaving(null);
     }
   }
 
@@ -196,6 +272,7 @@ export default function SiteSettingsPage() {
   }
 
   const visibleCount = sections.filter((section) => section.isVisible !== false).length;
+  const previewMap = mapEmbedUrl(contact);
 
   return (
     <div className="space-y-5">
@@ -244,11 +321,14 @@ export default function SiteSettingsPage() {
           <button
             type="button"
             onClick={() => void saveBranding()}
-            disabled={saving}
+            disabled={saving !== null}
             className="inline-flex items-center gap-2 rounded-lg grad-accent px-3.5 py-2 text-[12px] font-semibold text-accent-ink disabled:opacity-60"
           >
-            <Icon name={saving ? "Loader" : "Save"} className={`h-3.5 w-3.5 ${saving ? "animate-spin" : ""}`} />
-            {saving ? "Saving…" : "Save branding"}
+            <Icon
+              name={saving === "branding" ? "Loader" : "Save"}
+              className={`h-3.5 w-3.5 ${saving === "branding" ? "animate-spin" : ""}`}
+            />
+            {saving === "branding" ? "Saving…" : "Save branding"}
           </button>
         </div>
 
@@ -293,12 +373,181 @@ export default function SiteSettingsPage() {
               Used for screen readers and search engines when the logo replaces the name.
             </span>
           </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
+              Wordmark
+            </span>
+            <input
+              value={wordmark}
+              onChange={(event) => setWordmark(event.target.value)}
+              placeholder="nihal.dev"
+              maxLength={40}
+              className="h-9 rounded-lg border border-line bg-surface-2/50 px-3 text-[12px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+            />
+            <span className="text-[10.5px] text-faint">
+              Text beside the mark in the header. Empty falls back to the site name; the first half
+              stays white and the rest carries the gradient.
+            </span>
+          </label>
         </div>
 
         <p className="mono mt-4 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[10.5px] leading-relaxed text-faint">
           Leave a slot empty to fall back to the gradient initials mark. The visible text block in the
           navbar and footer is hidden automatically once a logo exists.
         </p>
+      </section>
+
+      {/* ── Typography ───────────────────────────────────────────────────── */}
+      <section className="panel p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-ink">Typography</h2>
+            <p className="mono mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
+              one google fonts request · only the chosen families
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void saveTypography()}
+            disabled={saving !== null}
+            className="inline-flex items-center gap-2 rounded-lg grad-accent px-3.5 py-2 text-[12px] font-semibold text-accent-ink disabled:opacity-60"
+          >
+            <Icon
+              name={saving === "typography" ? "Loader" : "Save"}
+              className={`h-3.5 w-3.5 ${saving === "typography" ? "animate-spin" : ""}`}
+            />
+            {saving === "typography" ? "Saving…" : "Save fonts"}
+          </button>
+        </div>
+
+        {/* The admin layout only ships the saved families, so the preview needs
+            its own stylesheet for whatever is picked but not yet stored. */}
+        <link rel="stylesheet" href={resolveTypography(typography).href} />
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {FONT_ROLES.map((role) => {
+            const selected = findFont(role.role, typography[role.role]);
+
+            return (
+              <label
+                key={role.role}
+                className="flex flex-col gap-2 rounded-xl border border-line bg-surface-2/40 p-3"
+              >
+                <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
+                  {role.label}
+                </span>
+
+                <select
+                  value={selected.key}
+                  onChange={(event) =>
+                    setTypography((current) => ({ ...current, [role.role]: event.target.value }))
+                  }
+                  className="h-9 rounded-lg border border-line bg-page px-2 text-[12px] text-ink outline-none transition-colors focus:border-accent"
+                >
+                  {fontOptions(role.role).map((font) => (
+                    <option key={font.key} value={font.key}>
+                      {font.label}
+                    </option>
+                  ))}
+                </select>
+
+                <span
+                  className="truncate text-[19px] text-ink"
+                  style={{ fontFamily: selected.stack }}
+                >
+                  Aa Bb 123
+                </span>
+                <span className="text-[10.5px] text-faint">
+                  {role.hint} · {selected.note}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Contact map ──────────────────────────────────────────────────── */}
+      <section className="panel p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-[13.5px] font-semibold text-ink">Contact map</h2>
+            <p className="mono mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
+              key-free google maps embed · no sdk needed
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => void saveMap()}
+            disabled={saving !== null}
+            className="inline-flex items-center gap-2 rounded-lg grad-accent px-3.5 py-2 text-[12px] font-semibold text-accent-ink disabled:opacity-60"
+          >
+            <Icon
+              name={saving === "map" ? "Loader" : "Save"}
+              className={`h-3.5 w-3.5 ${saving === "map" ? "animate-spin" : ""}`}
+            />
+            {saving === "map" ? "Saving…" : "Save map"}
+          </button>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <MapField
+            label="Location"
+            value={contact.location ?? ""}
+            onChange={(value) => patchContact("location", value)}
+            placeholder="Mirsarai, Chattogram"
+            hint="Shown in the contact list and used to centre the map when no pin is set."
+          />
+          <MapField
+            label="Latitude"
+            value={String(contact.mapLat ?? "")}
+            onChange={(value) => patchContact("mapLat", value)}
+            placeholder="22.3833"
+          />
+          <MapField
+            label="Longitude"
+            value={String(contact.mapLng ?? "")}
+            onChange={(value) => patchContact("mapLng", value)}
+            placeholder="91.8315"
+          />
+          <MapField
+            label="Zoom · 1-20"
+            value={String(contact.mapZoom ?? 13)}
+            onChange={(value) => patchContact("mapZoom", Number(value) || 13)}
+            placeholder="13"
+            type="number"
+          />
+        </div>
+
+        <div className="mt-3">
+          <MapField
+            label="Custom embed url"
+            value={contact.mapEmbedUrl ?? ""}
+            onChange={(value) => patchContact("mapEmbedUrl", value)}
+            placeholder="https://www.google.com/maps/embed?pb=…"
+            hint="Optional. Leave empty to generate the embed from the place or pin above."
+          />
+        </div>
+
+        <div className="mt-4 overflow-hidden rounded-xl border border-line">
+          {previewMap ? (
+            <iframe
+              src={previewMap}
+              title="Map preview"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="block h-56 w-full border-0 grayscale-[35%] dark:invert dark:hue-rotate-180 dark:grayscale-[65%]"
+            />
+          ) : (
+            <div className="grid h-32 place-items-center bg-surface-2/40 px-4 text-center">
+              <p className="mono text-[10.5px] uppercase tracking-[0.16em] text-faint">
+                set a location or a pin to see the map here
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ── Component visibility ─────────────────────────────────────────── */}
@@ -478,6 +727,39 @@ function LogoRow({
 
       <p className="mt-1.5 text-[10.5px] text-faint">{hint}</p>
     </div>
+  );
+}
+
+/** One labelled text box in the map grid. */
+function MapField({
+  label,
+  value,
+  placeholder,
+  hint,
+  type = "text",
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder?: string;
+  hint?: string;
+  type?: "text" | "number";
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">{label}</span>
+      <input
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        min={type === "number" ? 1 : undefined}
+        max={type === "number" ? 20 : undefined}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-9 rounded-lg border border-line bg-surface-2/50 px-3 text-[12px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+      />
+      {hint ? <span className="text-[10.5px] text-faint">{hint}</span> : null}
+    </label>
   );
 }
 
