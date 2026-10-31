@@ -22,6 +22,40 @@ export function formatMonth(value?: string | null): string {
   return date.toLocaleDateString("en-GB", { month: "short", year: "numeric" });
 }
 
+/** "31 Oct 2026, 14:05" — used where the exact time matters. */
+export function formatDateTime(value?: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return `${date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  })} · ${date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+/** Compact relative label for table rows: "just now", "4h", "3d", "12 Oct". */
+export function timeAgo(value?: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  const timestamp = date.getTime();
+  if (Number.isNaN(timestamp)) return "";
+
+  const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+  if (seconds < 60) return "just now";
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+
+  return formatDate(value);
+}
+
 export function absoluteUrl(path: string | undefined, siteUrl?: string): string {
   if (!path) return "";
   if (/^https?:\/\//i.test(path)) return path;

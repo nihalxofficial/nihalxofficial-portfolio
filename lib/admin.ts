@@ -242,6 +242,15 @@ export async function fillFormWithAi(input: {
   return data;
 }
 
+export interface MessageReply {
+  _id?: string;
+  to: string;
+  subject: string;
+  body: string;
+  delivered?: boolean;
+  sentAt?: string;
+}
+
 export interface ContactMessage {
   _id: string;
   name: string;
@@ -250,15 +259,45 @@ export interface ContactMessage {
   message: string;
   status: "unread" | "read" | "replied" | "archived";
   location?: string;
+  userAgent?: string;
   emailDelivered?: boolean;
+  replies?: MessageReply[];
   createdAt?: string;
+  updatedAt?: string;
 }
 
-export async function listMessages(options: { page?: number; status?: string; search?: string } = {}) {
+export type MessageSort =
+  | "newest"
+  | "oldest"
+  | "name"
+  | "email"
+  | "subject"
+  | "status"
+  | "updated";
+
+export interface MessageListOptions {
+  page?: number;
+  limit?: number;
+  status?: ContactMessage["status"] | "all";
+  search?: string;
+  sort?: MessageSort;
+  dir?: "asc" | "desc";
+  delivery?: "delivered" | "failed" | "all";
+  from?: string;
+  to?: string;
+}
+
+export async function listMessages(options: MessageListOptions = {}) {
   const params = new URLSearchParams();
   if (options.page) params.set("page", String(options.page));
-  if (options.status) params.set("status", options.status);
+  if (options.limit) params.set("limit", String(options.limit));
+  if (options.status && options.status !== "all") params.set("status", options.status);
   if (options.search) params.set("search", options.search);
+  if (options.sort && options.sort !== "newest") params.set("sort", options.sort);
+  if (options.sort && options.dir) params.set("dir", options.dir);
+  if (options.delivery && options.delivery !== "all") params.set("delivery", options.delivery);
+  if (options.from) params.set("from", options.from);
+  if (options.to) params.set("to", options.to);
 
   const query = params.toString();
   const { data, meta } = await request<ContactMessage[]>(
@@ -270,6 +309,34 @@ export async function listMessages(options: { page?: number; status?: string; se
     items: data,
     meta: meta ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 },
   };
+}
+
+/** Full document including the reply thread; marks an unread message as read. */
+export async function getMessage(id: string): Promise<ContactMessage> {
+  const { data } = await request<ContactMessage>(`/admin/messages/${id}`, { method: "GET" });
+  return data;
+}
+
+export async function replyToMessage(input: {
+  id: string;
+  to: string;
+  subject: string;
+  body: string;
+  ccOwner: boolean;
+}): Promise<{ replies: MessageReply[]; status: ContactMessage["status"] }> {
+  const { data } = await request<{
+    replies: MessageReply[];
+    status: ContactMessage["status"];
+  }>(`/admin/messages/${input.id}/reply`, {
+    method: "POST",
+    body: JSON.stringify({
+      to: input.to,
+      subject: input.subject,
+      body: input.body,
+      ccOwner: input.ccOwner,
+    }),
+  });
+  return data;
 }
 
 export async function updateMessageStatus(id: string, status: ContactMessage["status"]) {

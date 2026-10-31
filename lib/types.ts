@@ -217,6 +217,11 @@ export interface SiteSettings extends DocMeta {
     phone?: string;
     location?: string;
     availability?: string;
+    /** Optional pin for the contact map. Empty means "geocode `location`". */
+    mapLat?: string;
+    mapLng?: string;
+    mapZoom?: number;
+    mapEmbedUrl?: string;
   };
   socialLinks: SocialLink[];
   resumeUrl: string;

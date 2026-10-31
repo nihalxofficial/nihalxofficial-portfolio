@@ -3,9 +3,11 @@
 import { Button, Input, Label, TextArea, TextField } from "@heroui/react";
 import { useState, type FormEvent } from "react";
 import { Icon } from "@/components/ui/icon";
+import { PlusMarks, WindowBar } from "@/components/ui/panel-chrome";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { sendContactMessage } from "@/lib/api";
+import { coordinatesOf, formatCoordinates, mapEmbedUrl, mapsLink } from "@/lib/map";
 import type { SectionMeta, SiteSettings } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +33,9 @@ export function Contact({
   const [message, setMessage] = useState("");
 
   const contact = settings?.contact ?? {};
+  const mapSrc = mapEmbedUrl(contact);
+  const coords = coordinatesOf(contact);
+  const externalMap = mapsLink(contact);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -119,6 +124,47 @@ export function Contact({
                     </li>
                   ))}
                 </ul>
+              </Reveal>
+            ) : null}
+
+            {mapSrc ? (
+              <Reveal delay={120}>
+                <div className="code-window relative mt-5 overflow-hidden">
+                  <PlusMarks className="z-10" />
+                  <WindowBar title="location · live map">
+                    {externalMap ? (
+                      <a
+                        href={externalMap}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mono inline-flex items-center gap-1 text-[9.5px] uppercase tracking-[0.14em] text-faint transition-colors hover:text-accent"
+                      >
+                        open in maps
+                        <Icon name="ArrowUpRight" className="h-3 w-3" />
+                      </a>
+                    ) : null}
+                  </WindowBar>
+
+                  <iframe
+                    src={mapSrc}
+                    title={`Map of ${contact.location || "my location"}`}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="block h-56 w-full border-0 grayscale-[45%] contrast-[1.05] dark:invert dark:hue-rotate-180 dark:grayscale-[65%] dark:contrast-[0.92] sm:h-64"
+                  />
+
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line px-4 py-2.5">
+                    <span className="mono inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-faint">
+                      <Icon name="MapPin" className="h-3 w-3 text-accent" />
+                      {contact.location || "coordinates"}
+                    </span>
+                    {coords ? (
+                      <span className="mono ml-auto text-[10.5px] text-accent">
+                        {formatCoordinates(coords)}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
               </Reveal>
             ) : null}
 
