@@ -84,6 +84,11 @@ export default async function HomePage() {
 
   const nav = data.navigation.filter((item) => item.isVisible);
 
+  // Featured shows at most three builds — the ones flagged in the dashboard,
+  // or the first published ones when nothing is flagged.
+  const featuredPool = data.projects.filter((project) => project.isFeatured);
+  const featured = (featuredPool.length > 0 ? featuredPool : data.projects).slice(0, 3);
+
   return (
     <>
       <ScrollProgress />
@@ -118,12 +123,17 @@ export default async function HomePage() {
         ) : null}
 
         {shown("projects") ? (
-          <Projects projects={data.projects} section={meta("projects")} index={at("projects")} />
+          <Projects
+            projects={featured}
+            total={data.projects.length}
+            section={meta("projects")}
+            index={at("projects")}
+          />
         ) : null}
 
         {shown("showcase") ? (
           <Showcase
-            projects={data.projects.filter((project) => project.isFeatured)}
+            projects={data.projects}
             section={meta("showcase")}
             index={at("showcase")}
           />

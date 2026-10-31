@@ -4,18 +4,27 @@ import { Icon } from "@/components/ui/icon";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { Project, SectionMeta } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
-/** Projects — full grid of published work; each card opens the detail page. */
+/**
+ * Featured Projects — the three builds flagged in the dashboard. With a full
+ * row of three, the middle card is promoted: gradient edge, lift and a badge.
+ */
 export function Projects({
   projects,
+  total,
   section,
   index,
 }: {
   projects: Project[];
+  /** Published projects overall, for the counter chip. */
+  total?: number;
   section?: SectionMeta;
   index: number;
 }) {
   if (projects.length === 0) return null;
+
+  const spotlight = projects.length === 3 ? 1 : -1;
 
   return (
     <section id="projects" className="relative section-pad">
@@ -37,7 +46,10 @@ export function Projects({
 
           <Reveal delay={80}>
             <span className="mono rounded-full border border-line bg-surface/60 px-3 py-1.5 text-[11px] text-muted">
-              {projects.length} projects
+              {projects.length} featured
+              {typeof total === "number" && total !== projects.length ? (
+                <span className="text-faint"> · {total} shipped</span>
+              ) : null}
             </span>
           </Reveal>
         </div>
@@ -45,7 +57,19 @@ export function Projects({
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, position) => (
             <Reveal key={project._id} delay={position * 50}>
-              <article className="panel panel-hover group relative flex h-full flex-col overflow-hidden">
+              <article
+                className={cn(
+                  "panel panel-hover group relative flex h-full flex-col overflow-hidden transition-transform",
+                  position === spotlight &&
+                    "border-grad lg:-translate-y-4 lg:scale-[1.015] shadow-[0_30px_80px_-46px_var(--accent-glow)]",
+                )}
+              >
+                {position === spotlight ? (
+                  <span className="mono absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-md grad-accent px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-accent-ink">
+                    <Icon name="Star" className="h-3 w-3" />
+                    pick
+                  </span>
+                ) : null}
                 <Link
                   href={`/projects/${project.slug}`}
                   className="relative block overflow-hidden border-b border-line bg-surface-2"
