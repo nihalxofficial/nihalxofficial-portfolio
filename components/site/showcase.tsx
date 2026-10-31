@@ -3,14 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { Project, SectionMeta } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-const PAGE_SIZE = 6;
+/**
+ * The shelf keeps a fixed height and scrolls instead of growing: seven rows at
+ * 3.5rem, six 0.375rem gaps and 1rem of panel padding = 27.75rem.
+ */
+const LIST_WINDOW = "lg:max-h-[27.75rem]";
 /** The tech row stays scannable: the most-used stacks only. */
 const TECH_LIMIT = 8;
 
@@ -29,9 +33,11 @@ function hostOf(project: Project): string {
 }
 
 /**
- * Project Showcase — filters drive both halves: the preview switcher on top
- * and the paginated card grid below. Everything comes from the published
- * projects, so new categories and stacks appear without a code change.
+ * Project Showcase — the filters narrow the shelf, the shelf drives the
+ * preview. Every published project stays listed on the left (scroll for the
+ * ones below the fold) and picking one repaints the browser panel beside it.
+ * Nothing comes from a hardcoded list: new categories and stacks appear on
+ * their own.
  */
 export function Showcase({
   projects,
@@ -44,7 +50,6 @@ export function Showcase({
 }) {
   const [category, setCategory] = useState("All");
   const [tech, setTech] = useState("All");
-  const [page, setPage] = useState(1);
   const [activeSlug, setActiveSlug] = useState("");
 
   const categories = useMemo(
@@ -78,9 +83,6 @@ export function Showcase({
     [projects, category, tech],
   );
 
-  const totalPages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const visible = matches.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
   const active = matches.find((project) => project.slug === activeSlug) ?? matches[0];
   const filtering = category !== "All" || tech !== "All";
 
@@ -98,7 +100,7 @@ export function Showcase({
             title={section?.heading || "Project Showcase"}
             description={
               section?.description ||
-              "Filter the shelf by category or stack, preview one on the left and open the rest below."
+              "Filter the shelf by category or stack, then pick a build to preview it."
             }
           />
         </Reveal>
@@ -110,20 +112,9 @@ export function Showcase({
               label="Category"
               options={categories}
               value={category}
-              onChange={(next) => {
-                setCategory(next);
-                setPage(1);
-              }}
+              onChange={setCategory}
             />
-            <FilterRow
-              label="Stack"
-              options={technologies}
-              value={tech}
-              onChange={(next) => {
-                setTech(next);
-                setPage(1);
-              }}
-            />
+            <FilterRow label="Stack" options={technologies} value={tech} onChange={setTech} />
             <div className="mono flex flex-wrap items-center gap-3 text-[11px] text-faint">
               <span>
                 {matches.length} of {projects.length} projects
@@ -134,7 +125,6 @@ export function Showcase({
                   onClick={() => {
                     setCategory("All");
                     setTech("All");
-                    setPage(1);
                   }}
                   className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-muted transition-colors hover:border-accent/50 hover:text-accent"
                 >
@@ -158,95 +148,81 @@ export function Showcase({
             </p>
           </div>
         ) : (
-          <>
-            {/* Preview switcher */}
-            <div className="mt-8 grid gap-5 lg:grid-cols-[0.62fr_1fr]">
-              <Reveal>
-                <div className="panel h-full overflow-hidden p-2">
-                  <ul className="scrollbar-none flex gap-1.5 overflow-x-auto lg:max-h-[30rem] lg:flex-col lg:overflow-y-auto">
-                    {matches.map((project, position) => {
-                      const isActive = project.slug === active?.slug;
-                      return (
-                        <li key={project._id} className="shrink-0 lg:w-full">
-                          <button
-                            type="button"
-                            onClick={() => setActiveSlug(project.slug)}
-                            aria-current={isActive ? "true" : undefined}
+          <div className="mt-8 grid gap-5 lg:grid-cols-[0.62fr_1fr] lg:items-start">
+            {/* The whole filtered shelf: seven rows high, the rest is a scroll away. */}
+            <Reveal>
+              <div className="panel overflow-hidden p-2">
+                <ul
+                  aria-label="Project list"
+                  className={cn(
+                    "thin-scroll flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-y-auto lg:pr-1",
+                    LIST_WINDOW,
+                  )}
+                >
+                  {matches.map((project, position) => {
+                    const isActive = project.slug === active?.slug;
+                    return (
+                      <li key={project._id} className="shrink-0 lg:w-full">
+                        <button
+                          type="button"
+                          onClick={() => setActiveSlug(project.slug)}
+                          aria-current={isActive ? "true" : undefined}
+                          className={cn(
+                            "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors lg:h-14",
+                            isActive
+                              ? "bg-accent/10 text-ink"
+                              : "text-muted hover:bg-surface-2 hover:text-ink",
+                          )}
+                        >
+                          <span
                             className={cn(
-                              "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors",
-                              isActive
-                                ? "bg-accent/10 text-ink"
-                                : "text-muted hover:bg-surface-2 hover:text-ink",
+                              "mono w-5 shrink-0 text-[10px]",
+                              isActive ? "text-accent" : "text-faint",
                             )}
                           >
+                            {String(position + 1).padStart(2, "0")}
+                          </span>
+                          <span className="min-w-0 flex-1">
                             <span
                               className={cn(
-                                "mono w-5 shrink-0 text-[10px]",
-                                isActive ? "text-accent" : "text-faint",
+                                "block truncate text-[13px] font-medium",
+                                isActive && "text-accent",
                               )}
                             >
-                              {String(position + 1).padStart(2, "0")}
+                              {project.title}
                             </span>
-                            <span className="min-w-0 flex-1">
-                              <span
-                                className={cn(
-                                  "block truncate text-[13px] font-medium",
-                                  isActive && "text-accent",
-                                )}
-                              >
-                                {project.title}
-                              </span>
-                              <span className="mt-0.5 hidden truncate text-[10.5px] text-faint sm:block">
-                                {project.category}
-                              </span>
+                            <span className="mt-0.5 hidden truncate text-[10.5px] text-faint sm:block">
+                              {project.category}
                             </span>
-                            <Icon
-                              name="ChevronRight"
-                              className={cn(
-                                "h-3.5 w-3.5 shrink-0 transition-transform",
-                                isActive ? "translate-x-0.5 text-accent" : "text-faint",
-                              )}
-                            />
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </Reveal>
+                          </span>
+                          <Icon
+                            name="ChevronRight"
+                            className={cn(
+                              "h-3.5 w-3.5 shrink-0 transition-transform",
+                              isActive ? "translate-x-0.5 text-accent" : "text-faint",
+                            )}
+                          />
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </Reveal>
 
-              <Reveal delay={90}>{active ? <Preview project={active} /> : null}</Reveal>
-            </div>
-
-            {/* Filtered, paginated grid */}
-            <motion.div
-              layout
-              className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-              aria-label="Filtered projects"
-            >
-              <AnimatePresence mode="popLayout">
-                {visible.map((project) => (
-                  <motion.div
-                    key={project._id}
-                    layout
-                    initial={{ opacity: 0, y: 14 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, ease: "easeOut" }}
-                  >
-                    <ShelfCard
-                      project={project}
-                      onPreview={() => setActiveSlug(project.slug)}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
-
-            {totalPages > 1 ? (
-              <Pager page={safePage} totalPages={totalPages} onChange={setPage} />
-            ) : null}
-          </>
+            <Reveal delay={90}>
+              {active ? (
+                <motion.div
+                  key={active._id}
+                  initial={{ opacity: 0.35, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                >
+                  <Preview project={active} />
+                </motion.div>
+              ) : null}
+            </Reveal>
+          </div>
         )}
       </div>
     </section>
@@ -289,147 +265,6 @@ function FilterRow({
           </button>
         );
       })}
-    </div>
-  );
-}
-
-/** Compact shelf card; the title opens the case study, the button previews it. */
-function ShelfCard({ project, onPreview }: { project: Project; onPreview: () => void }) {
-  return (
-    <article className="panel panel-hover group relative flex h-full flex-col overflow-hidden">
-      <div className="relative border-b border-line bg-surface-2">
-        <Image
-          src={project.thumbnailUrl || "/preview.png"}
-          alt={`${project.title} screenshot`}
-          width={800}
-          height={500}
-          sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 30vw"
-          className="aspect-[16/10] w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.04]"
-        />
-        <span className="absolute left-3 top-3 rounded-md border border-line bg-page/70 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-accent backdrop-blur">
-          {project.category}
-        </span>
-      </div>
-
-      <div className="flex flex-1 flex-col p-4">
-        <h4 className="text-[14px] font-semibold text-ink transition-colors group-hover:text-accent">
-          <Link href={`/projects/${project.slug}`}>{project.title}</Link>
-        </h4>
-        <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-muted">
-          {project.shortDescription}
-        </p>
-
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {project.techStack.slice(0, 3).map((item) => (
-            <span
-              key={item}
-              className="rounded-md border border-line bg-accent/5 px-1.5 py-0.5 text-[10px] text-accent/90"
-            >
-              {item}
-            </span>
-          ))}
-          {project.techStack.length > 3 ? (
-            <span className="rounded-md border border-line px-1.5 py-0.5 text-[10px] text-faint">
-              +{project.techStack.length - 3}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="mt-auto flex items-center gap-2 pt-4">
-          <button
-            type="button"
-            onClick={onPreview}
-            className="mono inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-muted transition-colors hover:text-accent"
-          >
-            <Icon name="Eye" className="h-3.5 w-3.5" />
-            preview
-          </button>
-          {project.liveUrl ? (
-            <a
-              href={project.liveUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${project.title} live site`}
-              className="ml-auto grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-accent/50 hover:text-accent"
-            >
-              <Icon name="ExternalLink" className="h-3.5 w-3.5" />
-            </a>
-          ) : null}
-          {project.sourceUrl ? (
-            <a
-              href={project.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${project.title} source code`}
-              className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-accent/50 hover:text-accent"
-            >
-              <Icon name="Github" className="h-3.5 w-3.5" />
-            </a>
-          ) : null}
-        </div>
-      </div>
-    </article>
-  );
-}
-
-/** Page switcher with a sliding indicator. */
-function Pager({
-  page,
-  totalPages,
-  onChange,
-}: {
-  page: number;
-  totalPages: number;
-  onChange: (next: number) => void;
-}) {
-  return (
-    <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
-      <button
-        type="button"
-        onClick={() => onChange(Math.max(1, page - 1))}
-        disabled={page === 1}
-        aria-label="Previous page"
-        className="grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        <Icon name="ArrowLeft" className="h-4 w-4" />
-      </button>
-
-      {Array.from({ length: totalPages }, (_, offset) => offset + 1).map((candidate) => {
-        const selected = candidate === page;
-        return (
-          <button
-            key={candidate}
-            type="button"
-            onClick={() => onChange(candidate)}
-            aria-current={selected ? "page" : undefined}
-            className={cn(
-              "mono relative grid h-9 w-9 place-items-center rounded-lg border text-[12px] transition-colors",
-              selected
-                ? "border-accent/55 text-accent-ink"
-                : "border-line text-muted hover:border-line-strong hover:text-ink",
-            )}
-          >
-            {selected ? (
-              <motion.span
-                layoutId="showcase-page-fill"
-                className="absolute inset-0 rounded-lg grad-accent"
-                transition={{ duration: 0.25 }}
-              />
-            ) : null}
-            <span className="relative">{candidate}</span>
-          </button>
-        );
-      })}
-
-      <button
-        type="button"
-        onClick={() => onChange(Math.min(totalPages, page + 1))}
-        disabled={page === totalPages}
-        aria-label="Next page"
-        className="grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        <Icon name="ArrowRight" className="h-4 w-4" />
-      </button>
     </div>
   );
 }
