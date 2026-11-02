@@ -81,7 +81,7 @@ export default async function HomePage() {
 
   return (
     <PortfolioShell navigation={nav} settings={data.settings}>
-      {data.hero && heroVisible ? <Hero hero={data.hero} settings={data.settings} /> : null}
+      {data.hero && heroVisible ? <Hero hero={data.hero} settings={data.settings} navigation={nav} /> : null}
 
       {data.about && shown("about") ? (
         <About about={data.about} section={meta("about")} index={at("about")} />

@@ -7,7 +7,6 @@ import {
   Send,
 } from "lucide-react";
 import { BrandLogo } from "@/components/ui/brand-logo";
-import type { Accent } from "@/components/site/accent-context";
 import { ACCENTS } from "@/components/site/accent-context";
 import type { NavigationItem, SiteBranding, SiteSettings } from "@/lib/types";
 import { initials } from "@/lib/utils";
@@ -73,7 +72,13 @@ export function TopBar({
         className="flex items-center gap-3 cursor-pointer group"
       >
         {hasCustomLogo ? (
-          <BrandLogo branding={branding} siteName={siteName} size={40} />
+          <BrandLogo
+            branding={branding}
+            variant="nav"
+            fallback={mark}
+            alt={siteName}
+            className="shrink-0"
+          />
         ) : (
           <span className="w-11 h-10 rounded-lg grid place-items-center font-black italic text-lg text-grad ring-acc bg-[#070c30] glow-sm group-hover:glow transition">
             {mark}
