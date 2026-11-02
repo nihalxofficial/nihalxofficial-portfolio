@@ -113,6 +113,7 @@ body {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .bg-grad { background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+.rule-grad { background: linear-gradient(90deg, transparent, var(--acc), var(--acc2), transparent); opacity: 0.25; }
 
 /* ─── Buttons ───────────────────────────────────────────────────────── */
 .btn-primary {
