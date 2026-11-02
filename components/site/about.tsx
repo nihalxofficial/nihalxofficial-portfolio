@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+import { Gauge, Puzzle, Rocket, ShieldCheck } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
 import { Reveal } from "@/components/ui/reveal";
 import { AboutEditor, type CodeFile, type Token } from "@/components/site/about-editor";
@@ -11,6 +15,20 @@ const st = (text: string): Token => ({ text, kind: "str" });
 const pu = (text: string): Token => ({ text, kind: "punc" });
 const cm = (text: string): Token => ({ text, kind: "com" });
 const pl = (text: string): Token => ({ text });
+
+/** Core principles — static reference data (visual design constant) */
+const PRINCIPLES = [
+  { icon: Puzzle,      t: "Clean Architecture", d: "Modular, testable code that's a joy to extend." },
+  { icon: Gauge,       t: "Blazing Performance", d: "Lean bundles, lazy loading and smart caching." },
+  { icon: ShieldCheck, t: "Secure by Default",  d: "Validated inputs, safe auth, no shortcuts." },
+  { icon: Rocket,      t: "Ship & Iterate",     d: "Small releases, fast feedback, constant polish." },
+] as const;
+
+/** Default hobby chips shown when about.codeCard.passion is empty. */
+const DEFAULT_HOBBIES = [
+  "🎧 Lo-fi coder", "🎮 Gaming", "🚀 Space nerd",
+  "📚 Tech books", "☕ Coffee-driven", "🌙 Night owl", "🧩 Puzzle solver",
+];
 
 /**
  * Turns the About document into two source files: a typed object with the
@@ -130,6 +148,9 @@ export function About({
   index: number;
 }) {
   const files = toSourceFiles(about);
+  // Hobby chips: use passions from DB, fall back to reference defaults
+  const hobbies = (about.codeCard?.passion ?? []).filter(Boolean);
+  const displayHobbies = hobbies.length > 0 ? hobbies : DEFAULT_HOBBIES;
 
   return (
     <section id="about" className="relative py-12">
@@ -204,6 +225,33 @@ export function About({
           <AboutEditor files={files} />
         </Reveal>
       </div>
+
+      {/* Core principles — matches reference exactly */}
+      <Reveal delay={160}>
+        <div className="mt-12">
+          <div className="font-mono text-xs text-acc tracking-widest uppercase mb-4">{"// core principles"}</div>
+          <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            {PRINCIPLES.map((p, i) => (
+              <div
+                key={p.t}
+                className="hud hud-hover p-5 rise"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <p.icon size={26} className="text-acc" />
+                <div className="mt-3 font-display font-bold">{p.t}</div>
+                <div className="text-sm text-slate-400 mt-1">{p.d}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Hobby / passion chips */}
+          <div className="mt-6 flex flex-wrap gap-2">
+            {displayHobbies.map((c) => (
+              <span key={c} className="chip !cursor-default">{c}</span>
+            ))}
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
