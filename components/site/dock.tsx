@@ -14,8 +14,6 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
-import Link from "next/link";
-import { useActiveSection } from "@/hooks/useActiveSection";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 
 /** Maps section/href key → Lucide icon */
@@ -41,15 +39,14 @@ function keyFor(href: string) {
 interface DockProps {
   navigation: NavigationItem[];
   settings: SiteSettings | null;
+  activeSection?: string;
 }
 
 /**
  * Left-side navigation dock (hidden below md).
  * Exactly matches the reference Dock component visual design.
  */
-export function Dock({ navigation, settings }: DockProps) {
-  const active = useActiveSection(navigation.map((item) => item.href));
-
+export function Dock({ navigation, settings, activeSection = "" }: DockProps) {
   const email = settings?.contact?.email ?? "";
   const githubLink = settings?.socialLinks?.find(
     (s) => s.platform?.toLowerCase() === "github"
@@ -66,7 +63,7 @@ export function Dock({ navigation, settings }: DockProps) {
           {navigation.map((item, i) => {
             const key = keyFor(item.href);
             const Icon: LucideIcon = ICON_BY_KEY[key] ?? Home;
-            const isActive = active === item.href || active === `#${key}`;
+            const isActive = activeSection === item.href || activeSection === `#${key}`;
 
             return (
               <a
@@ -156,4 +153,3 @@ export function Dock({ navigation, settings }: DockProps) {
     </aside>
   );
 }
-

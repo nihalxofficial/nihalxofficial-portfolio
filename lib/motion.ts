@@ -13,7 +13,7 @@ export const EASE_SPRING: Transition = { type: "spring", stiffness: 170, damping
 
 export const REVEAL_VARIANTS: Variants = {
   hidden: { opacity: 0, y: 24, scale: 0.985 },
-  visible: { ...EASE_SPRING, opacity: 1, y: 0, scale: 1 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: EASE_SPRING },
 };
 
 /** Parent variant: children cascade instead of arriving as one slab. */

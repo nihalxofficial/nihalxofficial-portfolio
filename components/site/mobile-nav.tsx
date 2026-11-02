@@ -17,7 +17,6 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
-import { useActiveSection } from "@/hooks/useActiveSection";
 import type { NavigationItem } from "@/lib/types";
 
 /** Beyond this the dock stops being one-thumb reachable. */
@@ -60,14 +59,19 @@ function scrollToHref(href: string) {
 
 /**
  * Mobile-only bottom dock — exactly matches the reference MobileNav style.
- * Active section tracked via IntersectionObserver. Overflow items fold into a sheet.
+ * Receives activeSection from shell (single observer). Overflow items fold into a sheet.
  */
-export function MobileNav({ navigation }: { navigation: NavigationItem[] }) {
+export function MobileNav({
+  navigation,
+  activeSection = "",
+}: {
+  navigation: NavigationItem[];
+  activeSection?: string;
+}) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
   const { primary, rest } = splitForDock(navigation);
-  const active = useActiveSection(navigation.map((item) => item.href));
   const onHome = pathname === "/";
 
   useEffect(() => {
@@ -95,7 +99,7 @@ export function MobileNav({ navigation }: { navigation: NavigationItem[] }) {
         >
           <div className="hud overflow-hidden rounded-2xl p-1.5">
             {rest.map((item) => {
-              const isActive = active === item.href;
+              const isActive = activeSection === item.href;
               return (
                 <button
                   key={item._id}
@@ -131,7 +135,7 @@ export function MobileNav({ navigation }: { navigation: NavigationItem[] }) {
         className="md:hidden fixed bottom-0 inset-x-0 z-[66] bg-ink/90 backdrop-blur-xl border-t border-white/10 flex justify-around px-1 pb-[env(safe-area-inset-bottom)]"
       >
         {primary.map((item) => {
-          const isActive = active === item.href;
+          const isActive = activeSection === item.href;
           return (
             <button
               key={item._id}

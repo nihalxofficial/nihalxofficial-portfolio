@@ -9,6 +9,7 @@ import { MobileNav } from "@/components/site/mobile-nav";
 import { SiteBackground } from "@/components/site/site-background";
 import { StatusBar } from "@/components/site/status-bar";
 import { TopBar } from "@/components/site/top-bar";
+import { useActiveSection } from "@/hooks/useActiveSection";
 import type { NavigationItem, SiteBranding, SiteSettings } from "@/lib/types";
 
 interface PortfolioShellProps {
@@ -25,6 +26,10 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   const [rain, setRain] = useState(true);
   const [palette, setPalette] = useState(false);
   const [toast, setToast] = useState("");
+
+  // Active section tracking via IntersectionObserver
+  const hrefs = navigation.map((n) => n.href);
+  const activeSection = useActiveSection(hrefs);
 
   // Hydrate booted state on client only (avoid SSR mismatch)
   useEffect(() => {
@@ -108,7 +113,7 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
         navigation={navigation}
         siteName={settings?.siteName ?? "Md. Nihal Uddin Bijoy"}
         branding={settings?.branding}
-        activeSection=""
+        activeSection={activeSection}
         accentId={accentId}
         setAccentId={changeAccent}
         openPalette={() => setPalette(true)}
@@ -118,7 +123,7 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
       {/* Main content row */}
       <div className="relative z-10 flex flex-1 min-h-0">
         {/* Left dock */}
-        <Dock navigation={navigation} settings={settings} />
+        <Dock navigation={navigation} settings={settings} activeSection={activeSection} />
 
         {/* Scrollable stage */}
         <main
@@ -133,10 +138,11 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
       <StatusBar
         navigation={navigation}
         accentName={accent.name}
+        activeSection={activeSection}
       />
 
       {/* Mobile bottom nav */}
-      <MobileNav navigation={navigation} />
+      <MobileNav navigation={navigation} activeSection={activeSection} />
 
       {/* Command palette */}
       <CommandPalette
@@ -173,4 +179,3 @@ export function PortfolioShell({ children, navigation, settings }: PortfolioShel
     </AccentProvider>
   );
 }
-

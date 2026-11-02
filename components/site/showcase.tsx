@@ -6,21 +6,15 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
 import { Reveal } from "@/components/ui/reveal";
-import { SectionHeading } from "@/components/ui/section-heading";
 import type { Project, SectionMeta } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-/** The shelf never outgrows its neighbour: it stretches to the preview's height
- * and scrolls inside. Rows are compact so more projects stay visible at once. */
-const ROW_HEIGHT = "lg:h-11";
-/** The tech row stays scannable: the most-used stacks only. */
 const TECH_LIMIT = 8;
 
 function unique(values: string[]): string[] {
   return [...new Set(values.filter(Boolean))];
 }
 
-/** Host label for the browser-chrome strip; falls back to the slug. */
 function hostOf(project: Project): string {
   if (!project.liveUrl) return `${project.slug}.local`;
   try {
@@ -31,11 +25,8 @@ function hostOf(project: Project): string {
 }
 
 /**
- * Project Showcase — the filters narrow the shelf, the shelf drives the
- * preview. Every published project stays listed on the left (scroll for the
- * ones below the fold) and picking one repaints the browser panel beside it.
- * Nothing comes from a hardcoded list: new categories and stacks appear on
- * their own.
+ * Project Showcase — HUD dark terminal style.
+ * Left shelf: filterable project list. Right: browser-chrome preview.
  */
 export function Showcase({
   projects,
@@ -51,14 +42,14 @@ export function Showcase({
   const [activeSlug, setActiveSlug] = useState("");
 
   const categories = useMemo(
-    () => ["All", ...unique(projects.map((project) => project.category))],
+    () => ["All", ...unique(projects.map((p) => p.category))],
     [projects],
   );
 
   const technologies = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const project of projects) {
-      for (const item of project.techStack) {
+    for (const p of projects) {
+      for (const item of p.techStack) {
         counts.set(item, (counts.get(item) ?? 0) + 1);
       }
     }
@@ -74,14 +65,14 @@ export function Showcase({
   const matches = useMemo(
     () =>
       projects.filter(
-        (project) =>
-          (category === "All" || project.category === category) &&
-          (tech === "All" || project.techStack.includes(tech)),
+        (p) =>
+          (category === "All" || p.category === category) &&
+          (tech === "All" || p.techStack.includes(tech)),
       ),
     [projects, category, tech],
   );
 
-  const active = matches.find((project) => project.slug === activeSlug) ?? matches[0];
+  const active = matches.find((p) => p.slug === activeSlug) ?? matches[0];
   const filtering = category !== "All" || tech !== "All";
 
   if (projects.length === 0) return null;
@@ -91,73 +82,65 @@ export function Showcase({
       <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px rule-grad" />
 
       <div className="container-page">
+        {/* View header */}
         <Reveal>
-          <SectionHeading
-            index={index}
-            label={section?.label || "Showcase"}
-            title={section?.heading || "Project Showcase"}
-            description={
-              section?.description ||
-              "Filter the shelf by category or stack, then pick a build to preview it."
-            }
-          />
+          <div className="mb-8">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-acc/70">
+              // showcase
+            </p>
+            <h2 className="mt-1 text-[1.7rem] font-bold leading-[1.15] tracking-tight text-white sm:text-[2rem]">
+              {section?.heading?.split(" ").slice(0, -1).join(" ") || "Project"}{" "}
+              <span className="text-grad">
+                {section?.heading?.split(" ").slice(-1)[0] || "Showcase"}
+              </span>
+            </h2>
+            {section?.description && (
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{section.description}</p>
+            )}
+          </div>
         </Reveal>
 
         {/* Filters */}
         <Reveal delay={60}>
-          <div className="mt-10 space-y-3">
-            <FilterRow
-              label="Category"
-              options={categories}
-              value={category}
-              onChange={setCategory}
-            />
+          <div className="mb-6 space-y-2.5">
+            <FilterRow label="Category" options={categories} value={category} onChange={setCategory} />
             <FilterRow label="Stack" options={technologies} value={tech} onChange={setTech} />
-            <div className="mono flex flex-wrap items-center gap-3 text-[11px] text-faint">
+            <div className="flex flex-wrap items-center gap-3 font-mono text-[11px] text-slate-500">
               <span>
-                {matches.length} of {projects.length} projects
+                {matches.length}/{projects.length} projects
               </span>
-              {filtering ? (
+              {filtering && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setCategory("All");
-                    setTech("All");
-                  }}
-                  className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-muted transition-colors hover:border-accent/50 hover:text-accent"
+                  onClick={() => { setCategory("All"); setTech("All"); }}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-white/10 px-2 py-1 text-slate-400 transition-colors hover:border-acc/50 hover:text-acc"
                 >
                   <Icon name="X" className="h-3 w-3" />
-                  clear filters
+                  clear
                 </button>
-              ) : null}
+              )}
             </div>
           </div>
         </Reveal>
 
         {matches.length === 0 ? (
-          <div className="panel mt-6 flex flex-col items-center gap-3 px-6 py-12 text-center">
-            <span className="grid h-12 w-12 place-items-center rounded-xl border border-line bg-accent/10 text-accent">
+          <div className="hud mt-4 flex flex-col items-center gap-3 px-6 py-12 text-center">
+            <span className="grid h-12 w-12 place-items-center rounded-xl border border-acc/20 bg-acc/10 text-acc">
               <Icon name="Search" className="h-5 w-5" />
             </span>
-            <p className="text-sm font-medium text-ink">Nothing matches those filters yet</p>
-            <p className="max-w-sm text-[13px] text-muted">
-              Try another category or stack — every published project shows up here once the filter
-              is cleared.
+            <p className="text-sm font-medium text-white">Nothing matches those filters</p>
+            <p className="max-w-sm text-[13px] text-slate-400">
+              Try another category or stack.
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 lg:grid-cols-[0.62fr_1fr] lg:items-stretch">
-            {/* The whole filtered shelf: as tall as the preview, the rest is a
-                scroll away. `data-lenis-prevent` hands the wheel back to this
-                list so it scrolls without dragging the scrollbar. */}
+          <div className="mt-4 grid gap-5 lg:grid-cols-[0.62fr_1fr] lg:items-stretch">
+            {/* Shelf */}
             <Reveal className="h-full">
-              <div className="panel h-full overflow-hidden p-2">
+              <div className="hud h-full overflow-hidden !p-2">
                 <ul
                   aria-label="Project list"
-                  data-lenis-prevent
-                  className={cn(
-                    "thin-scroll flex h-full gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-y-auto lg:pr-1",
-                  )}
+                  className="flex h-full gap-1.5 overflow-x-auto pb-1 no-scrollbar lg:flex-col lg:overflow-y-auto lg:pr-1"
                 >
                   {matches.map((project, position) => {
                     const isActive = project.slug === active?.slug;
@@ -168,17 +151,16 @@ export function Showcase({
                           onClick={() => setActiveSlug(project.slug)}
                           aria-current={isActive ? "true" : undefined}
                           className={cn(
-                            "group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors",
-                            ROW_HEIGHT,
+                            "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all lg:h-11",
                             isActive
-                              ? "bg-accent/10 text-ink"
-                              : "text-muted hover:bg-surface-2 hover:text-ink",
+                              ? "bg-acc/10 text-white ring-acc glow-sm"
+                              : "text-slate-400 hover:bg-white/5 hover:text-white",
                           )}
                         >
                           <span
                             className={cn(
-                              "mono w-5 shrink-0 text-[10px]",
-                              isActive ? "text-accent" : "text-faint",
+                              "font-mono w-5 shrink-0 text-[10px]",
+                              isActive ? "text-acc" : "text-slate-600",
                             )}
                           >
                             {String(position + 1).padStart(2, "0")}
@@ -187,12 +169,12 @@ export function Showcase({
                             <span
                               className={cn(
                                 "block truncate text-[12.5px] font-medium",
-                                isActive && "text-accent",
+                                isActive && "text-acc",
                               )}
                             >
                               {project.title}
                             </span>
-                            <span className="mt-0.5 hidden truncate text-[10px] text-faint sm:block lg:leading-tight">
+                            <span className="mt-0.5 hidden truncate text-[10px] text-slate-500 sm:block lg:leading-tight">
                               {project.category}
                             </span>
                           </span>
@@ -200,7 +182,7 @@ export function Showcase({
                             name="ChevronRight"
                             className={cn(
                               "h-3.5 w-3.5 shrink-0 transition-transform",
-                              isActive ? "translate-x-0.5 text-accent" : "text-faint",
+                              isActive ? "translate-x-0.5 text-acc" : "text-slate-600",
                             )}
                           />
                         </button>
@@ -211,6 +193,7 @@ export function Showcase({
               </div>
             </Reveal>
 
+            {/* Preview */}
             <Reveal delay={90} className="h-full">
               {active ? (
                 <motion.div
@@ -230,7 +213,6 @@ export function Showcase({
   );
 }
 
-/** One row of single-select filter chips. */
 function FilterRow({
   label,
   options,
@@ -244,7 +226,7 @@ function FilterRow({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="mono w-16 shrink-0 text-[10px] uppercase tracking-[0.18em] text-faint">
+      <span className="font-mono w-16 shrink-0 text-[10px] uppercase tracking-[0.18em] text-slate-500">
         {label}
       </span>
       {options.map((option) => {
@@ -258,8 +240,8 @@ function FilterRow({
             className={cn(
               "chip transition-colors",
               selected
-                ? "border-accent/55 bg-accent/12 text-accent"
-                : "text-muted hover:border-line-strong hover:text-ink",
+                ? "chip on"
+                : "text-slate-400 hover:border-white/20 hover:text-white",
             )}
           >
             {option}
@@ -270,18 +252,18 @@ function FilterRow({
   );
 }
 
-/** Browser-chrome preview of the selected project. */
 function Preview({ project }: { project: Project }) {
   return (
-    <div className="panel overflow-hidden">
-      <div className="flex items-center gap-1.5 border-b border-line px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-danger/70" />
-        <span className="h-2.5 w-2.5 rounded-full bg-warning/70" />
-        <span className="h-2.5 w-2.5 rounded-full bg-success/70" />
-        <span className="mono ml-2 truncate text-[10.5px] text-faint">{hostOf(project)}</span>
+    <div className="hud overflow-hidden">
+      {/* Browser chrome */}
+      <div className="flex items-center gap-1.5 border-b border-white/5 px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
+        <span className="h-2.5 w-2.5 rounded-full bg-yellow-500/70" />
+        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
+        <span className="font-mono ml-2 truncate text-[10.5px] text-slate-500">{hostOf(project)}</span>
       </div>
 
-      <div className="relative bg-surface-2">
+      <div className="relative bg-[#060b14]">
         <Image
           key={project.slug}
           src={project.thumbnailUrl || "/preview.png"}
@@ -295,25 +277,25 @@ function Preview({ project }: { project: Project }) {
 
       <div className="p-5">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-lg font-semibold text-ink">{project.title}</h3>
-          <span className="mono rounded-md border border-line px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
+          <h3 className="text-lg font-semibold text-white">{project.title}</h3>
+          <span className="font-mono rounded-md border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-slate-500">
             {project.category}
           </span>
-          {project.isFeatured ? (
-            <span className="mono inline-flex items-center gap-1 rounded-md bg-accent/12 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-accent">
+          {project.isFeatured && (
+            <span className="font-mono inline-flex items-center gap-1 rounded-md bg-acc/10 px-2 py-0.5 text-[10px] uppercase tracking-[0.14em] text-acc">
               <Icon name="Star" className="h-3 w-3" />
               featured
             </span>
-          ) : null}
+          )}
         </div>
 
-        <p className="mt-2.5 text-[13px] leading-relaxed text-muted">{project.shortDescription}</p>
+        <p className="mt-2.5 text-[13px] leading-relaxed text-slate-400">{project.shortDescription}</p>
 
         <div className="mt-4 flex flex-wrap gap-1.5">
           {project.techStack.map((item) => (
             <span
               key={item}
-              className="rounded-md border border-line bg-accent/5 px-2 py-0.5 text-[10.5px] text-accent/90"
+              className="chip"
             >
               {item}
             </span>
@@ -321,31 +303,31 @@ function Preview({ project }: { project: Project }) {
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
-          {project.liveUrl ? (
+          {project.liveUrl && (
             <a
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg grad-accent px-4 py-2.5 text-[12.5px] font-semibold text-accent-ink transition-transform hover:-translate-y-0.5"
+              className="btn-primary inline-flex items-center gap-2 !rounded-lg !py-2 !text-[12.5px]"
             >
               Live Site
               <Icon name="ArrowUpRight" className="h-3.5 w-3.5" />
             </a>
-          ) : null}
-          {project.sourceUrl ? (
+          )}
+          {project.sourceUrl && (
             <a
               href={project.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg border border-line-strong px-4 py-2.5 text-[12.5px] font-semibold text-ink transition-colors hover:border-accent hover:text-accent"
+              className="btn-ghost inline-flex items-center gap-2 !rounded-lg !py-2 !text-[12.5px]"
             >
               <Icon name="Github" className="h-3.5 w-3.5" />
               Source Code
             </a>
-          ) : null}
+          )}
           <Link
             href={`/projects/${project.slug}`}
-            className="mono ml-auto inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-muted transition-colors hover:text-accent"
+            className="font-mono ml-auto inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-slate-400 transition-colors hover:text-acc"
           >
             Case study
             <Icon name="ArrowRight" className="h-3.5 w-3.5" />

@@ -2,7 +2,6 @@
 
 import { CheckCircle2, GitCommitHorizontal } from "lucide-react";
 import { useClock } from "@/hooks/useClock";
-import { useActiveSection } from "@/hooks/useActiveSection";
 import type { NavigationItem } from "@/lib/types";
 
 const FILE_BY_KEY: Record<string, string> = {
@@ -23,15 +22,15 @@ const FILE_BY_KEY: Record<string, string> = {
 interface StatusBarProps {
   navigation: NavigationItem[];
   accentName: string;
+  activeSection?: string;
 }
 
 /**
  * VS Code-style status bar pinned to the bottom of the shell (desktop only).
  */
-export function StatusBar({ navigation, accentName }: StatusBarProps) {
+export function StatusBar({ navigation, accentName, activeSection = "" }: StatusBarProps) {
   const clock = useClock("Asia/Dhaka");
-  const active = useActiveSection(navigation.map((n) => n.href));
-  const key = active.replace(/^#/, "").split("/")[0] || "hero";
+  const key = activeSection.replace(/^#/, "").split("/")[0] || "hero";
   const file = FILE_BY_KEY[key] ?? "index.tsx";
 
   return (
@@ -59,4 +58,3 @@ export function StatusBar({ navigation, accentName }: StatusBarProps) {
     </footer>
   );
 }
-
