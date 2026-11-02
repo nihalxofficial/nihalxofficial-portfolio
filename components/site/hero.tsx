@@ -65,10 +65,17 @@ export function Hero({
   navigation?: NavigationItem[];
 }) {
   const socials = (settings?.socialLinks ?? []).filter((s) => s.url);
-  const roleLines =
+  const rawRoleLines =
     hero.rotator?.lines?.filter((l) => l.trim()).length
       ? hero.rotator!.lines
       : [hero.role].filter(Boolean);
+
+  const roleLines = rawRoleLines.flatMap((line) => {
+    if (line.includes(" & ") && line.toLowerCase().includes("problem solver")) {
+      return line.split(" & ").map((s) => s.trim());
+    }
+    return [line];
+  });
 
   const secondaryHref = hero.secondaryCta?.href || "#contact";
   const secondaryExternal = /^https?:\/\//i.test(secondaryHref);

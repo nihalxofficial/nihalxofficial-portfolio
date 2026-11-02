@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "@/components/ui/icon";
+import { Bot, MessageSquare, Send, Sparkles, X, Loader2, ArrowDown } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -11,41 +11,36 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  "What does Nihal work with?",
-  "Tell me about RentEase",
-  "Is he open to internships?",
-  "How do I contact him?",
+  "What is Nihal's core tech stack?",
+  "Tell me about RentEase & Mentora",
+  "Is he available for contract / remote hire?",
+  "How do I initialize contact with him?",
 ];
 
 const GREETING: Message = {
   role: "assistant",
   content:
-    "Hey — I'm Nihal's assistant. Ask me about his stack, projects, availability or how to reach him.",
+    "👋 Greetings! I'm Nihal's Agentic AI Assistant.\n\nI have live telemetry access to Nihal's full-stack architecture, production projects (RentEase, Mentora, SunCart, etc.), verified skills, and work availability.\n\nAsk me anything about his engineering capabilities or click any prompt below to get started!",
 };
 
 /**
- * Visitor-facing AI assistant.
- *
- * Talks to `POST /api/v1/ai/chat`, which streams Server-Sent Events so the
- * answer appears as it is written instead of after a long spinner.
+ * Visitor-facing Agentic AI assistant with real-time SSE streaming.
+ * Styled in dark OS terminal / cyber HUD theme.
  */
 export function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [showCallout, setShowCallout] = useState(true);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState("");
-  /** False while the visitor is reading older messages — stops the pull to bottom. */
   const [atBottom, setAtBottom] = useState(true);
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-  /** Partial reply while the stream is still arriving. */
   const answerRef = useRef("");
 
-  // Scrolling is a DOM write, not state, so a reply streaming in never yanks the
-  // view down when the reader has scrolled up.
   useEffect(() => {
     const node = scrollRef.current;
     if (!node || !atBottom) return;
@@ -67,7 +62,10 @@ export function ChatWidget() {
   }
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open) {
+      setShowCallout(false);
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
   }, [open]);
 
   useEffect(() => {
@@ -78,14 +76,19 @@ export function ChatWidget() {
     const question = text.trim();
     if (!question || streaming) return;
 
-    const history: Message[] = [...messages.filter((m) => m.content !== GREETING.content), { role: "user", content: question }];
-    setMessages([...messages, { role: "user", content: question }, { role: "assistant", content: "" }]);
+    const history: Message[] = [
+      ...messages.filter((m) => m.content !== GREETING.content),
+      { role: "user", content: question },
+    ];
+    setMessages([
+      ...messages,
+      { role: "user", content: question },
+      { role: "assistant", content: "" },
+    ]);
     setInput("");
     setError("");
     setStreaming(true);
 
-    // A new question always scrolls the reader back down, even if they were
-    // browsing older messages.
     requestAnimationFrame(() => {
       const node = scrollRef.current;
       if (node) node.scrollTop = node.scrollHeight;
@@ -105,7 +108,7 @@ export function ChatWidget() {
 
       if (!response.ok || !response.body) {
         const body = (await response.json().catch(() => null)) as { message?: string } | null;
-        throw new Error(body?.message ?? "The assistant is unavailable right now.");
+        throw new Error(body?.message ?? "The assistant is currently unavailable.");
       }
 
       const reader = response.body.getReader();
@@ -138,7 +141,6 @@ export function ChatWidget() {
           }
 
           if (event.type === "delta" && event.text) {
-            // The ref holds the partial answer; React state only sees snapshots.
             answerRef.current += event.text;
             const answer = answerRef.current;
             setMessages((current) => {
@@ -149,22 +151,21 @@ export function ChatWidget() {
           }
 
           if (event.type === "error") {
-            setError(event.message ?? "The assistant is unavailable right now.");
+            setError(event.message ?? "The assistant encountered a transient error.");
           }
         }
       }
 
       if (!answerRef.current.trim()) {
-        setError((previous) => previous || "No answer came back — please try again.");
+        setError((previous) => previous || "No response received. Please try again.");
       }
     } catch (cause) {
       if ((cause as Error).name !== "AbortError") {
-        setError(cause instanceof Error ? cause.message : "Something went wrong.");
+        setError(cause instanceof Error ? cause.message : "Connection failed.");
       }
     } finally {
       setStreaming(false);
       abortRef.current = null;
-      // Drop an empty trailing bubble so no blank assistant row is left behind.
       setMessages((current) =>
         current.filter((m, index) => !(index === current.length - 1 && m.role === "assistant" && !m.content)),
       );
@@ -173,51 +174,99 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Launcher */}
+      {/* ── Attraction Callout Banner (shown when closed) ── */}
+      {!open && showCallout && (
+        <div
+          onClick={() => setOpen(true)}
+          className="fixed right-18 sm:right-22 bottom-[calc(68px+env(safe-area-inset-bottom))] sm:bottom-6 z-[69] hidden xs:flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-bottom-2"
+        >
+          <span className="relative flex h-2.5 w-2.5 shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
+          </span>
+          <span className="font-mono text-xs text-slate-200 group-hover:text-acc transition-colors font-medium whitespace-nowrap">
+            Ask Nihal&apos;s AI Agent
+          </span>
+          <span className="font-mono text-[9.5px] uppercase tracking-wider text-acc bg-acc/10 px-1.5 py-0.5 rounded border border-acc/30">
+            ⚡ Live
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowCallout(false);
+            }}
+            className="text-slate-500 hover:text-slate-300 ml-1 p-0.5 transition-colors cursor-pointer"
+            aria-label="Dismiss greeting"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      )}
+
+      {/* ── Main Launcher Button ── */}
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        aria-label={open ? "Close assistant" : "Ask about Nihal"}
+        aria-label={open ? "Close assistant" : "Ask Nihal's Agentic AI"}
         aria-expanded={open}
         className={cn(
-          "dock-raised fixed right-5 z-[70] grid h-12 w-12 place-items-center rounded-full grad-accent text-accent-ink shadow-[0_12px_36px_-10px_var(--accent-glow)] transition-transform hover:-translate-y-0.5 active:scale-95",
-          open && "rotate-90",
+          "fixed right-4 sm:right-6 bottom-[calc(68px+env(safe-area-inset-bottom))] sm:bottom-6 z-[70] grid h-12 w-12 place-items-center rounded-2xl hud !border-acc/40 bg-[#070c30] text-acc shadow-[0_0_24px_rgba(0,229,255,0.35)] backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:glow active:scale-95 cursor-pointer",
+          open && "rotate-90 !border-red-400/40 text-red-400 shadow-[0_0_20px_rgba(248,113,113,0.3)]",
         )}
       >
-        <Icon name={open ? "X" : "MessageSquare"} className="h-5 w-5" />
+        {open ? <X size={20} /> : <Bot size={22} className="text-acc" />}
       </button>
 
-      {/* Panel */}
+      {/* ── Chat Window Dialog ── */}
       <div
         className={cn(
-          "fixed right-4 bottom-[calc(var(--dock-h)+env(safe-area-inset-bottom)+4.5rem)] z-[70] w-[min(23rem,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl border border-line bg-page/95 shadow-[var(--shadow-float)] backdrop-blur-xl transition-all duration-200 lg:bottom-20",
+          "fixed right-4 sm:right-6 bottom-[calc(68px+env(safe-area-inset-bottom)+3.8rem)] sm:bottom-20 z-[75] w-[min(25rem,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl hud !border-white/15 bg-[#03050f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300",
           open
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
-            : "pointer-events-none translate-y-3 scale-95 opacity-0",
+            : "pointer-events-none translate-y-4 scale-95 opacity-0",
         )}
         role="dialog"
-        aria-label="Portfolio assistant"
+        aria-label="Agentic AI assistant"
         aria-hidden={!open}
       >
-        <div className="flex items-center gap-2.5 border-b border-line px-4 py-3">
-          <span className="relative grid h-8 w-8 place-items-center rounded-lg grad-accent text-accent-ink">
-            <Icon name="Sparkles" className="h-4 w-4" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-ink">Portfolio assistant</p>
-            <p className="mono flex items-center gap-1.5 text-[10px] uppercase tracking-[0.16em] text-faint">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" />
-              {streaming ? "writing…" : "online"}
-            </p>
+        {/* Terminal Header */}
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 bg-white/[0.02]">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Mac chrome buttons */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+            </div>
+            <div className="min-w-0 ml-1">
+              <p className="font-mono text-xs font-semibold text-slate-200 flex items-center gap-1.5 truncate">
+                <Sparkles size={13} className="text-acc shrink-0" />
+                ai-agent.sh
+              </p>
+              <p className="font-mono flex items-center gap-1.5 text-[9.5px] uppercase tracking-widest text-slate-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {streaming ? "streaming telemetry…" : "agentic ai · ready"}
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="text-slate-500 hover:text-white p-1 rounded transition-colors cursor-pointer"
+            aria-label="Close assistant"
+          >
+            <X size={15} />
+          </button>
         </div>
 
+        {/* Messages Body */}
         <div className="relative">
           <div
             ref={scrollRef}
             onScroll={trackScroll}
             data-lenis-prevent
-            className="thin-scroll h-[min(24rem,52vh)] min-h-[12rem] space-y-2.5 overflow-y-auto overscroll-contain px-3.5 py-3.5"
+            className="thin-scroll h-[min(23rem,50vh)] min-h-[12rem] space-y-3 overflow-y-auto overscroll-contain p-4"
           >
             {messages.map((message, index) => (
               <div
@@ -227,45 +276,55 @@ export function ChatWidget() {
                   message.role === "user" ? "justify-end" : "justify-start",
                 )}
               >
-                <p
+                <div
                   className={cn(
-                    "max-w-[85%] whitespace-pre-wrap break-words rounded-xl px-3 py-2 text-[12.5px] leading-relaxed",
+                    "max-w-[88%] whitespace-pre-wrap break-words rounded-xl px-3.5 py-2.5 text-[12px] leading-relaxed font-mono",
                     message.role === "user"
-                      ? "bg-accent/15 text-ink"
-                      : "border border-line bg-surface/70 text-muted",
+                      ? "hud !border-acc/40 bg-acc/15 text-white glow-sm"
+                      : "hud !border-white/10 bg-white/[0.03] text-slate-200",
                   )}
                 >
-                  {message.content || (streaming ? "…" : "")}
-                </p>
+                  {message.role === "assistant" && (
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-acc mb-1.5 flex items-center gap-1">
+                      <Bot size={11} />
+                      AI Agent
+                    </div>
+                  )}
+                  {message.content || (streaming ? <span className="text-acc animate-pulse">▍</span> : "")}
+                </div>
               </div>
             ))}
           </div>
 
-          {atBottom || messages.length <= 1 ? null : (
+          {/* Jump to latest pill */}
+          {!atBottom && messages.length > 1 && (
             <button
               type="button"
               onClick={jumpToLatest}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-accent/45 bg-surface/90 px-3 py-1 text-[11px] text-accent shadow-[0_10px_26px_-14px_var(--accent-glow)] backdrop-blur transition-transform hover:-translate-y-0.5"
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full hud !border-acc/40 bg-[#03050f]/90 px-3 py-1 font-mono text-[10.5px] text-acc shadow-lg backdrop-blur hover:glow-sm transition-transform hover:-translate-y-0.5 cursor-pointer"
             >
-              Jump to latest ↓
+              <ArrowDown size={12} />
+              Jump to latest
             </button>
           )}
         </div>
 
+        {/* Error notice */}
         {error ? (
-          <p className="mx-3.5 mb-2 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-[11.5px] text-danger">
+          <p className="mx-4 mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 font-mono text-[11px] text-red-400">
             {error}
           </p>
         ) : null}
 
+        {/* Quick Suggestion Chips */}
         {messages.length <= 1 ? (
-          <div className="flex flex-wrap gap-1.5 px-3.5 pb-2">
+          <div className="flex flex-wrap gap-1.5 px-4 pb-2">
             {SUGGESTIONS.map((suggestion) => (
               <button
                 key={suggestion}
                 type="button"
                 onClick={() => void send(suggestion)}
-                className="rounded-full border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-strong hover:text-accent"
+                className="chip !text-[11px] !py-1 text-slate-300 hover:text-acc hover:border-acc/60 transition-colors cursor-pointer"
               >
                 {suggestion}
               </button>
@@ -273,31 +332,34 @@ export function ChatWidget() {
           </div>
         ) : null}
 
+        {/* Input Form */}
         <form
           onSubmit={(event) => {
             event.preventDefault();
             void send(input);
           }}
-          className="flex items-center gap-2 border-t border-line p-2.5"
+          className="flex items-center gap-2 border-t border-white/10 p-3 bg-white/[0.01]"
         >
+          <span className="font-mono text-acc text-xs pl-1 font-bold">{">"}</span>
           <input
             ref={inputRef}
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Ask about my work…"
-            aria-label="Message"
-            className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-surface/60 px-3 text-[12.5px] text-ink outline-none placeholder:text-faint focus:border-accent/60"
+            placeholder="Ask AI agent about Nihal..."
+            aria-label="Message prompt"
+            className="h-9 min-w-0 flex-1 rounded-xl hud !border-white/10 bg-transparent px-3 font-mono text-xs text-slate-100 outline-none placeholder:text-slate-500 focus:border-acc/60"
           />
           <button
             type="submit"
             disabled={streaming || !input.trim()}
-            aria-label="Send"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-lg grad-accent text-accent-ink transition-opacity disabled:opacity-40"
+            aria-label="Send message"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-xl btn-primary text-white transition-opacity disabled:opacity-40 cursor-pointer"
           >
-            <Icon
-              name={streaming ? "Loader" : "Send"}
-              className={cn("h-4 w-4", streaming && "animate-spin")}
-            />
+            {streaming ? (
+              <Loader2 size={15} className="animate-spin text-acc" />
+            ) : (
+              <Send size={15} />
+            )}
           </button>
         </form>
       </div>

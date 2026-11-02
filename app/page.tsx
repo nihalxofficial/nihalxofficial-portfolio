@@ -5,6 +5,7 @@ import { ExperienceEducation } from "@/components/site/experience-education";
 import { Footer } from "@/components/site/footer";
 import { Hero } from "@/components/site/hero";
 import { PortfolioShell } from "@/components/site/portfolio-shell";
+import { ScrollToTop } from "@/components/site/scroll-to-top";
 import { Services } from "@/components/site/services";
 import { Showcase } from "@/components/site/showcase";
 import { Skills } from "@/components/site/skills";
@@ -210,6 +211,7 @@ export default async function Page() {
         year={new Date().getFullYear()}
       />
 
+      <ScrollToTop />
       <ChatWidget />
     </PortfolioShell>
   );
