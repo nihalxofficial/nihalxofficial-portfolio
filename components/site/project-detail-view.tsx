@@ -318,24 +318,15 @@ export function ProjectDetailView({
   const statusInfo = STATUS_CONFIG[statusKey] || STATUS_CONFIG.Live;
   const year = project.createdAt ? new Date(project.createdAt).getFullYear() : 2025;
 
-  // Synthetic code snippet for peek
+  // Synthetic code snippet for peek (compact to balance column heights)
   const sampleCode = useMemo(() => {
-    return `// ${project.slug} - entrypoint
-import { bootstrapSystem } from "@/core/engine";
-import type { ServiceConfig } from "@/types";
-
-const config: ServiceConfig = {
-  service: "${project.title}",
-  category: "${project.category}",
-  techStack: [${project.techStack.slice(0, 3).map((t) => `"${t}"`).join(", ")}],
+    return `// src/${project.slug}/index.ts
+export const manifest = defineProject({
+  name: "${project.title}",
+  stack: [${project.techStack.slice(0, 3).map((t) => `"${t}"`).join(", ")}],
   status: "${statusKey}",
-  activeFeatures: ${project.features.length},
-};
-
-export async function init() {
-  const app = await bootstrapSystem(config);
-  return app.listen(process.env.PORT || 3000);
-}`;
+  live: ${Boolean(project.liveUrl)},
+});`;
   }, [project, statusKey]);
 
   // Compute prev & next from related
@@ -637,17 +628,17 @@ export async function init() {
             </div>
           </div>
 
-          {/* Architecture Preview Component (Moved to Right Column to balance left & right) */}
+          {/* Architecture Preview Component (Compact height to balance column lengths) */}
           <div className="min-w-0">
-            <div className="font-mono text-xs text-acc uppercase tracking-widest mb-2.5 flex items-center justify-between">
+            <div className="font-mono text-xs text-acc uppercase tracking-widest mb-2 flex items-center justify-between">
               <span>{"// architecture preview"}</span>
-              <span className="text-[10px] text-slate-500 font-mono">entrypoint.ts</span>
+              <span className="text-[10px] text-slate-500 font-mono">index.ts</span>
             </div>
             <div className="hud overflow-hidden min-w-0 max-w-full">
-              <div className="flex items-center justify-between px-3.5 py-2 border-b border-white/10 bg-white/[0.02] text-xs font-mono text-slate-400">
-                <div className="flex items-center gap-2 truncate">
-                  <span className="w-2 h-2 rounded-full bg-acc shrink-0" />
-                  <span className="truncate">src/{project.slug}/bootstrap.ts</span>
+              <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/10 bg-white/[0.02] text-xs font-mono text-slate-400">
+                <div className="flex items-center gap-1.5 truncate">
+                  <span className="w-1.5 h-1.5 rounded-full bg-acc shrink-0" />
+                  <span className="truncate text-[11px]">src/{project.slug}/index.ts</span>
                 </div>
                 <button
                   onClick={() => {
@@ -655,16 +646,16 @@ export async function init() {
                     setCopiedCode(true);
                     setTimeout(() => setCopiedCode(false), 1400);
                   }}
-                  className="flex items-center gap-1 hover:text-acc transition text-[11px] shrink-0 ml-2"
+                  className="flex items-center gap-1 hover:text-acc transition text-[10px] shrink-0 ml-2"
                 >
-                  {copiedCode ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                  {copiedCode ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
                   <span>{copiedCode ? "copied" : "copy"}</span>
                 </button>
               </div>
-              <pre className="p-3 sm:p-4 font-mono text-[11px] sm:text-[12px] leading-6 overflow-x-auto max-w-full text-slate-200 whitespace-pre selection:bg-acc/30">
+              <pre className="p-3 font-mono text-[11px] leading-5 overflow-x-auto max-w-full text-slate-200 whitespace-pre selection:bg-acc/30">
                 {sampleCode.split("\n").map((line, i) => (
                   <div key={i} className="flex">
-                    <span className="w-6 shrink-0 select-none text-right pr-3 text-slate-600">
+                    <span className="w-5 shrink-0 select-none text-right pr-2 text-slate-600">
                       {i + 1}
                     </span>
                     <code>{highlightCode(line)}</code>
