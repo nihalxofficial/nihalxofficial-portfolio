@@ -3,14 +3,17 @@
 import {
   ArrowRight,
   BookOpen,
+  Bot,
   Briefcase,
   CloudRain,
   Command,
   Copy,
   CornerDownLeft,
   Cpu,
+  Dna,
   FolderKanban,
   GraduationCap,
+  Grid,
   Home,
   Layers,
   Mail,
@@ -25,6 +28,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ACCENTS } from "@/components/site/accent-context";
+import { useAiChat } from "@/components/site/ai-chat-context";
+import type { BackgroundMode } from "@/components/site/site-background";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 
 const ICON_BY_KEY: Record<string, LucideIcon> = {
@@ -61,8 +66,10 @@ interface CommandPaletteProps {
   navigation: NavigationItem[];
   settings: SiteSettings | null;
   setAccentId: (id: string) => void;
-  rain: boolean;
-  setRain: (b: boolean) => void;
+  bgMode?: BackgroundMode;
+  setBgMode?: (mode: BackgroundMode) => void;
+  rain?: boolean;
+  setRain?: (b: boolean) => void;
   notify: (s: string) => void;
 }
 
@@ -72,13 +79,14 @@ export function CommandPalette({
   navigation,
   settings,
   setAccentId,
-  rain,
-  setRain,
+  bgMode = "dna",
+  setBgMode,
   notify,
 }: CommandPaletteProps) {
   const [q, setQ] = useState("");
   const [idx, setIdx] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { openChat } = useAiChat();
 
   const email = settings?.contact?.email ?? "";
 
@@ -99,6 +107,14 @@ export function CommandPalette({
         group: "Navigate",
         run: () => scrollTo(n.href),
       })),
+      {
+        id: "ai-assistant",
+        label: "Ask Nihal's Agentic AI Assistant",
+        hint: "Live AI telemetry & Q&A",
+        icon: Bot,
+        group: "Assistant",
+        run: () => openChat(),
+      },
       ...ACCENTS.map((a): Action => ({
         id: a.id,
         label: `Theme: ${a.name}`,
@@ -108,12 +124,28 @@ export function CommandPalette({
         run: () => setAccentId(a.id),
       })),
       {
-        id: "rain",
-        label: `${rain ? "Disable" : "Enable"} code rain`,
-        hint: "Toggle matrix background",
+        id: "bg-dna",
+        label: "Background: DNA Neural Mesh (Default)",
+        hint: bgMode === "dna" ? "Currently active" : "Flowing 3D particle double-helix",
+        icon: Dna,
+        group: "Appearance",
+        run: () => setBgMode?.("dna"),
+      },
+      {
+        id: "bg-rain",
+        label: "Background: Matrix Code Rain",
+        hint: bgMode === "rain" ? "Currently active" : "Classic falling green/accent matrix",
         icon: CloudRain,
         group: "Appearance",
-        run: () => setRain(!rain),
+        run: () => setBgMode?.("rain"),
+      },
+      {
+        id: "bg-grid",
+        label: "Background: Minimal Cyber Grid",
+        hint: bgMode === "none" ? "Currently active" : "Clean dark space grid",
+        icon: Grid,
+        group: "Appearance",
+        run: () => setBgMode?.("none"),
       },
       {
         id: "copy-email",
@@ -136,7 +168,7 @@ export function CommandPalette({
         run: () => scrollTo("#contact"),
       },
     ],
-    [navigation, email, rain, setRain, setAccentId, notify]
+    [navigation, email, bgMode, setBgMode, setAccentId, notify, openChat]
   );
 
   const list = useMemo(() => {

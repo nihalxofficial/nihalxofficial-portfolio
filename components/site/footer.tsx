@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { BrandLogo } from "@/components/ui/brand-logo";
+import { NbLogo } from "@/components/ui/nb-logo";
 import { Icon } from "@/components/ui/icon";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 import { initials } from "@/lib/utils";
@@ -35,9 +36,7 @@ export function Footer({
               <BrandLogo branding={branding} variant="footer" fallback={mark} alt={name} />
             ) : (
               <>
-                <span className="w-10 h-9 rounded-lg grid place-items-center font-black italic text-sm text-grad ring-acc bg-[#070c30] glow-sm">
-                  {mark}
-                </span>
+                <NbLogo size={38} className="glow-sm" />
                 <div>
                   <p className="text-sm font-semibold">{name}</p>
                   <p className="font-mono text-[11px] uppercase tracking-widest text-slate-500">

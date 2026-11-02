@@ -179,9 +179,27 @@ export function Hero({
           )}
         </div>
 
-        {/* Right: portrait frame (on mobile displays first, balanced compact height) */}
-        <div className="order-1 lg:order-2 w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[420px] mx-auto lg:ml-auto">
-          <div className="hud overflow-hidden">
+        {/* Right: portrait frame with 3D Holographic Orbitals */}
+        <div className="order-1 lg:order-2 relative w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[420px] mx-auto lg:ml-auto">
+          {/* 3D Holographic Orbital Rings (inspired by Haiku HoloCore) */}
+          <div className="absolute -inset-4 sm:-inset-6 pointer-events-none overflow-hidden rounded-3xl -z-10 opacity-75">
+            <div className="absolute inset-0 animate-spin-slow rounded-full border border-dashed border-acc/25">
+              <span className="orbit-dot" />
+            </div>
+            <div className="absolute inset-3 sm:inset-5 animate-spin-rev rounded-full border border-acc2/30">
+              <span className="orbit-dot plasma" />
+            </div>
+            <div className="absolute inset-7 sm:inset-10 animate-spin-fast rounded-full border border-acc/20">
+              <span className="orbit-dot" />
+              <span className="orbit-dot bottom" />
+            </div>
+            <div className="absolute inset-12 rounded-full bg-acc/10 blur-2xl" />
+          </div>
+
+          <div className="hud overflow-hidden relative shadow-[0_0_35px_rgba(0,229,255,0.12)]">
+            {/* Holographic Scan Beam */}
+            <div className="scan-beam" />
+
             {/* Window chrome */}
             <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/5 bg-white/3">
               <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />

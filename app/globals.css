@@ -349,6 +349,69 @@ button { cursor: pointer; }
   box-shadow: 0 0 18px color-mix(in srgb, var(--acc) 12%, transparent);
 }
 
+/* ─── Haiku 3D Holographic Animations & Orbitals ──────────────────────── */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+@keyframes spin-rev {
+  to { transform: rotate(-360deg); }
+}
+@keyframes spin-fast {
+  to { transform: rotate(360deg); }
+}
+@keyframes core-pulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.08); filter: brightness(1.3); }
+}
+@keyframes scan-beam-anim {
+  from { top: -20%; }
+  to { top: 110%; }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 28s linear infinite;
+}
+.animate-spin-rev {
+  animation: spin-rev 18s linear infinite;
+}
+.animate-spin-fast {
+  animation: spin-fast 9s linear infinite;
+}
+.animate-core {
+  animation: core-pulse 3.5s ease-in-out infinite;
+}
+
+.orbit-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  background-color: var(--acc, #22d3ee);
+  box-shadow: 0 0 14px var(--acc, #22d3ee);
+}
+.orbit-dot.plasma {
+  background-color: var(--acc2, #d946ef);
+  box-shadow: 0 0 14px var(--acc2, #d946ef);
+}
+.orbit-dot.bottom {
+  top: 100%;
+  left: 50%;
+}
+
+.scan-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(180deg, transparent, rgba(0, 229, 255, 0.12), transparent);
+  pointer-events: none;
+  z-index: 2;
+  animation: scan-beam-anim 6s linear infinite;
+}
+
 /* ─── Reduced motion ─────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

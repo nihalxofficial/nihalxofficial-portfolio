@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Bot, MessageSquare, Send, Sparkles, X, Loader2, ArrowDown } from "lucide-react";
+import { useAiChat } from "@/components/site/ai-chat-context";
 import { API_URL } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,7 @@ interface Message {
 
 const SUGGESTIONS = [
   "What is Nihal's core tech stack?",
-  "Tell me about RentEase & Mentora",
+  "Tell me about Sparq & RentEase",
   "Is he available for contract / remote hire?",
   "How do I initialize contact with him?",
 ];
@@ -28,8 +29,7 @@ const GREETING: Message = {
  * Styled in dark OS terminal / cyber HUD theme.
  */
 export function ChatWidget() {
-  const [open, setOpen] = useState(false);
-  const [showCallout, setShowCallout] = useState(true);
+  const { isOpen, closeChat, toggleChat, unreadCount, showTeaser, dismissTeaser } = useAiChat();
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
@@ -45,7 +45,7 @@ export function ChatWidget() {
     const node = scrollRef.current;
     if (!node || !atBottom) return;
     node.scrollTop = node.scrollHeight;
-  }, [messages, streaming, open, atBottom]);
+  }, [messages, streaming, isOpen, atBottom]);
 
   function trackScroll() {
     const node = scrollRef.current;
@@ -62,11 +62,19 @@ export function ChatWidget() {
   }
 
   useEffect(() => {
-    if (open) {
-      setShowCallout(false);
+    if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
-  }, [open]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeChat();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, closeChat]);
 
   useEffect(() => {
     return () => abortRef.current?.abort();
@@ -174,11 +182,11 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* ── Attraction Callout Banner (shown when closed) ── */}
-      {!open && showCallout && (
+      {/* ── Attraction Callout Banner (anchored to the left of the launcher button) ── */}
+      {!isOpen && showTeaser && (
         <div
-          onClick={() => setOpen(true)}
-          className="fixed right-18 sm:right-22 bottom-[calc(68px+env(safe-area-inset-bottom))] sm:bottom-6 z-[69] hidden xs:flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-bottom-2"
+          onClick={toggleChat}
+          className="fixed right-18 sm:right-20 md:right-22 bottom-[calc(64px+env(safe-area-inset-bottom))] md:bottom-6 z-[69] flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-right-3 max-w-[calc(100vw-6.5rem)]"
         >
           <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -187,16 +195,16 @@ export function ChatWidget() {
           <span className="font-mono text-xs text-slate-200 group-hover:text-acc transition-colors font-medium whitespace-nowrap">
             Ask Nihal&apos;s AI Agent
           </span>
-          <span className="font-mono text-[9.5px] uppercase tracking-wider text-acc bg-acc/10 px-1.5 py-0.5 rounded border border-acc/30">
+          <span className="font-mono text-[9.5px] uppercase tracking-wider text-acc bg-acc/10 px-1.5 py-0.5 rounded border border-acc/30 shrink-0">
             ⚡ Live
           </span>
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              setShowCallout(false);
+              dismissTeaser();
             }}
-            className="text-slate-500 hover:text-slate-300 ml-1 p-0.5 transition-colors cursor-pointer"
+            className="text-slate-500 hover:text-slate-300 ml-0.5 p-0.5 transition-colors cursor-pointer"
             aria-label="Dismiss greeting"
           >
             <X size={13} />
@@ -204,31 +212,36 @@ export function ChatWidget() {
         </div>
       )}
 
-      {/* ── Main Launcher Button ── */}
+      {/* ── Main Floating Launcher Button (Fixed Bottom-Right) ── */}
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-label={open ? "Close assistant" : "Ask Nihal's Agentic AI"}
-        aria-expanded={open}
+        onClick={toggleChat}
+        aria-label={isOpen ? "Close assistant" : "Ask Nihal's Agentic AI"}
+        aria-expanded={isOpen}
         className={cn(
-          "fixed right-4 sm:right-6 bottom-[calc(68px+env(safe-area-inset-bottom))] sm:bottom-6 z-[70] grid h-12 w-12 place-items-center rounded-2xl hud !border-acc/40 bg-[#070c30] text-acc shadow-[0_0_24px_rgba(0,229,255,0.35)] backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:glow active:scale-95 cursor-pointer",
-          open && "rotate-90 !border-red-400/40 text-red-400 shadow-[0_0_20px_rgba(248,113,113,0.3)]",
+          "fixed right-4 sm:right-6 bottom-[calc(64px+env(safe-area-inset-bottom))] md:bottom-6 z-[70] grid h-12 w-12 place-items-center rounded-2xl hud !border-acc/40 bg-[#070c30] text-acc shadow-[0_0_24px_rgba(0,229,255,0.35)] backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:glow active:scale-95 cursor-pointer",
+          isOpen && "rotate-90 !border-red-400/40 text-red-400 shadow-[0_0_20px_rgba(248,113,113,0.3)]",
         )}
       >
-        {open ? <X size={20} /> : <Bot size={22} className="text-acc" />}
+        {isOpen ? <X size={20} /> : <Bot size={22} className="text-acc" />}
+        {!isOpen && unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-[10px] font-bold text-white grid place-items-center animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.9)]">
+            {unreadCount}
+          </span>
+        )}
       </button>
 
       {/* ── Chat Window Dialog ── */}
       <div
         className={cn(
-          "fixed right-4 sm:right-6 bottom-[calc(68px+env(safe-area-inset-bottom)+3.8rem)] sm:bottom-20 z-[75] w-[min(25rem,calc(100vw-2rem))] origin-bottom-right overflow-hidden rounded-2xl hud !border-white/15 bg-[#03050f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300",
-          open
+          "fixed right-4 sm:right-6 bottom-[calc(64px+env(safe-area-inset-bottom)+3.8rem)] md:bottom-20 z-[75] w-[min(26rem,calc(100vw-2rem))] max-h-[min(34rem,calc(100dvh-130px))] flex flex-col origin-bottom-right overflow-hidden rounded-2xl hud !border-white/15 bg-[#03050f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300",
+          isOpen
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none translate-y-4 scale-95 opacity-0",
         )}
         role="dialog"
         aria-label="Agentic AI assistant"
-        aria-hidden={!open}
+        aria-hidden={!isOpen}
       >
         {/* Terminal Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 bg-white/[0.02]">
@@ -252,7 +265,7 @@ export function ChatWidget() {
           </div>
           <button
             type="button"
-            onClick={() => setOpen(false)}
+            onClick={closeChat}
             className="text-slate-500 hover:text-white p-1 rounded transition-colors cursor-pointer"
             aria-label="Close assistant"
           >

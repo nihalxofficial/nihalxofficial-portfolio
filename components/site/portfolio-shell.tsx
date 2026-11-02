@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { AccentProvider, ACCENTS, useAccent } from "@/components/site/accent-context";
+import { AiChatProvider } from "@/components/site/ai-chat-context";
 import { BootScreen } from "@/components/site/boot-screen";
 import { CommandPalette } from "@/components/site/command-palette";
 import { Dock } from "@/components/site/dock";
 import { MobileNav } from "@/components/site/mobile-nav";
-import { SiteBackground } from "@/components/site/site-background";
+import { BackgroundMode, SiteBackground } from "@/components/site/site-background";
 import { StatusBar } from "@/components/site/status-bar";
 import { TopBar } from "@/components/site/top-bar";
 import { useActiveSection } from "@/hooks/useActiveSection";
@@ -23,9 +24,33 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   const { accent, accentId, setAccentId } = useAccent();
 
   const [booted, setBooted] = useState(false);
-  const [rain, setRain] = useState(true);
+  const [bgMode, setBgMode] = useState<BackgroundMode>("dna");
   const [palette, setPalette] = useState(false);
   const [toast, setToast] = useState("");
+
+  // Hydrate background mode preference (default: "dna")
+  useEffect(() => {
+    const saved = localStorage.getItem("bg_mode") as BackgroundMode | null;
+    if (saved && (saved === "dna" || saved === "rain" || saved === "none")) {
+      setBgMode(saved);
+    } else if (settings?.backgroundEffect) {
+      setBgMode(settings.backgroundEffect as BackgroundMode);
+    }
+  }, [settings?.backgroundEffect]);
+
+  const changeBgMode = useCallback((mode: BackgroundMode) => {
+    setBgMode(mode);
+    localStorage.setItem("bg_mode", mode);
+    notify(
+      `Background → ${
+        mode === "dna"
+          ? "DNA Mesh 🧬"
+          : mode === "rain"
+          ? "Matrix Rain 🌧️"
+          : "Minimal Grid"
+      }`
+    );
+  }, []);
 
   // Active section tracking via IntersectionObserver
   const hrefs = navigation.map((n) => n.href);
@@ -106,7 +131,7 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
       {!booted && <BootScreen done={finishBoot} />}
 
       {/* Animated background */}
-      <SiteBackground accent={accent.a} rain={rain} />
+      <SiteBackground accent={accent.a} mode={bgMode} />
 
       {/* Top bar */}
       <TopBar
@@ -118,6 +143,8 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
         setAccentId={changeAccent}
         openPalette={() => setPalette(true)}
         onHireMeClick={scrollToContact}
+        bgMode={bgMode}
+        setBgMode={changeBgMode}
       />
 
       {/* Main content row */}
@@ -151,8 +178,8 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
         navigation={navigation}
         settings={settings}
         setAccentId={changeAccent}
-        rain={rain}
-        setRain={setRain}
+        bgMode={bgMode}
+        setBgMode={changeBgMode}
         notify={notify}
       />
 
@@ -173,9 +200,11 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
 export function PortfolioShell({ children, navigation, settings }: PortfolioShellProps) {
   return (
     <AccentProvider>
-      <ShellInner navigation={navigation} settings={settings}>
-        {children}
-      </ShellInner>
+      <AiChatProvider>
+        <ShellInner navigation={navigation} settings={settings}>
+          {children}
+        </ShellInner>
+      </AiChatProvider>
     </AccentProvider>
   );
 }

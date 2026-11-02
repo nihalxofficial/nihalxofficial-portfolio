@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
+import { useAiChat } from "@/components/site/ai-chat-context";
 
 /**
  * Floating "Back to Top" button in the bottom-right corner.
- * Listens to scroll on both the `#stage` main container and `window`.
+ * Sits directly above the AI Chatbot button without any overlap.
+ * Hides automatically when the chat dialog is open for zero UI clutter.
  */
 export function ScrollToTop() {
   const [visible, setVisible] = useState(false);
+  const { isOpen } = useAiChat();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +40,7 @@ export function ScrollToTop() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (!visible) return null;
+  if (!visible || isOpen) return null;
 
   return (
     <button
@@ -45,9 +48,9 @@ export function ScrollToTop() {
       onClick={scrollToTop}
       title="Back to top"
       aria-label="Back to top"
-      className="fixed z-[65] right-4 sm:right-6 bottom-[calc(68px+env(safe-area-inset-bottom)+3.5rem)] sm:bottom-22 grid h-10 w-10 sm:h-11 sm:w-11 place-items-center rounded-xl hud !border-white/15 bg-[#03050f]/90 text-slate-300 shadow-[0_8px_30px_rgba(0,0,0,0.6)] backdrop-blur-md transition-all duration-200 hover:-translate-y-1 hover:border-acc hover:text-acc hover:glow-sm active:scale-95 group cursor-pointer"
+      className="fixed z-[68] right-4 sm:right-6 bottom-[calc(64px+env(safe-area-inset-bottom)+3.5rem)] md:bottom-[82px] grid h-11 w-11 place-items-center rounded-xl hud !border-acc/40 bg-[#03050f]/90 text-slate-200 shadow-[0_0_20px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-acc hover:text-acc hover:glow active:scale-95 group cursor-pointer animate-in fade-in zoom-in-95"
     >
-      <ArrowUp size={18} className="transition-transform group-hover:-translate-y-0.5 text-acc" />
+      <ArrowUp size={19} className="transition-transform group-hover:-translate-y-0.5 text-acc" />
       <span className="sr-only">Back to top</span>
     </button>
   );

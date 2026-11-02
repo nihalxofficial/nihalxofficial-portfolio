@@ -2,12 +2,15 @@
 
 import {
   Command,
+  Dna,
   Palette,
   Search,
   Send,
 } from "lucide-react";
 import { BrandLogo } from "@/components/ui/brand-logo";
+import { NbLogo } from "@/components/ui/nb-logo";
 import { ACCENTS } from "@/components/site/accent-context";
+import type { BackgroundMode } from "@/components/site/site-background";
 import type { NavigationItem, SiteBranding, SiteSettings } from "@/lib/types";
 import { initials } from "@/lib/utils";
 
@@ -40,6 +43,8 @@ interface TopBarProps {
   setAccentId: (id: string) => void;
   openPalette: () => void;
   onHireMeClick: () => void;
+  bgMode?: BackgroundMode;
+  setBgMode?: (mode: BackgroundMode) => void;
 }
 
 export function TopBar({
@@ -51,7 +56,14 @@ export function TopBar({
   setAccentId,
   openPalette,
   onHireMeClick,
+  bgMode = "dna",
+  setBgMode,
 }: TopBarProps) {
+  const cycleBg = () => {
+    if (!setBgMode) return;
+    const next: BackgroundMode = bgMode === "dna" ? "rain" : bgMode === "rain" ? "none" : "dna";
+    setBgMode(next);
+  };
   const mark = branding?.mark?.trim() || initials(siteName);
 
   // Resolve the breadcrumb file for current active section
@@ -81,9 +93,7 @@ export function TopBar({
             className="shrink-0"
           />
         ) : (
-          <span className="w-11 h-10 rounded-lg grid place-items-center font-black italic text-lg text-grad ring-acc bg-[#070c30] glow-sm group-hover:glow transition">
-            {mark}
-          </span>
+          <NbLogo size={42} className="glow-sm group-hover:glow" />
         )}
         <span className="text-left leading-tight hidden sm:block">
           <span className="block font-display font-bold text-sm">{siteName}</span>
@@ -122,16 +132,36 @@ export function TopBar({
           <Search size={16} />
         </button>
 
+        {/* Dynamic Background Effect selector (DNA / Rain / Off) */}
+        {setBgMode && (
+          <button
+            onClick={cycleBg}
+            title={`Background: ${
+              bgMode === "dna"
+                ? "DNA Neural Mesh (Default)"
+                : bgMode === "rain"
+                ? "Matrix Code Rain"
+                : "Minimal Grid"
+            }`}
+            className="flex items-center gap-1 sm:gap-1.5 hud !rounded-full px-2 sm:px-2.5 py-1.5 font-mono text-[10px] sm:text-[11px] text-slate-300 hover:text-acc hover:border-acc/40 transition cursor-pointer shrink-0"
+          >
+            <Dna size={13} className="text-acc" />
+            <span className="font-bold uppercase tracking-wider text-[9.5px] sm:text-[10px]">
+              {bgMode === "dna" ? "DNA" : bgMode === "rain" ? "Rain" : "Grid"}
+            </span>
+          </button>
+        )}
+
         {/* Accent color picker */}
-        <div className="hidden sm:flex items-center gap-1.5 hud !rounded-full px-2.5 py-2" title="Accent color">
-          <Palette size={13} className="text-slate-400 mr-1" />
+        <div className="flex items-center gap-1 sm:gap-1.5 hud !rounded-full px-1.5 sm:px-2.5 py-1 sm:py-2 shrink-0" title="Accent color">
+          <Palette size={12} className="text-slate-400 mr-0.5 sm:mr-1 hidden xs:block" />
           {ACCENTS.map((a) => (
             <button
               key={a.id}
               onClick={() => setAccentId(a.id)}
               aria-label={a.name}
               title={a.name}
-              className={`w-4 h-4 rounded-full cursor-pointer transition ${
+              className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full cursor-pointer transition ${
                 accentId === a.id
                   ? "scale-125 ring-2 ring-white/80"
                   : "opacity-70 hover:opacity-100"
@@ -144,10 +174,10 @@ export function TopBar({
         {/* Let's Talk CTA */}
         <button
           onClick={onHireMeClick}
-          className="btn-primary rounded-lg px-4 py-2.5 text-sm flex items-center gap-2 cursor-pointer"
+          className="btn-primary rounded-lg px-2.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0"
         >
           <span className="hidden sm:inline">Let&apos;s Talk</span>
-          <Send size={14} />
+          <Send size={13} />
         </button>
       </div>
     </header>

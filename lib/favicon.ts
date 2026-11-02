@@ -1,26 +1,45 @@
 /**
- * Generated favicon.
+ * Generated futuristic Cyber "NB" Favicon & App Icon.
  *
- * When no favicon image is uploaded in Site settings, the browser tab shows a
- * small gradient tile carrying the brand mark (the same initials used by the
- * navbar and footer logo). This keeps a fresh install looking finished without
- * shipping a binary asset.
+ * Renders an interlocked neon cyber 'NB' monogram badge with electric cyan
+ * and violet gradients, matching the site's dark OS terminal HUD.
  */
-
-/** Build a square SVG data URI from up to three initials. */
-export function markFavicon(mark: string): string {
-  const label = (mark.trim().slice(0, 3) || "•").toUpperCase();
-  // Shrink the type so three characters still fit comfortably.
-  const fontSize = label.length >= 3 ? 34 : label.length === 2 ? 44 : 54;
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-<stop offset="0" stop-color="#0891b2"/><stop offset="1" stop-color="#0ea5e9"/>
-</linearGradient></defs>
-<rect width="100" height="100" rx="22" fill="url(#g)"/>
-<text x="50" y="50" text-anchor="middle" dominant-baseline="central"
-fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-weight="700"
-font-size="${fontSize}" letter-spacing="1">${label}</text>
+export function markFavicon(_mark?: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#070c30"/>
+    <stop offset="50%" stop-color="#040718"/>
+    <stop offset="100%" stop-color="#02030a"/>
+  </linearGradient>
+  <linearGradient id="stroke" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#00f0ff"/>
+    <stop offset="50%" stop-color="#8b5cf6"/>
+    <stop offset="100%" stop-color="#d946ef"/>
+  </linearGradient>
+  <linearGradient id="letters" x1="15" y1="20" x2="85" y2="80" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#00f5ff"/>
+    <stop offset="45%" stop-color="#38bdf8"/>
+    <stop offset="75%" stop-color="#a855f7"/>
+    <stop offset="100%" stop-color="#ec4899"/>
+  </linearGradient>
+  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+    <feGaussianBlur stdDeviation="3" result="b"/>
+    <feComposite in="SourceGraphic" in2="b" operator="over"/>
+  </filter>
+</defs>
+<rect x="4" y="4" width="92" height="92" rx="22" fill="url(#bg)" stroke="url(#stroke)" stroke-width="3"/>
+<path d="M12 24 L12 12 L24 12" stroke="#00f0ff" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+<path d="M88 76 L88 88 L76 88" stroke="#d946ef" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+<g filter="url(#glow)">
+  <path d="M24 74 L24 26 L32.5 26 L32.5 74 Z" fill="url(#letters)"/>
+  <path d="M29 26 L48.5 64 L48.5 74 L40 74 L24 38 L24 26 Z" fill="url(#letters)"/>
+  <path d="M48 26 L56.5 26 L56.5 74 L48 74 Z" fill="url(#letters)"/>
+  <path d="M54 26 L66 26 C73.5 26 77.5 30 77.5 37 C77.5 43.5 73.5 48 65.5 48 L54 48 L54 40 L64 40 C67.5 40 69.5 39 69.5 37 C69.5 35 67.5 34 64 34 Z" fill="url(#letters)"/>
+  <path d="M54 46 L68 46 C76 46 80.5 50.5 80.5 58 C80.5 66.5 75.5 74 66.5 74 L54 74 L54 66 L65 66 C69 66 72 63.5 72 59.5 C72 55.5 69 54 65 54 L54 54 Z" fill="url(#letters)"/>
+  <polygon points="43,45 47,45 45,51" fill="#040718"/>
+  <circle cx="56.5" cy="50" r="2.5" fill="#00f0ff"/>
+</g>
 </svg>`;
 
   return `data:image/svg+xml,${encodeURIComponent(svg.replace(/\s+/g, " ").trim())}`;

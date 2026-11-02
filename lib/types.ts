@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Shapes returned by portfolio-server (`GET /api/v1/portfolio`).
  * The dashboard edits these documents, so every field the admin can change is
  * represented here.
@@ -231,6 +231,7 @@ export interface SiteSettings extends DocMeta {
   };
   socialLinks: SocialLink[];
   resumeUrl: string;
+  backgroundEffect?: string;
 }
 
 export interface SectionMeta extends DocMeta {
