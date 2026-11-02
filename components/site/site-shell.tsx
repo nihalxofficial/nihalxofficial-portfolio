@@ -14,9 +14,7 @@ export async function SiteShell({ children }: { children: ReactNode }) {
 
   return (
     <PortfolioShell navigation={navigation} settings={data?.settings ?? null}>
-      <main className="py-8">
-        {children}
-      </main>
+      {children}
       <Footer
         settings={data?.settings ?? null}
         navigation={navigation}
