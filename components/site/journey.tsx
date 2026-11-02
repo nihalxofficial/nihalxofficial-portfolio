@@ -1,127 +1,132 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll } from "framer-motion";
+import { useState } from "react";
+import { ChevronDown, MapPin } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
-import { Reveal } from "@/components/ui/reveal";
 import type { Experience } from "@/lib/types";
-import { cn, formatMonth } from "@/lib/utils";
+import { formatMonth } from "@/lib/utils";
 
-const STATUS: Record<string, { label: string; className: string }> = {
-  current: { label: "Current", className: "border-success/40 bg-success/10 text-success" },
-  ongoing: { label: "Ongoing", className: "border-accent/40 bg-accent/10 text-accent" },
-  upcoming: { label: "Upcoming", className: "border-warning/40 bg-warning/10 text-warning" },
-  completed: { label: "Completed", className: "border-line bg-surface-2 text-faint" },
+/** Status badge colors */
+const STATUS_CFG: Record<string, { label: string; cls: string }> = {
+  current:   { label: "HEAD",      cls: "text-emerald-400 border-emerald-400/40 bg-emerald-400/10" },
+  ongoing:   { label: "Ongoing",   cls: "text-acc border-acc/40 bg-acc/10" },
+  upcoming:  { label: "Upcoming",  cls: "text-amber-400 border-amber-400/40 bg-amber-400/10" },
+  completed: { label: "Completed", cls: "text-slate-500 border-white/10 bg-white/4" },
 };
 
 function period(entry: Experience): string {
   const start = formatMonth(entry.startDate) || entry.startDate;
-  const end = entry.isCurrent ? "Present" : formatMonth(entry.endDate) || entry.endDate;
+  const end   = entry.isCurrent ? "Present" : formatMonth(entry.endDate) || entry.endDate;
   if (!start && !end) return "";
   return [start, end].filter(Boolean).join(" — ");
 }
 
-/**
- * Experience timeline column.
- *
- * Rows stay unframed like the reference: the rail carries the structure, so a
- * card around every entry would only add weight. The rail fills as the visitor
- * scrolls it into view, which is what `useScroll` on the list container is for.
- */
-export function JourneyTimeline({ experience }: { experience: Experience[] }) {
-  const listRef = useRef<HTMLOListElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: listRef,
-    offset: ["start 75%", "end 55%"],
-  });
+/** Short git-hash–style id derived from the entry _id */
+function shortHash(id: string) {
+  return id.slice(-7);
+}
+
+function CommitCard({ entry, index }: { entry: Experience; index: number }) {
+  const [expanded, setExpanded] = useState(entry.status === "current");
+  const status = STATUS_CFG[entry.status] ?? STATUS_CFG.completed;
+  const range  = period(entry);
+  const isCurrent = entry.status === "current" || entry.isCurrent;
 
   return (
-    <div className="relative mt-8 pl-6 sm:pl-7">
-      {/* Track, then the scroll-linked fill on top of it. */}
-      <span aria-hidden className="absolute left-[6px] top-2 bottom-2 w-px bg-line" />
-      <motion.span
-        aria-hidden
-        style={{ scaleY: scrollYProgress }}
-        className="absolute left-[6px] top-2 bottom-2 w-px origin-top bg-gradient-to-b from-accent via-accent/70 to-accent/25"
-      />
+    <div className={`hud transition ${isCurrent ? "ring-acc glow-sm" : ""}`}>
+      {/* Commit header */}
+      <button
+        className="w-full flex items-start gap-3 p-4 cursor-pointer text-left"
+        onClick={() => setExpanded((v) => !v)}
+      >
+        {/* Timeline dot */}
+        <span className="mt-1 shrink-0 w-3.5 h-3.5 rounded-full border-2 border-acc bg-ink" />
 
-      <ol ref={listRef} className="space-y-6">
-        {experience.map((entry, position) => {
-          const status = STATUS[entry.status] ?? STATUS.completed;
-          const range = period(entry);
-
-          return (
-            <li key={entry._id} className="relative">
-              <span
-                aria-hidden
-                className="absolute -left-6 top-1 grid h-3.5 w-3.5 place-items-center rounded-full border border-accent/50 bg-page sm:-left-7"
-              >
-                <span className="h-1.5 w-1.5 rounded-full grad-accent" />
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            {/* Git hash */}
+            <span className="font-mono text-[10px] text-acc bg-acc/10 px-1.5 py-0.5 rounded">
+              {shortHash(entry._id)}
+            </span>
+            {/* Branch badge */}
+            <span className="font-mono text-[10px] text-slate-400 border border-white/10 px-1.5 py-0.5 rounded">
+              {entry.employmentType || "employment"}
+            </span>
+            {/* HEAD badge */}
+            {isCurrent && (
+              <span className={`font-mono text-[10px] rounded-full border px-2 py-0.5 ${status.cls}`}>
+                {status.label}
               </span>
+            )}
+          </div>
 
-              <Reveal delay={position * 70}>
-                <div className="group">
-                  <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1.5">
-                    <h3 className="text-[14.5px] font-semibold leading-snug text-ink">
-                      {entry.role}
-                    </h3>
-                    <span
-                      className={cn(
-                        "mono shrink-0 rounded-full border px-2.5 py-0.5 text-[9.5px] uppercase tracking-[0.14em]",
-                        status.className,
-                      )}
-                    >
-                      {status.label}
-                    </span>
-                  </div>
+          {/* Role commit message */}
+          <p className="font-semibold text-[14px] leading-snug">{entry.role}</p>
+          <p className="text-sm text-acc mt-0.5">{entry.organization}</p>
 
-                  <p className="mt-1 text-[13px] text-accent">{entry.organization}</p>
+          {(range || entry.location) && (
+            <p className="font-mono flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] text-slate-500 mt-1.5">
+              {range && <span>{range}</span>}
+              {range && entry.location && <span className="text-white/10">•</span>}
+              {entry.location && (
+                <span className="inline-flex items-center gap-1">
+                  <MapPin size={10} /> {entry.location}
+                </span>
+              )}
+            </p>
+          )}
+        </div>
 
-                  {range || entry.location ? (
-                    <p className="mono mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10.5px] text-faint">
-                      {range ? <span>{range}</span> : null}
-                      {range && entry.location ? <span className="text-line">•</span> : null}
-                      {entry.location ? (
-                        <span className="inline-flex items-center gap-1">
-                          <Icon name="MapPin" className="h-2.5 w-2.5" />
-                          {entry.location}
-                        </span>
-                      ) : null}
-                    </p>
-                  ) : null}
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-slate-500 mt-1 transition-transform ${expanded ? "rotate-180" : ""}`}
+        />
+      </button>
 
-                  {entry.description ? (
-                    <p className="mt-2 max-w-prose text-[12.5px] leading-relaxed text-muted">
-                      {entry.description}
-                    </p>
-                  ) : null}
+      {/* Expandable body */}
+      {expanded && (
+        <div className="px-4 pb-4 pt-0 border-t border-white/5">
+          {entry.description && (
+            <p className="text-[12.5px] leading-relaxed text-slate-400 mt-3">
+              {entry.description}
+            </p>
+          )}
 
-                  {entry.responsibilities.length > 0 ? (
-                    <ul className="mt-2 space-y-1">
-                      {entry.responsibilities.map((item) => (
-                        <li key={item} className="flex gap-2 text-[12.5px] leading-snug text-muted">
-                          <span className="mt-[1px] text-accent">▹</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
+          {entry.responsibilities.length > 0 && (
+            <ul className="mt-3 space-y-1.5">
+              {entry.responsibilities.map((item) => (
+                <li key={item} className="flex gap-2 text-[12.5px] leading-snug text-slate-300">
+                  <span className="text-acc mt-0.5 shrink-0">▹</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          )}
 
-                  {entry.technologies.length > 0 ? (
-                    <div className="mt-2.5 flex flex-wrap gap-1.5">
-                      {entry.technologies.map((tech) => (
-                        <span key={tech} className="chip">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              </Reveal>
-            </li>
-          );
-        })}
-      </ol>
+          {entry.technologies.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-1.5">
+              {entry.technologies.map((tech) => (
+                <span key={tech} className="chip !text-[10px] !py-0.5">{tech}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function JourneyTimeline({ experience }: { experience: Experience[] }) {
+  return (
+    <div className="relative mt-6 pl-4 border-l-2 border-acc/20">
+      {/* Gradient line */}
+      <div className="absolute -left-px top-0 bottom-0 w-0.5 bg-gradient-to-b from-acc via-acc/40 to-transparent" />
+
+      <div className="space-y-4">
+        {experience.map((entry, i) => (
+          <CommitCard key={entry._id} entry={entry} index={i} />
+        ))}
+      </div>
     </div>
   );
 }
