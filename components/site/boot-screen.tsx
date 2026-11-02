@@ -93,3 +93,4 @@ export function BootScreen({ done }: { done: () => void }) {
     </div>
   );
 }
+

@@ -1,15 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Icon } from "@/components/ui/icon";
-import { Reveal } from "@/components/ui/reveal";
-import { SectionHeading } from "@/components/ui/section-heading";
+import { ArrowRight, ExternalLink, Github } from "lucide-react";
 import type { Project, SectionMeta } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
-/**
- * Featured Projects — the three builds flagged in the dashboard. With a full
- * row of three, the middle card is promoted: gradient edge, lift and a badge.
- */
+function StatusBadge({ status }: { status?: string }) {
+  if (!status) return null;
+  const lower = status.toLowerCase();
+  const cfg =
+    lower.includes("live") || lower.includes("published")
+      ? { cls: "text-emerald-400 border-emerald-400/30 bg-emerald-400/10", label: "Live" }
+      : lower.includes("progress")
+      ? { cls: "text-amber-400 border-amber-400/30 bg-amber-400/10", label: "In Progress" }
+      : { cls: "text-sky-400 border-sky-400/30 bg-sky-400/10", label: "Shipped" };
+
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-[10px] ${cfg.cls}`}>
+      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+      {cfg.label}
+    </span>
+  );
+}
+
 export function Projects({
   projects,
   total,
@@ -17,157 +28,148 @@ export function Projects({
   index,
 }: {
   projects: Project[];
-  /** Published projects overall, for the counter chip. */
   total?: number;
   section?: SectionMeta;
   index: number;
 }) {
   if (projects.length === 0) return null;
 
-  const spotlight = projects.length === 3 ? 1 : -1;
-
   return (
-    <section id="projects" className="relative section-pad">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px rule-grad" />
+    <section id="projects" className="relative py-12">
+      {/* ViewHeader */}
+      <p className="eyebrow mb-2 font-mono text-xs text-acc">{"// my projects"}</p>
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <h2 className="text-3xl font-bold">
+          Featured <span className="text-grad">Projects</span>
+        </h2>
+        <span className="chip">
+          {projects.length} featured
+          {typeof total === "number" && total !== projects.length && (
+            <span className="text-slate-500"> · {total} total</span>
+          )}
+        </span>
+      </div>
 
-      <div className="container-page">
-        <div className="flex flex-wrap items-end justify-between gap-6">
-          <Reveal>
-            <SectionHeading
-              index={index}
-              label={section?.label || "Projects"}
-              title={section?.heading || "Featured Projects"}
-              description={
-                section?.description ||
-                "Full-stack builds where the product, the API and the database all live in one repository."
-              }
-            />
-          </Reveal>
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map((project, pos) => (
+          <article
+            key={project._id}
+            style={{ animationDelay: `${pos * 60}ms` }}
+            className="rise hud hud-hover group relative flex flex-col overflow-hidden transition-transform hover:-translate-y-1"
+          >
+            {/* Thumbnail */}
+            <Link
+              href={`/projects/${project.slug}`}
+              className="relative block overflow-hidden border-b border-white/5"
+              aria-label={project.title}
+            >
+              {project.thumbnailUrl ? (
+                <Image
+                  src={project.thumbnailUrl}
+                  alt={`${project.title} preview`}
+                  width={900}
+                  height={560}
+                  sizes="(max-width:640px) 92vw, (max-width:1024px) 46vw, 30vw"
+                  className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                />
+              ) : (
+                <div className="grid aspect-[16/10] w-full place-items-center bg-white/3">
+                  <span className="text-4xl text-acc/20">{"</>"}</span>
+                </div>
+              )}
+              {/* Hover overlay */}
+              <span className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 font-mono text-xs text-acc opacity-0 group-hover:opacity-100 transition-opacity">
+                Open case file <ArrowRight size={13} />
+              </span>
+              {/* Category */}
+              <span className="absolute left-3 top-3 rounded-md border border-white/10 bg-black/60 px-2 py-0.5 font-mono text-[10px] text-acc backdrop-blur">
+                {project.category}
+              </span>
+              {/* Status */}
+              {project.isPublished && (
+                <span className="absolute right-3 top-3">
+                  <StatusBadge status={project.isPublished ? "live" : "shipped"} />
+                </span>
+              )}
+            </Link>
 
-          <Reveal delay={80}>
-            <span className="mono rounded-full border border-line bg-surface/60 px-3 py-1.5 text-[11px] text-muted">
-              {projects.length} featured
-              {typeof total === "number" && total !== projects.length ? (
-                <span className="text-faint"> · {total} shipped</span>
-              ) : null}
-            </span>
-          </Reveal>
-        </div>
+            {/* Body */}
+            <div className="flex flex-1 flex-col p-5">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="text-[15px] font-semibold transition-colors group-hover:text-acc">
+                  <Link href={`/projects/${project.slug}`}>{project.title}</Link>
+                </h3>
+                <span className="font-mono text-[10px] text-slate-600">
+                  {String(pos + 1).padStart(2, "0")}
+                </span>
+              </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project, position) => (
-            <Reveal key={project._id} delay={position * 50}>
-              <article
-                className={cn(
-                  "panel panel-hover group relative flex h-full flex-col overflow-hidden transition-transform",
-                  position === spotlight &&
-                    "border-grad lg:-translate-y-4 lg:scale-[1.015] shadow-[0_30px_80px_-46px_var(--accent-glow)]",
-                )}
-              >
-                {position === spotlight ? (
-                  <span className="mono absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-md grad-accent px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-accent-ink">
-                    <Icon name="Star" className="h-3 w-3" />
-                    pick
+              <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-slate-400">
+                {project.shortDescription}
+              </p>
+
+              {/* Tech chips */}
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {project.techStack.slice(0, 4).map((tech) => (
+                  <span key={tech} className="chip !text-[10px] !py-0.5 !px-2">
+                    {tech}
                   </span>
-                ) : null}
+                ))}
+                {project.techStack.length > 4 && (
+                  <span className="chip !text-[10px] !py-0.5 !px-2 !text-slate-500">
+                    +{project.techStack.length - 4}
+                  </span>
+                )}
+              </div>
+
+              {/* Footer links */}
+              <div className="mt-auto flex items-center justify-between gap-2 pt-4 border-t border-white/5 mt-4">
                 <Link
                   href={`/projects/${project.slug}`}
-                  className="relative block overflow-hidden border-b border-line bg-surface-2"
-                  aria-label={project.title}
+                  className="font-mono inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-400 hover:text-acc transition-colors"
                 >
-                  {project.thumbnailUrl ? (
-                    <Image
-                      src={project.thumbnailUrl}
-                      alt={`${project.title} preview`}
-                      width={900}
-                      height={560}
-                      sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 30vw"
-                      className="aspect-[16/10] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    />
-                  ) : (
-                    <div className="grid aspect-[16/10] w-full place-items-center bg-surface-2">
-                      <Icon name="FolderCode" className="h-9 w-9 text-accent/30" />
-                    </div>
-                  )}
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 bg-gradient-to-t from-page/85 via-page/10 to-transparent opacity-70"
-                  />
-                  <span className="absolute left-3 top-3 rounded-md border border-line bg-page/70 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-accent backdrop-blur">
-                    {project.category}
-                  </span>
+                  Case study <ArrowRight size={12} />
                 </Link>
-
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-start justify-between gap-3">
-                    <h3 className="text-[15px] font-semibold text-ink transition-colors group-hover:text-accent">
-                      <Link href={`/projects/${project.slug}`}>{project.title}</Link>
-                    </h3>
-                    <span className="mono text-[10px] text-faint">
-                      {String(position + 1).padStart(2, "0")}
-                    </span>
-                  </div>
-
-                  <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-muted">
-                    {project.shortDescription}
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap gap-1.5">
-                    {project.techStack.slice(0, 4).map((tech) => (
-                      <span
-                        key={tech}
-                        className="rounded-md border border-line bg-accent/5 px-2 py-0.5 text-[10.5px] text-accent/90"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                    {project.techStack.length > 4 ? (
-                      <span className="rounded-md border border-line px-2 py-0.5 text-[10.5px] text-faint">
-                        +{project.techStack.length - 4}
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between gap-2 pt-5">
-                    <Link
-                      href={`/projects/${project.slug}`}
-                      className="mono inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-muted transition-colors hover:text-accent"
+                <div className="flex items-center gap-1">
+                  {project.liveUrl && (
+                    <a
+                      href={project.liveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${project.title} live`}
+                      className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-slate-400 hover:border-acc/60 hover:text-acc transition-colors"
                     >
-                      Case study
-                      <Icon name="ArrowRight" className="h-3.5 w-3.5" />
-                    </Link>
-
-                    <div className="flex items-center gap-1">
-                      {project.liveUrl ? (
-                        <a
-                          href={project.liveUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${project.title} live site`}
-                          className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-line-strong hover:text-accent"
-                        >
-                          <Icon name="ExternalLink" className="h-3.5 w-3.5" />
-                        </a>
-                      ) : null}
-                      {project.sourceUrl ? (
-                        <a
-                          href={project.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`${project.title} source code`}
-                          className="grid h-8 w-8 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-line-strong hover:text-accent"
-                        >
-                          <Icon name="Github" className="h-3.5 w-3.5" />
-                        </a>
-                      ) : null}
-                    </div>
-                  </div>
+                      <ExternalLink size={13} />
+                    </a>
+                  )}
+                  {project.sourceUrl && (
+                    <a
+                      href={project.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${project.title} source`}
+                      className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-slate-400 hover:border-acc/60 hover:text-acc transition-colors"
+                    >
+                      <Github size={13} />
+                    </a>
+                  )}
                 </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
+
+      {/* View all link */}
+      {typeof total === "number" && total > projects.length && (
+        <div className="mt-8 text-center">
+          <a href="#showcase" onClick={(e) => { e.preventDefault(); document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" }); }}
+            className="btn-ghost rounded-full px-6 py-2.5 text-sm font-semibold inline-flex items-center gap-2"
+          >
+            View all {total} projects <ArrowRight size={14} />
+          </a>
+        </div>
+      )}
     </section>
   );
 }

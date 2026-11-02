@@ -59,3 +59,4 @@ export function StatusBar({ navigation, accentName }: StatusBarProps) {
     </footer>
   );
 }
+

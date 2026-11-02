@@ -70,3 +70,4 @@ export function AccentProvider({ children }: { children: ReactNode }) {
 export function useAccent() {
   return useContext(AccentContext);
 }
+

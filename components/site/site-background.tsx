@@ -99,3 +99,4 @@ export function SiteBackground({ accent, rain }: SiteBackgroundProps) {
     </div>
   );
 }
+

@@ -173,3 +173,4 @@ export function PortfolioShell({ children, navigation, settings }: PortfolioShel
     </AccentProvider>
   );
 }
+

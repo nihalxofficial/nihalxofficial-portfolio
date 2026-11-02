@@ -156,3 +156,4 @@ export function Dock({ navigation, settings }: DockProps) {
     </aside>
   );
 }
+
