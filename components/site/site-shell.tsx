@@ -1,38 +1,27 @@
 import type { ReactNode } from "react";
-import { BackToTop } from "@/components/ui/back-to-top";
 import { Footer } from "@/components/site/footer";
-import { MobileNav } from "@/components/site/mobile-nav";
-import { Navbar } from "@/components/site/navbar";
+import { PortfolioShell } from "@/components/site/portfolio-shell";
 import { getPortfolio } from "@/lib/api";
 
 /**
  * Chrome shared by the sub-pages (project and post detail).
- * Re-uses the cached portfolio read so navigation and settings stay in sync
- * with the homepage without a second request.
+ * Wraps content inside PortfolioShell so sub-pages get the same
+ * OS shell: TopBar, Dock, StatusBar, CommandPalette, MobileNav.
  */
 export async function SiteShell({ children }: { children: ReactNode }) {
   const data = await getPortfolio();
   const navigation = (data?.navigation ?? []).filter((item) => item.isVisible);
 
   return (
-    <>
-      <Navbar
-        navigation={navigation}
-        siteName={data?.settings?.siteName ?? "Md. Nihal Uddin Bijoy"}
-        branding={data?.settings?.branding}
-      />
-      {/* Dock links point at the homepage sections from a detail page. */}
-      <MobileNav navigation={navigation} />
-
-      <main className="pb-20 pt-24 sm:pt-28">{children}</main>
-
+    <PortfolioShell navigation={navigation} settings={data?.settings ?? null}>
+      <main className="py-8">
+        {children}
+      </main>
       <Footer
         settings={data?.settings ?? null}
         navigation={navigation}
         year={new Date().getFullYear()}
       />
-
-      <BackToTop />
-    </>
+    </PortfolioShell>
   );
 }
