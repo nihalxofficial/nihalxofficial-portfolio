@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
-import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import { Analytics } from "@/components/site/analytics";
 import { getSiteSettings } from "@/lib/api";
 import { markFavicon } from "@/lib/favicon";
@@ -20,10 +19,7 @@ const FALLBACK = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#030A12" },
-    { media: "(prefers-color-scheme: light)", color: "#EEF4FA" },
-  ],
+  themeColor: [{ color: "#03050f" }],
   width: "device-width",
   initialScale: 1,
 };
@@ -80,7 +76,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const type = resolveTypography(settings?.typography);
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -99,7 +95,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       >
         <ThemeProvider>
           <MotionProvider>
-            <SmoothScroll>{children}</SmoothScroll>
+            {children}
           </MotionProvider>
           {/* Passive visitor beacon; ignores the dashboard internally. */}
           <Analytics />

@@ -1,25 +1,66 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Icon } from "@/components/ui/icon";
+import {
+  BookOpen,
+  Briefcase,
+  ChevronDown,
+  FolderKanban,
+  GraduationCap,
+  Home,
+  Layers,
+  Mail,
+  Menu,
+  Rocket,
+  User,
+  Wrench,
+  type LucideIcon,
+} from "lucide-react";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import type { NavigationItem } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
-/** Beyond this the dock stops being one-thumb reachable, so the rest fold away. */
+/** Beyond this the dock stops being one-thumb reachable. */
 const MAX_DOCK_ITEMS = 5;
-/** Smallest sensible dock: flagged links plus a top-up from the list. */
 const MIN_FLAGGED_ITEMS = 4;
 
+const ICON_BY_KEY: Record<string, LucideIcon> = {
+  hero:         Home,
+  about:        User,
+  stats:        Wrench,
+  services:     Layers,
+  skills:       Wrench,
+  projects:     FolderKanban,
+  showcase:     Rocket,
+  journey:      Briefcase,
+  education:    GraduationCap,
+  testimonials: Layers,
+  blog:         BookOpen,
+  contact:      Mail,
+};
+
+function keyFor(href: string) {
+  return href.replace(/^#/, "").split("/")[0] || "hero";
+}
+
+function NavIcon({ href }: { href: string }) {
+  const Icon = ICON_BY_KEY[keyFor(href)] ?? Home;
+  return <Icon size={19} />;
+}
+
+function scrollToHref(href: string) {
+  const id = href.replace(/^#/, "");
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth" });
+  } else {
+    document.getElementById("stage")?.scrollTo({ top: 0, behavior: "smooth" });
+  }
+}
+
 /**
- * Mobile-only bottom dock: the fixed, app-style tab bar.
- *
- * Which links live here is dashboard data (`isPrimary` on the navigation
- * document), everything else folds into a compact More sheet. The active tab
- * follows the visible section through IntersectionObserver rather than clicks,
- * and the whole bar sits inside the device safe area.
+ * Mobile-only bottom dock — exactly matches the reference MobileNav style.
+ * Active section tracked via IntersectionObserver. Overflow items fold into a sheet.
  */
 export function MobileNav({ navigation }: { navigation: NavigationItem[] }) {
   const pathname = usePathname();
@@ -29,19 +70,11 @@ export function MobileNav({ navigation }: { navigation: NavigationItem[] }) {
   const active = useActiveSection(navigation.map((item) => item.href));
   const onHome = pathname === "/";
 
-  // Anchor links only exist on the homepage; elsewhere they route back to it.
-  const hrefFor = (item: NavigationItem) =>
-    onHome ? item.href : `/${item.href}`;
-
   useEffect(() => {
     if (!moreOpen) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMoreOpen(false);
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setMoreOpen(false); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
   }, [moreOpen]);
 
   if (primary.length === 0) return null;
@@ -51,153 +84,93 @@ export function MobileNav({ navigation }: { navigation: NavigationItem[] }) {
   return (
     <>
       {/* More sheet */}
-      {rest.length > 0 ? (
+      {rest.length > 0 && (
         <div
-          className={cn(
-            "fixed inset-x-0 bottom-[calc(var(--dock-h)+env(safe-area-inset-bottom))] z-[65] px-3 transition-all duration-200 lg:hidden",
+          className={`fixed inset-x-0 bottom-[calc(56px+env(safe-area-inset-bottom))] z-[65] px-3 transition-all duration-200 md:hidden ${
             moreOpen
               ? "pointer-events-auto translate-y-0 opacity-100"
-              : "pointer-events-none translate-y-3 opacity-0",
-          )}
+              : "pointer-events-none translate-y-3 opacity-0"
+          }`}
           id="dock-more-sheet"
-          role="group"
-          aria-label="More sections"
-          aria-hidden={!moreOpen}
         >
-          <div className="panel-alt overflow-hidden rounded-2xl border-line-strong/60 p-1.5 shadow-[var(--shadow-float)] backdrop-blur-xl">
+          <div className="hud overflow-hidden rounded-2xl p-1.5">
             {rest.map((item) => {
               const isActive = active === item.href;
               return (
-                <Link
+                <button
                   key={item._id}
-                  href={hrefFor(item)}
-                  onClick={() => setMoreOpen(false)}
-                  aria-current={isActive ? "page" : undefined}
-                  className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] transition-colors active:scale-[0.99]",
-                    isActive ? "bg-accent/12 text-accent" : "text-muted hover:text-ink",
-                  )}
+                  onClick={() => { scrollToHref(item.href); setMoreOpen(false); }}
+                  className={`flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-[13px] transition-colors cursor-pointer ${
+                    isActive ? "bg-acc/10 text-acc" : "text-slate-400 hover:text-white"
+                  }`}
                 >
-                  <Icon name={item.icon} className="h-4 w-4" />
+                  <NavIcon href={item.href} />
                   {item.label}
-                  {isActive ? (
-                    <span aria-hidden className="mono ml-auto text-[9.5px] uppercase tracking-[0.18em]">
-                      here
-                    </span>
-                  ) : null}
-                </Link>
+                  {isActive && (
+                    <span className="mono ml-auto text-[9.5px] uppercase tracking-widest text-acc">here</span>
+                  )}
+                </button>
               );
             })}
           </div>
         </div>
-      ) : null}
+      )}
 
-      {/* Backdrop, so a tap outside the sheet closes it */}
-      {moreOpen ? (
+      {/* Backdrop */}
+      {moreOpen && (
         <button
-          type="button"
           aria-label="Close menu"
           onClick={() => setMoreOpen(false)}
-          className="fixed inset-0 z-[60] cursor-default bg-[var(--backdrop)] backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-[60] cursor-default bg-black/40 backdrop-blur-sm md:hidden"
         />
-      ) : null}
+      )}
 
+      {/* Bottom tab bar */}
       <nav
         aria-label="Sections"
-        className="dock fixed inset-x-0 bottom-0 z-[66] grid items-center gap-[0.15rem] lg:hidden"
-        style={{ gridTemplateColumns: `repeat(${cells}, minmax(0, 1fr))` }}
+        className="md:hidden fixed bottom-0 inset-x-0 z-[66] bg-ink/90 backdrop-blur-xl border-t border-white/10 flex justify-around px-1 pb-[env(safe-area-inset-bottom)]"
       >
         {primary.map((item) => {
           const isActive = active === item.href;
           return (
-            <Link
+            <button
               key={item._id}
-              href={hrefFor(item)}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(
-                "group relative flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition-transform duration-200 active:scale-90",
-                isActive ? "text-accent" : "text-faint",
-              )}
+              onClick={() => scrollToHref(item.href)}
+              className={`flex flex-col items-center gap-0.5 py-2 px-1.5 text-[9px] flex-1 cursor-pointer transition-colors ${
+                isActive ? "text-acc" : "text-slate-500"
+              }`}
             >
-              {/* Active glow pad behind the icon */}
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute inset-x-3 inset-y-1 rounded-xl transition-all duration-300",
-                  isActive
-                    ? "bg-accent/12 shadow-[0_0_26px_-8px_var(--accent-glow)] ring-1 ring-accent/35"
-                    : "bg-transparent",
-                )}
-              />
-              {/* Top indicator rail */}
-              <span
-                aria-hidden
-                className={cn(
-                  "absolute inset-x-[30%] top-0 h-[2px] rounded-full grad-accent transition-transform duration-300",
-                  isActive ? "scale-x-100" : "scale-x-0",
-                )}
-              />
-              <Icon
-                name={item.icon}
-                className={cn(
-                  "relative h-[18px] w-[18px] transition-transform duration-200",
-                  isActive ? "scale-110" : "group-hover:scale-105",
-                )}
-              />
-              <span
-                className={cn(
-                  "relative max-w-full truncate text-[10px] font-medium leading-none",
-                  isActive && "text-shadow-glow",
-                )}
-              >
-                {item.label}
+              <span className={isActive ? "drop-shadow-[0_0_6px_var(--acc)]" : ""}>
+                <NavIcon href={item.href} />
               </span>
-            </Link>
+              {item.label}
+            </button>
           );
         })}
 
-        {rest.length > 0 ? (
+        {rest.length > 0 && (
           <button
-            type="button"
-            onClick={() => setMoreOpen((value) => !value)}
+            onClick={() => setMoreOpen((v) => !v)}
             aria-expanded={moreOpen}
-            aria-controls="dock-more-sheet"
-            className={cn(
-              "group relative flex flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition-transform duration-200 active:scale-90",
-              moreOpen ? "text-accent" : "text-faint",
-            )}
+            className={`flex flex-col items-center gap-0.5 py-2 px-1.5 text-[9px] flex-1 cursor-pointer transition-colors ${
+              moreOpen ? "text-acc" : "text-slate-500"
+            }`}
           >
-            <span
-              aria-hidden
-              className={cn(
-                "absolute inset-x-3 inset-y-1 rounded-xl transition-colors duration-300",
-                moreOpen ? "bg-accent/12 ring-1 ring-accent/35" : "bg-transparent",
-              )}
-            />
-            <Icon
-              name={moreOpen ? "ChevronDown" : "Menu"}
-              className="relative h-[18px] w-[18px] transition-transform duration-200 group-hover:scale-105"
-            />
-            <span className="relative text-[10px] font-medium leading-none">More</span>
+            {moreOpen ? <ChevronDown size={19} /> : <Menu size={19} />}
+            More
           </button>
-        ) : null}
+        )}
       </nav>
     </>
   );
 }
 
-/**
- * Flagged links always make the dock; when the owner has flagged too few, the
- * earliest unflagged sections top it up so the bar is never nearly empty.
- * Output keeps the dashboard's `order`, and everything else folds into More.
- */
 function splitForDock(items: NavigationItem[]): {
   primary: NavigationItem[];
   rest: NavigationItem[];
 } {
   const flagged = items.filter((item) => item.isPrimary);
   const chosen = new Set(flagged);
-  // A short list needs no overflow menu at all.
   const target = items.length <= MAX_DOCK_ITEMS ? items.length : MIN_FLAGGED_ITEMS;
 
   if (chosen.size < target) {
