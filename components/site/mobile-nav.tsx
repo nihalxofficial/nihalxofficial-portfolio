@@ -129,10 +129,10 @@ export function MobileNav({
         />
       )}
 
-      {/* Bottom tab bar */}
+      {/* Bottom tab bar — bg-page/90 avoids the bg-ink color token conflict */}
       <nav
         aria-label="Sections"
-        className="md:hidden fixed bottom-0 inset-x-0 z-[66] bg-ink/90 backdrop-blur-xl border-t border-white/10 flex justify-around px-1 pb-[env(safe-area-inset-bottom)]"
+        className="md:hidden fixed bottom-0 inset-x-0 z-[66] bg-page/90 backdrop-blur-xl border-t border-white/10 flex justify-around px-1 pb-[env(safe-area-inset-bottom)]"
       >
         {primary.map((item) => {
           const isActive = activeSection === item.href;
