@@ -1,12 +1,31 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Icon } from "@/components/ui/icon";
+import { ArrowRight, BookOpen } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
-import { SectionHeading } from "@/components/ui/section-heading";
 import type { BlogPost, SectionMeta } from "@/lib/types";
 import { formatDate } from "@/lib/utils";
 
-/** Writing — published notes, newest first. */
+/** Generate a code-snippet "cover" background for posts without a cover image */
+function CodeCover({ title, category }: { title: string; category?: string }) {
+  const snippets = [
+    `const ${category?.toLowerCase().replace(/[^a-z]/g, "_") || "post"} = {\n  title: "${title.slice(0, 20)}…",\n  by: "Nihal Uddin",\n};`,
+    `// ${title.slice(0, 30)}\nexport default function () {\n  return <Article />;\n}`,
+    `function read() {\n  /* ${category || "Blog"} */\n  return insights;\n}`,
+  ];
+  const snippet = snippets[Math.abs(title.charCodeAt(0)) % snippets.length];
+  const colors  = ["from-acc/20 to-acc2/20", "from-emerald-400/15 to-acc/15", "from-acc2/20 to-pink-500/15"];
+  const color   = colors[Math.abs(title.charCodeAt(1) || 0) % colors.length];
+
+  return (
+    <div className={`aspect-[16/9] w-full grid place-items-center bg-gradient-to-br ${color} border-b border-white/5`}>
+      <pre className="font-mono text-[9px] text-acc/70 text-left px-4 leading-relaxed select-none">
+        {snippet}
+      </pre>
+    </div>
+  );
+}
+
+/** Writing — published articles in HUD card style. */
 export function Blog({
   posts,
   section,
@@ -19,93 +38,79 @@ export function Blog({
   if (posts.length === 0) return null;
 
   return (
-    <section id="blog" className="relative section-pad">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px rule-grad" />
+    <section id="blog" className="relative py-12">
+      {/* ViewHeader */}
+      <p className="eyebrow mb-2 font-mono text-xs text-acc">{"// latest blog"}</p>
+      <h2 className="text-3xl font-bold mb-2">
+        Read My <span className="text-grad">Articles</span>
+      </h2>
+      {section?.description && (
+        <p className="text-sm text-slate-400 mb-8 max-w-xl">{section.description}</p>
+      )}
 
-      <div className="container-page">
-        <Reveal>
-          <SectionHeading
-            index={index}
-            label={section?.label || "Blog"}
-            title={section?.heading || "Writing"}
-            description={
-              section?.description || "Notes on the things I break, fix and learn while building."
-            }
-          />
-        </Reveal>
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post, position) => (
+          <Reveal key={post._id} delay={position * 60}>
+            <article className="hud hud-hover group flex h-full flex-col overflow-hidden transition hover:-translate-y-1">
+              {/* Cover */}
+              <Link
+                href={`/blog/${post.slug}`}
+                className="relative block overflow-hidden"
+                aria-label={post.title}
+              >
+                {post.coverImageUrl ? (
+                  <Image
+                    src={post.coverImageUrl}
+                    alt={post.title}
+                    width={900}
+                    height={520}
+                    sizes="(max-width: 768px) 92vw, 30vw"
+                    className="aspect-[16/9] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  />
+                ) : (
+                  <CodeCover title={post.title} category={post.category} />
+                )}
+              </Link>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post, position) => (
-            <Reveal key={post._id} delay={position * 60}>
-              <article className="panel panel-hover group flex h-full flex-col overflow-hidden">
-                <Link
-                  href={`/blog/${post.slug}`}
-                  className="relative block overflow-hidden border-b border-line bg-surface-2"
-                >
-                  {post.coverImageUrl ? (
-                    <Image
-                      src={post.coverImageUrl}
-                      alt={post.title}
-                      width={900}
-                      height={520}
-                      sizes="(max-width: 768px) 92vw, 30vw"
-                      className="aspect-[16/9] w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    />
-                  ) : (
-                    <div className="grid aspect-[16/9] w-full place-items-center bg-surface-2">
-                      <Icon name="Newspaper" className="h-8 w-8 text-accent/30" />
-                    </div>
+              {/* Body */}
+              <div className="flex flex-1 flex-col p-5">
+                <div className="flex items-center gap-2 text-[10.5px]">
+                  <span className="font-mono uppercase tracking-widest text-acc/90">
+                    {post.category || "Note"}
+                  </span>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-slate-500">{formatDate(post.publishedAt)}</span>
+                  {post.readingTime && (
+                    <>
+                      <span className="text-slate-600">·</span>
+                      <span className="text-slate-500">{post.readingTime}</span>
+                    </>
                   )}
-                </Link>
+                </div>
 
-                <div className="flex flex-1 flex-col p-5">
-                  <div className="flex items-center gap-2 text-[10.5px] text-faint">
-                    <span className="mono uppercase tracking-[0.14em] text-accent/90">
-                      {post.category || "Note"}
-                    </span>
-                    <span aria-hidden>·</span>
-                    <span>{formatDate(post.publishedAt)}</span>
-                    {post.readingTime ? (
-                      <>
-                        <span aria-hidden>·</span>
-                        <span>{post.readingTime}</span>
-                      </>
-                    ) : null}
-                  </div>
+                <h3 className="mt-2 text-[15px] font-semibold leading-snug transition-colors group-hover:text-acc">
+                  <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                </h3>
 
-                  <h3 className="mt-2 text-[15px] font-semibold leading-snug text-ink transition-colors group-hover:text-accent">
-                    <Link href={`/blog/${post.slug}`}>{post.title}</Link>
-                  </h3>
-
-                  <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-muted">
+                {post.excerpt && (
+                  <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-slate-400">
                     {post.excerpt}
                   </p>
+                )}
 
-                  <div className="mt-auto flex items-center justify-between pt-5">
-                    <div className="flex flex-wrap gap-1.5">
-                      {post.tags.slice(0, 2).map((tag) => (
-                        <span
-                          key={tag}
-                          className="rounded-md border border-line px-2 py-0.5 text-[10.5px] text-faint"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <Link
-                      href={`/blog/${post.slug}`}
-                      className="mono inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-muted transition-colors hover:text-accent"
-                    >
-                      Read
-                      <Icon name="ArrowRight" className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
+                <div className="mt-auto flex items-center justify-between gap-2 pt-4 border-t border-white/5 mt-4">
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="font-mono inline-flex items-center gap-1.5 text-[11px] uppercase tracking-widest text-slate-400 hover:text-acc transition-colors"
+                  >
+                    Read more <ArrowRight size={12} />
+                  </Link>
+                  <BookOpen size={14} className="text-slate-600" />
                 </div>
-              </article>
-            </Reveal>
-          ))}
-        </div>
+              </div>
+            </article>
+          </Reveal>
+        ))}
       </div>
     </section>
   );
