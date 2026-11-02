@@ -301,8 +301,29 @@ button { cursor: pointer; }
 .bg-ink { background: #03050f; }
 .bg-surface { background: var(--surface); }
 .bg-surface-2 { background: var(--surface-secondary); }
-.border-line { border-color: var(--border); }
-.border-acc  { border-color: var(--acc); }
+.border-line        { border-color: var(--border); }
+.border-line-strong { border-color: var(--border-strong); }
+.border-acc         { border-color: var(--acc); }
+
+/* Accent gradient helpers used in sub-pages */
+.grad-accent  { background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+.accent-ink   { color: #02061a; }
+.text-accent  { color: var(--acc); }
+.text-success { color: #22c55e; }
+.text-warning { color: #f59e0b; }
+.text-danger  { color: #ef4444; }
+
+/* Panel variant for sidebar/aside blocks */
+.panel-alt {
+  background: linear-gradient(160deg, rgba(10,20,60,0.55), rgba(4,7,22,0.7));
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+}
+.panel-hover { transition: border-color 0.2s, box-shadow 0.2s; }
+.panel-hover:hover {
+  border-color: color-mix(in srgb, var(--acc) 40%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--acc) 12%, transparent);
+}
 
 /* ─── Reduced motion ─────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
