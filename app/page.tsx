@@ -100,7 +100,7 @@ export default async function HomePage() {
       ) : null}
 
       {shown("skills") ? (
-        <Skills groups={data.skills} section={meta("skills")} index={at("skills")} />
+        <Skills groups={data.skills} projects={data.projects} section={meta("skills")} index={at("skills")} />
       ) : null}
 
       {shown("projects") ? (

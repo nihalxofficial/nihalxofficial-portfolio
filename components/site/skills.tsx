@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import type { SectionMeta, SkillGroup, Skill } from "@/lib/types";
+import { useMemo, useState } from "react";
+import { LayoutGrid, Orbit, Search, ArrowUpRight } from "lucide-react";
+import type { Project, SectionMeta, SkillGroup, Skill } from "@/lib/types";
 
-/** Map proficiency → segment count out of 10 */
+/* ── Proficiency helpers ─────────────────────────────────────────────── */
+function proficiencyToLevel(p: Skill["proficiency"]): number {
+  switch (p) {
+    case "expert":   return 90;
+    case "advanced": return 70;
+    case "familiar": return 55;
+    case "learning": return 30;
+    default:         return 30;
+  }
+}
 function proficiencyToSegs(p: Skill["proficiency"]): number {
   switch (p) {
     case "expert":   return 9;
@@ -13,7 +23,6 @@ function proficiencyToSegs(p: Skill["proficiency"]): number {
     default:         return 3;
   }
 }
-
 function proficiencyLabel(p: Skill["proficiency"]): string {
   switch (p) {
     case "expert":   return "Expert";
@@ -24,6 +33,7 @@ function proficiencyLabel(p: Skill["proficiency"]): string {
   }
 }
 
+/* ── Segmented bar ────────────────────────────────────────────────────── */
 function SegBar({ filled, total = 10 }: { filled: number; total?: number }) {
   return (
     <div className="seg">
@@ -34,143 +44,467 @@ function SegBar({ filled, total = 10 }: { filled: number; total?: number }) {
   );
 }
 
+/* ── Radar chart ──────────────────────────────────────────────────────── */
+function Radar({ data }: { data: { label: string; v: number }[] }) {
+  const R = 100;
+  const n = data.length;
+  if (n < 3) return null;
+
+  const pt = (i: number, v: number): [number, number] => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+    return [Math.cos(a) * R * (v / 100), Math.sin(a) * R * (v / 100)];
+  };
+
+  const polyStr = (v: number | ((i: number) => number)) =>
+    data.map((_, i) => pt(i, typeof v === "number" ? v : v(i)).map((x) => x.toFixed(1)).join(",")).join(" ");
+
+  return (
+    <svg viewBox="-150 -125 300 250" className="w-full max-w-[280px] mx-auto">
+      {[25, 50, 75, 100].map((r) => (
+        <polygon key={r} points={polyStr(r)} fill="none" stroke="currentColor" className="text-white/10" />
+      ))}
+      {data.map((_, i) => {
+        const [x, y] = pt(i, 100);
+        return <line key={i} x1="0" y1="0" x2={x} y2={y} stroke="currentColor" className="text-white/10" />;
+      })}
+      <g className="grow">
+        <polygon
+          points={polyStr((i) => data[i].v)}
+          fill="var(--acc)"
+          fillOpacity=".18"
+          stroke="var(--acc)"
+          strokeWidth="2"
+          style={{ filter: "drop-shadow(0 0 6px var(--acc))" }}
+        />
+        {data.map((d, i) => {
+          const [x, y] = pt(i, d.v);
+          return <circle key={d.label} cx={x} cy={y} r="3.5" fill="var(--acc)" />;
+        })}
+      </g>
+      {data.map((d, i) => {
+        const [x, y] = pt(i, 122);
+        return (
+          <text
+            key={d.label}
+            x={x}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="fill-slate-300"
+            style={{ fontSize: 10, fontFamily: "JetBrains Mono, monospace" }}
+          >
+            {d.label}{" "}
+            <tspan style={{ fill: "var(--acc)" }}>{d.v}</tspan>
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ── Orbit view ───────────────────────────────────────────────────────── */
+function OrbitView({
+  skills,
+  selected,
+  onPick,
+}: {
+  skills: Skill[];
+  selected: Skill;
+  onPick: (s: Skill) => void;
+}) {
+  const [hovered, setHovered] = useState<Skill | null>(null);
+  const sorted = [...skills].sort((a, b) => proficiencyToLevel(b.proficiency) - proficiencyToLevel(a.proficiency));
+  const rings = [
+    { r: 15, d: 36, list: sorted.slice(0, 5) },
+    { r: 28, d: 60, list: sorted.slice(5, 13) },
+    { r: 41, d: 90, list: sorted.slice(13) },
+  ];
+  const show = hovered ?? selected;
+
+  return (
+    <div
+      className="orbit relative w-full max-w-[520px] mx-auto aspect-square"
+      style={{ containerType: "inline-size" }}
+    >
+      {rings.map((ring, ri) =>
+        ring.list.length === 0 ? null : (
+          <div
+            key={ri}
+            className="orbit-ring absolute left-1/2 top-1/2 rounded-full border border-dashed border-acc/25"
+            style={{
+              width: `${ring.r * 2}cqw`,
+              height: `${ring.r * 2}cqw`,
+              marginLeft: `-${ring.r}cqw`,
+              marginTop: `-${ring.r}cqw`,
+              ["--d" as string]: `${ring.d}s`,
+              animationDirection: ri % 2 ? "reverse" : "normal",
+            }}
+          >
+            {ring.list.map((s, i) => {
+              const a = (360 / ring.list.length) * i;
+              const color = s.brandColor || "var(--acc)";
+              const isSelected = selected.id === s.id;
+              return (
+                <div
+                  key={s.id}
+                  className="absolute left-1/2 top-1/2 w-0 h-0"
+                  style={{ transform: `rotate(${a}deg) translateX(${ring.r}cqw)` }}
+                >
+                  <div style={{ transform: `rotate(${-a}deg)` }}>
+                    <div
+                      className="orbit-rev"
+                      style={{
+                        ["--d" as string]: `${ring.d}s`,
+                        animationDirection: ri % 2 ? "normal" : "reverse",
+                      }}
+                    >
+                      <button
+                        onMouseEnter={() => setHovered(s)}
+                        onMouseLeave={() => setHovered(null)}
+                        onClick={() => onPick(s)}
+                        aria-label={s.name}
+                        title={s.name}
+                        className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-xl grid place-items-center font-mono font-bold cursor-pointer transition hover:scale-125 ${isSelected ? "scale-125" : ""}`}
+                        style={{
+                          width: "9cqw",
+                          height: "9cqw",
+                          fontSize: "3cqw",
+                          color,
+                          background: "#070c2a",
+                          border: `1px solid ${color}${isSelected ? "" : "66"}`,
+                          boxShadow: `0 0 ${isSelected ? 20 : 10}px ${color}55`,
+                        }}
+                      >
+                        {s.icon ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={s.icon}
+                            alt=""
+                            className="object-contain"
+                            style={{ width: "5cqw", height: "5cqw" }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          s.name.slice(0, 2).toUpperCase()
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
+      )}
+
+      {/* Center orb */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[24cqw] h-[24cqw] rounded-full grid place-items-center text-center bg-[#050a26] ring-acc glow">
+        <div key={show.id} className="fade px-2">
+          <div
+            className="font-display font-bold"
+            style={{ fontSize: "3.6cqw", color: show.brandColor || "var(--acc)" }}
+          >
+            {show.name}
+          </div>
+          <div className="font-mono text-acc" style={{ fontSize: "2.6cqw" }}>
+            {proficiencyToLevel(show.proficiency)}%
+          </div>
+          <div className="text-slate-400 font-mono" style={{ fontSize: "2cqw" }}>
+            {proficiencyLabel(show.proficiency)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Main component ───────────────────────────────────────────────────── */
 export function Skills({
   groups,
+  projects = [],
   section,
   index,
 }: {
   groups: SkillGroup[];
+  projects?: Project[];
   section?: SectionMeta;
   index: number;
 }) {
   if (groups.length === 0) return null;
 
   const [selectedCat, setSelectedCat] = useState<string>("all");
-  const [hovered, setHovered] = useState<Skill | null>(null);
+  const [query, setQuery] = useState("");
+  const [mode, setMode] = useState<"grid" | "orbit">("grid");
+  const allSkills = useMemo(() => groups.flatMap((g) => g.skills), [groups]);
+  const [selected, setSelected] = useState<Skill>(allSkills[0] ?? ({} as Skill));
 
-  const allSkills = groups.flatMap((g) => g.skills);
-  const filteredSkills =
-    selectedCat === "all"
-      ? allSkills
-      : groups.find((g) => g.category === selectedCat)?.skills ?? [];
+  // Radar data — avg proficiency per category
+  const radarData = useMemo(
+    () =>
+      groups.map((g) => ({
+        label: g.category,
+        v: Math.round(g.skills.reduce((a, s) => a + proficiencyToLevel(s.proficiency), 0) / g.skills.length),
+      })),
+    [groups]
+  );
 
-  const displaySkill = hovered;
+  // Filtered skills
+  const filteredSkills = useMemo(() => {
+    let base = selectedCat === "all" ? allSkills : groups.find((g) => g.category === selectedCat)?.skills ?? [];
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      base = base.filter((s) => s.name.toLowerCase().includes(q));
+    }
+    return base;
+  }, [allSkills, groups, selectedCat, query]);
+
+  // "Used in" — projects that include the selected skill in their techStack
+  const usedIn = useMemo(() => {
+    if (!selected?.name) return [];
+    const key = selected.name.toLowerCase().split(" ")[0];
+    return projects.filter((p) => p.techStack.some((t) => t.toLowerCase().includes(key))).map((p) => p.title);
+  }, [selected, projects]);
 
   return (
     <section id="skills" className="relative py-12">
       {/* ViewHeader */}
-      <p className="eyebrow mb-2 font-mono text-xs text-acc">{"// my skills"}</p>
-      <h2 className="text-3xl font-bold mb-2">
-        Tech <span className="text-grad">Stack</span>
-      </h2>
-      {section?.description && (
-        <p className="text-sm text-slate-400 mb-8 max-w-xl">{section.description}</p>
-      )}
-
-      {/* Category filter chips */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        <button
-          className={`chip${selectedCat === "all" ? " on" : ""}`}
-          onClick={() => setSelectedCat("all")}
-        >
-          All ({allSkills.length})
-        </button>
-        {groups.map((g) => (
-          <button
-            key={g.category}
-            className={`chip${selectedCat === g.category ? " on" : ""}`}
-            onClick={() => setSelectedCat(g.category)}
-          >
-            {g.category} ({g.skills.length})
-          </button>
-        ))}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <p className="eyebrow mb-2 font-mono text-xs text-acc">{"// my skills"}</p>
+          <h2 className="text-3xl font-bold">
+            Tech <span className="text-grad">Stack</span>
+          </h2>
+          {section?.description && (
+            <p className="text-sm text-slate-400 mt-2 max-w-xl">{section.description}</p>
+          )}
+        </div>
+        {/* View mode toggle */}
+        <div className="hud !rounded-lg p-1 flex shrink-0">
+          {(
+            [
+              ["grid", LayoutGrid, "Matrix"],
+              ["orbit", Orbit, "Orbit"],
+            ] as const
+          ).map(([m, Icon, label]) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm cursor-pointer transition ${
+                mode === m ? "bg-acc/15 text-acc" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              <Icon size={15} />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
-        {/* Skill tiles grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-          {filteredSkills.map((skill) => {
-            const segs = proficiencyToSegs(skill.proficiency);
-            return (
-              <div
-                key={skill.id}
-                onMouseEnter={() => setHovered(skill)}
-                onMouseLeave={() => setHovered(null)}
-                className="hud hud-hover p-4 cursor-default transition"
+      <div className="grid xl:grid-cols-[1fr_360px] gap-6">
+        {/* Left: skill list or orbit */}
+        <div>
+          {/* Category filters + search */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <button
+              className={`chip${selectedCat === "all" ? " on" : ""}`}
+              onClick={() => setSelectedCat("all")}
+            >
+              All <span className="ml-1.5 opacity-60">{allSkills.length}</span>
+            </button>
+            {groups.map((g) => (
+              <button
+                key={g.category}
+                className={`chip${selectedCat === g.category ? " on" : ""}`}
+                onClick={() => setSelectedCat(g.category)}
               >
-                {/* Icon / brand mark */}
-                <div
-                  className="w-10 h-10 rounded-lg grid place-items-center text-lg font-bold mb-3"
-                  style={{ color: skill.brandColor || "var(--acc)", background: `${skill.brandColor || "var(--acc)"}18`, border: `1px solid ${skill.brandColor || "var(--acc)"}44` }}
-                >
-                  {skill.icon ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={skill.icon} alt={skill.name} className="w-5 h-5 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                  ) : (
-                    <span className="font-mono text-[11px]">
-                      {skill.name.slice(0, 2).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                {g.category} <span className="ml-1.5 opacity-60">{g.skills.length}</span>
+              </button>
+            ))}
+            <div className="ml-auto flex items-center gap-2 hud !rounded-lg px-3 py-1.5 w-full sm:w-52">
+              <Search size={14} className="text-slate-500 shrink-0" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="filter skills…"
+                className="bg-transparent outline-none text-sm w-full placeholder:text-slate-600"
+              />
+            </div>
+          </div>
 
-                <div className="text-sm font-semibold mb-1 truncate">{skill.name}</div>
-                <SegBar filled={segs} />
-                <div className="mt-1 font-mono text-[10px] text-slate-500">
-                  {proficiencyLabel(skill.proficiency)}
+          {/* Grid view */}
+          {mode === "grid" ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-3 gap-3">
+              {filteredSkills.map((skill, pos) => {
+                const segs = proficiencyToSegs(skill.proficiency);
+                const isSelected = selected?.id === skill.id;
+                return (
+                  <button
+                    key={skill.id}
+                    onClick={() => setSelected(skill)}
+                    style={{ animationDelay: `${pos * 35}ms` }}
+                    className={`hud hud-hover rise text-left p-4 cursor-pointer hover:-translate-y-0.5 transition ${
+                      isSelected ? "!border-acc glow-sm" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Brand icon */}
+                      <span
+                        className="grid place-items-center rounded-lg font-bold shrink-0 font-mono"
+                        style={{
+                          width: 36,
+                          height: 36,
+                          fontSize: 12,
+                          color: skill.brandColor || "var(--acc)",
+                          background: `${skill.brandColor || "var(--acc)"}1f`,
+                          border: `1px solid ${skill.brandColor || "var(--acc)"}55`,
+                          boxShadow: `0 0 14px ${skill.brandColor || "var(--acc)"}22`,
+                        }}
+                      >
+                        {skill.icon ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={skill.icon}
+                            alt={skill.name}
+                            className="w-5 h-5 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          skill.name.slice(0, 2).toUpperCase()
+                        )}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-sm truncate">{skill.name}</div>
+                        <div className="font-mono text-[10px] text-slate-500 uppercase">
+                          {proficiencyLabel(skill.proficiency)}
+                        </div>
+                      </div>
+                      <span className="ml-auto font-mono text-sm text-acc shrink-0">
+                        {proficiencyToLevel(skill.proficiency)}
+                      </span>
+                    </div>
+                    <SegBar filled={segs} />
+                  </button>
+                );
+              })}
+              {filteredSkills.length === 0 && (
+                <div className="col-span-full text-center py-12 text-slate-500 font-mono text-sm">
+                  {`$ grep "${query}" skills.json → no matches`}
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </div>
+          ) : (
+            /* Orbit view */
+            <div className="hud p-4">
+              <OrbitView
+                skills={filteredSkills.length ? filteredSkills : allSkills}
+                selected={selected ?? allSkills[0]}
+                onPick={setSelected}
+              />
+              <p className="text-center text-[11px] font-mono text-slate-500 mt-2">
+                hover to pause · click to inspect · sorted by proficiency, core → outer
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Skill detail panel */}
-        <div className="hud p-5 sticky top-4">
-          {displaySkill ? (
-            <>
-              <div
-                className="w-14 h-14 rounded-xl grid place-items-center text-2xl font-bold mb-4 mx-auto"
-                style={{ color: displaySkill.brandColor || "var(--acc)", background: `${displaySkill.brandColor || "var(--acc)"}18`, border: `2px solid ${displaySkill.brandColor || "var(--acc)"}` }}
-              >
-                {displaySkill.icon ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={displaySkill.icon} alt="" className="w-8 h-8 object-contain" />
-                ) : (
-                  <span className="font-mono text-sm">{displaySkill.name.slice(0, 2).toUpperCase()}</span>
-                )}
-              </div>
-              <h3 className="text-center font-bold text-lg mb-1">{displaySkill.name}</h3>
-              <p className="text-center text-xs text-slate-400 mb-4">
-                {proficiencyLabel(displaySkill.proficiency)}
-              </p>
-
-              <div className="space-y-3">
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="font-mono text-[11px] text-slate-400">Proficiency</span>
-                    <span className="font-mono text-[11px] text-acc">
-                      {proficiencyToSegs(displaySkill.proficiency) * 10}%
-                    </span>
+        {/* Right: selected skill detail + radar */}
+        <div className="space-y-5 self-start xl:sticky xl:top-4">
+          {/* Skill detail panel */}
+          <div className="hud p-5">
+            {selected?.name ? (
+              <>
+                <div className="flex items-center gap-3">
+                  <span
+                    className="grid place-items-center rounded-xl font-bold shrink-0 font-mono"
+                    style={{
+                      width: 46,
+                      height: 46,
+                      fontSize: 14,
+                      color: selected.brandColor || "var(--acc)",
+                      background: `${selected.brandColor || "var(--acc)"}1f`,
+                      border: `2px solid ${selected.brandColor || "var(--acc)"}`,
+                      boxShadow: `0 0 14px ${selected.brandColor || "var(--acc)"}22`,
+                    }}
+                  >
+                    {selected.icon ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={selected.icon}
+                        alt=""
+                        className="w-6 h-6 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      selected.name.slice(0, 2).toUpperCase()
+                    )}
+                  </span>
+                  <div>
+                    <div className="font-display text-xl font-bold">{selected.name}</div>
+                    <div className="font-mono text-[11px] text-acc">
+                      {proficiencyLabel(selected.proficiency)} · {proficiencyToLevel(selected.proficiency)}%
+                    </div>
                   </div>
-                  <SegBar filled={proficiencyToSegs(displaySkill.proficiency)} />
                 </div>
+
+                {/* Progress bar */}
+                <div className="mt-4 h-2 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    key={selected.id}
+                    className="fill h-full bg-grad"
+                    style={{ width: `${proficiencyToLevel(selected.proficiency)}%` }}
+                  />
+                </div>
+
+                {/* Used in projects */}
+                {projects.length > 0 && (
+                  <>
+                    <div className="mt-4 font-mono text-[10px] uppercase tracking-widest text-slate-500">used in</div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {usedIn.length > 0 ? (
+                        usedIn.map((title) => (
+                          <span key={title} className="chip flex items-center gap-1 !cursor-default">
+                            {title} <ArrowUpRight size={10} />
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-slate-500">Personal experiments & learning</span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3 text-acc/30">{"<>"}</div>
+                <p className="font-mono text-xs text-slate-500">click a skill to inspect</p>
               </div>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-3 text-acc/30">{"<>"}</div>
-              <p className="font-mono text-xs text-slate-500">hover a skill</p>
-              <p className="text-[10px] text-slate-600 mt-1">to see details</p>
+            )}
+          </div>
+
+          {/* Radar chart */}
+          {radarData.length >= 3 && (
+            <div className="hud p-5">
+              <div className="font-mono text-[11px] text-acc uppercase tracking-widest mb-1">{"// skill radar"}</div>
+              <Radar data={radarData} />
             </div>
           )}
 
           {/* Category summary */}
-          <div className="mt-6 border-t border-white/5 pt-4 space-y-2">
-            {groups.map((g) => (
-              <div key={g.category} className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400">{g.category}</span>
-                <span className="font-mono text-acc">{g.skills.length}</span>
-              </div>
-            ))}
+          <div className="hud p-5">
+            <div className="space-y-2">
+              {groups.map((g) => (
+                <div key={g.category} className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">{g.category}</span>
+                  <span className="font-mono text-acc">{g.skills.length}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
