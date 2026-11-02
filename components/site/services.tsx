@@ -478,21 +478,22 @@ export function Services({
               <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2 mt-2">
                 <button
                   onClick={() => setExpandedId(isExpanded ? null : service._id)}
-                  className="font-mono text-[11px] text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors"
+                  className="font-mono text-[11px] text-slate-400 hover:text-white inline-flex items-center gap-1 cursor-pointer transition-colors whitespace-nowrap"
                 >
-                  {isExpanded ? "Hide Specs" : "View Specs"}
+                  <span>{isExpanded ? "Hide Specs" : "View Specs"}</span>
                   <ChevronRight
                     size={13}
-                    className={`transition-transform duration-200 ${isExpanded ? "rotate-90 text-acc" : ""}`}
+                    className={`transition-transform duration-200 shrink-0 ${isExpanded ? "rotate-90 text-acc" : ""}`}
                   />
                 </button>
 
                 <button
                   onClick={() => handleInquire(service.title)}
-                  className="inline-flex items-center gap-1 font-mono text-[11px] font-semibold text-acc hover:text-white px-2.5 py-1 rounded bg-acc/10 hover:bg-acc/20 border border-acc/30 hover:border-acc cursor-pointer transition-all"
+                  className="inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold text-acc hover:text-white px-2.5 py-1 rounded bg-acc/10 hover:bg-acc/20 border border-acc/30 hover:border-acc cursor-pointer transition-all whitespace-nowrap"
                   title={`Inquire about ${service.title}`}
                 >
-                  Request Protocol <ArrowUpRight size={12} />
+                  <span>Request Protocol</span>
+                  <ArrowUpRight size={12} className="shrink-0" />
                 </button>
               </div>
             </div>
@@ -529,9 +530,10 @@ export function Services({
             const el = document.getElementById("contact");
             if (el) el.scrollIntoView({ behavior: "smooth" });
           }}
-          className="btn-acc text-xs whitespace-nowrap cursor-pointer shrink-0"
+          className="btn-primary inline-flex items-center justify-center gap-2 whitespace-nowrap px-4 py-2.5 rounded-xl font-mono text-xs font-bold cursor-pointer shrink-0"
         >
-          Initialize Contract <ArrowUpRight size={14} className="ml-1" />
+          <span>Initialize Contract</span>
+          <ArrowUpRight size={15} className="shrink-0" />
         </button>
       </div>
     </section>
