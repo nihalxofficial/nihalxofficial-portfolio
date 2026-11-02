@@ -99,9 +99,9 @@ export function Hero({
 
   return (
     <section id="hero" className="relative pt-6 pb-12">
-      <div className="relative grid xl:grid-cols-[1.1fr_0.9fr] gap-8 items-start">
-        {/* Left: copy */}
-        <div className="pt-2 xl:pt-8">
+      <div className="relative grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] xl:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center">
+        {/* Left: copy (on mobile displays second, on desktop displays first) */}
+        <div className="order-2 lg:order-1 pt-2">
           {/* Availability pill */}
           <div className="inline-flex items-center gap-2 text-xs font-mono text-emerald-300 hud !rounded-full px-4 py-1.5 !border-emerald-400/30">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -191,8 +191,8 @@ export function Hero({
           )}
         </div>
 
-        {/* Right: portrait frame */}
-        <div className="xl:max-w-[500px] xl:ml-auto w-full xl:pt-4">
+        {/* Right: portrait frame (on mobile displays first, balanced compact height) */}
+        <div className="order-1 lg:order-2 w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[420px] mx-auto lg:ml-auto">
           <div className="hud overflow-hidden">
             {/* Window chrome */}
             <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/5 bg-white/3">
@@ -203,23 +203,22 @@ export function Hero({
             </div>
 
             {hero.portraitUrl ? (
-              <div className="relative">
+              <div className="relative aspect-square sm:aspect-[4/4.2] w-full overflow-hidden">
                 <Image
                   src={hero.portraitUrl}
                   alt={hero.name}
-                  width={900}
-                  height={1000}
+                  fill
                   priority
-                  sizes="(max-width: 1024px) 90vw, 500px"
-                  className="aspect-[4/5] w-full object-cover object-top"
+                  sizes="(max-width: 640px) 320px, (max-width: 1024px) 380px, 420px"
+                  className="object-cover object-top"
                 />
                 {/* Scanline effect */}
                 <div className="scanline" />
                 {/* Bottom fade */}
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#03050f] to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#03050f] to-transparent" />
               </div>
             ) : (
-              <div className="grid aspect-[4/5] w-full place-items-center">
+              <div className="grid aspect-square sm:aspect-[4/4.2] w-full place-items-center">
                 <span className="text-6xl text-acc/30">{"</>"}</span>
               </div>
             )}
@@ -227,7 +226,7 @@ export function Hero({
 
           {/* Tagline */}
           {hero.tagline && (
-            <p className="mt-2 text-right font-mono text-sm text-slate-400 italic">
+            <p className="mt-2 text-center lg:text-right font-mono text-xs sm:text-sm text-slate-400 italic">
               &ldquo;{hero.tagline}&rdquo;
             </p>
           )}
