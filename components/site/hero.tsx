@@ -4,8 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import { Icon } from "@/components/ui/icon";
+import { RotatingTypewriter } from "@/components/ui/rotating-typewriter";
+import { TerminalText } from "@/components/ui/terminal-text";
 import { WindowBar } from "@/components/ui/panel-chrome";
 import { Typewriter } from "@/components/ui/typewriter";
+import { tokenizeCommand, tokenizeOutput } from "@/lib/terminal";
 import type { Hero as HeroContent, SiteSettings } from "@/lib/types";
 
 /** Entrance choreography: the copy rises in, the portrait follows. */
@@ -36,9 +39,16 @@ export function Hero({
   hero: HeroContent;
   settings: SiteSettings | null;
 }) {
-  const socials = settings?.socialLinks ?? [];
+  // Same dashboard links as the contact section and footer; rows without a URL
+  // are still drafts, so they stay hidden.
+  const socials = (settings?.socialLinks ?? []).filter((link) => link.url);
   const command = hero.terminal?.command || "whoami";
   const terminalLines = (hero.terminal?.lines ?? []).slice(0, 5);
+  const rotatorLines = (hero.rotator?.lines ?? []).filter((line) => line.trim());
+  // The role line *is* the typewriter: cycle the dashboard rotator, and fall
+  // back to the static role when no phrases have been entered yet.
+  const roleLines =
+    rotatorLines.length > 0 ? rotatorLines : [hero.role].filter((line) => line?.trim());
   const secondaryHref = hero.secondaryCta?.href || "#contact";
   const secondaryExternal = /^https?:\/\//i.test(secondaryHref);
 
@@ -72,9 +82,14 @@ export function Hero({
             ) : null}
           </motion.h1>
 
-          <motion.div variants={rise} className="mt-3 flex items-center gap-3">
+          <motion.div
+            variants={rise}
+            className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1"
+          >
             <span className="rule-grad h-px w-10" />
-            <p className="text-lg font-medium text-accent sm:text-xl">{hero.role}</p>
+            <p className="text-lg font-medium sm:text-xl">
+              <RotatingTypewriter lines={roleLines} className="text-accent" />
+            </p>
           </motion.div>
 
           <motion.p
@@ -119,11 +134,12 @@ export function Hero({
               <div className="flex items-center gap-2">
                 {socials.map((social) => (
                   <a
-                    key={social.url}
+                    key={`${social.platform}-${social.url}`}
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.platform}
+                    title={social.platform}
                     className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-surface/50 text-muted transition-all hover:-translate-y-0.5 hover:border-accent/60 hover:text-accent hover:shadow-[0_0_22px_-8px_var(--accent-glow)]"
                   >
                     <Icon name={social.icon || social.platform} className="h-4 w-4" />
@@ -205,11 +221,12 @@ export function Hero({
           <div className="code-window relative z-10 mt-4 w-full sm:absolute sm:-bottom-10 sm:-left-6 sm:mt-0 sm:w-[min(21rem,88%)] lg:-left-12">
             <WindowBar title={`${command} · session`} />
             <div className="px-4 py-3.5">
-              <p className="mono text-[11px] text-faint">
-                <span className="text-accent">$</span> {command}
+              <p className="mono text-[11px]">
+                <span className="text-accent">$</span>{" "}
+                <TerminalText tokens={tokenizeCommand(command)} className="text-ink" />
               </p>
               <div className="mt-1.5">
-                <Typewriter lines={terminalLines} className="text-muted" />
+                <Typewriter lines={terminalLines} tokenize={tokenizeOutput} className="text-muted" />
               </div>
             </div>
           </div>

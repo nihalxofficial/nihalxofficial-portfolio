@@ -16,7 +16,9 @@ export function Footer({
   year: number;
 }) {
   const name = settings?.siteName ?? "Md. Nihal Uddin Bijoy";
-  const socials = settings?.socialLinks ?? [];
+  // Rows without a URL are still drafts, so they stay hidden — same rule as the
+  // hero and contact sections.
+  const socials = (settings?.socialLinks ?? []).filter((link) => link.url);
   const branding = settings?.branding;
   const hasLogo = Boolean(branding?.footerLogoLight || branding?.footerLogoDark);
 
@@ -58,6 +60,7 @@ export function Footer({
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.platform}
+                    title={social.platform}
                     className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-surface/60 text-muted transition-all hover:-translate-y-0.5 hover:border-line-strong hover:text-accent"
                   >
                     <Icon name={social.icon || social.platform} className="h-4 w-4" />

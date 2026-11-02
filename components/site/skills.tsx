@@ -40,13 +40,13 @@ export function Skills({
 
         <div
           className={cn(
-            "mt-10 grid gap-5",
+            "mt-10 grid gap-5 lg:items-stretch",
             groups.length > 1 ? "lg:grid-cols-[1.62fr_1fr]" : "grid-cols-1",
           )}
         >
           {ordered.map((group, groupIndex) => (
-            <Reveal key={group.category} delay={groupIndex * 90}>
-              <div className="panel h-full p-5">
+            <Reveal key={group.category} delay={groupIndex * 90} className="h-full">
+              <div className="panel flex h-full flex-col p-5">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
                     <span className="h-1.5 w-1.5 rounded-full grad-accent" />
@@ -59,11 +59,20 @@ export function Skills({
 
                 <div className="mt-4 h-px w-full rule-grad opacity-60" />
 
-                <SkillGrid
-                  skills={group.skills}
-                  layout={groupIndex === 0 ? "tiles" : "rows"}
-                  columns="grid-cols-3 sm:grid-cols-4 xl:grid-cols-6"
-                />
+                {/* The grid scrolls inside a fixed-height shelf instead of
+                    stretching the card, so both columns stay the same length
+                    no matter how many tools are added. `data-lenis-prevent`
+                    hands the wheel back to this list. */}
+                <div
+                  data-lenis-prevent
+                  className="thin-scroll -mr-1 max-h-[24rem] flex-1 overflow-y-auto pr-1 lg:h-[26rem] lg:max-h-[26rem]"
+                >
+                  <SkillGrid
+                    skills={group.skills}
+                    layout={groupIndex === 0 ? "tiles" : "rows"}
+                    columns="grid-cols-3 sm:grid-cols-4 xl:grid-cols-6"
+                  />
+                </div>
               </div>
             </Reveal>
           ))}

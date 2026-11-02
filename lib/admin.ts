@@ -404,6 +404,61 @@ export async function deleteMedia(id: string) {
   await request<unknown>(`/admin/media/${id}`, { method: "DELETE" });
 }
 
+/** Mirrors the server `AnalyticsOverview` shape (portfolio-server analytics.service). */
+export interface AnalyticsOverview {
+  range: { days: number; from: string };
+  totals: {
+    pageViews: number;
+    sessions: number;
+    uniqueVisitors: number;
+    onlineNow: number;
+    avgDurationMs: number;
+    bounceRate: number;
+  };
+  timeline: Array<{ bucket: string; pageViews: number; sessions: number }>;
+  topPages: Array<{ path: string; views: number }>;
+  sources: Array<{ source: string; views: number }>;
+  browsers: Array<{ name: string; count: number }>;
+  oses: Array<{ name: string; count: number }>;
+  devices: Array<{ name: string; count: number }>;
+  countries: Array<{ country: string; code: string; lat?: number; lng?: number; count: number }>;
+  recent: Array<{
+    path: string;
+    city: string;
+    country: string;
+    browser: string;
+    device: string;
+    at: string;
+  }>;
+}
+
+export async function fetchAnalyticsOverview(days = 7): Promise<AnalyticsOverview> {
+  const { data } = await request<AnalyticsOverview>(`/admin/analytics/overview?days=${days}`, {
+    method: "GET",
+  });
+  return data;
+}
+
+/** Mirrors the server `AnalyticsRealtime` shape; polled client-side (no WebSockets). */
+export interface AnalyticsRealtime {
+  onlineNow: number;
+  pages: Array<{ path: string; count: number }>;
+  countries: Array<{ country: string; code: string; lat?: number; lng?: number; count: number }>;
+  events: Array<{
+    path: string;
+    city: string;
+    country: string;
+    browser: string;
+    device: string;
+    at: string;
+  }>;
+}
+
+export async function fetchAnalyticsRealtime(): Promise<AnalyticsRealtime> {
+  const { data } = await request<AnalyticsRealtime>("/admin/analytics/realtime", { method: "GET" });
+  return data;
+}
+
 /** `shortDescription` → `Short description`, for auto-generated form labels. */
 export function humanize(name: string): string {
   const spaced = name

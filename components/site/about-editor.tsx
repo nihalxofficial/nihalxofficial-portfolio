@@ -105,6 +105,7 @@ export function AboutEditor({ files }: { files: CodeFile[] }) {
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
           className="thin-scroll max-h-[26rem] overflow-auto"
+          data-lenis-prevent
         >
           <div className="mono min-w-max py-3 text-[12px] leading-[1.85]">
             {file.lines.map((line, position) => (

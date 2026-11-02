@@ -6,6 +6,7 @@ import {
   ArrowUp,
   ArrowUpRight,
   Award,
+  Bell,
   Briefcase,
   Building2,
   CalendarDays,
@@ -25,6 +26,7 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  File,
   Filter,
   FolderCode,
   FolderKanban,
@@ -79,14 +81,18 @@ import {
 } from "lucide-react";
 import type { IconType as BrandIconType } from "react-icons";
 import {
+  SiDiscord,
   SiDocker,
   SiExpress,
+  SiFacebook,
   SiFigma,
   SiGit,
   SiGo,
   SiGithub,
   SiHeroui,
+  SiInstagram,
   SiJavascript,
+  SiLeetcode,
   SiLinux,
   SiMongodb,
   SiNeon,
@@ -99,9 +105,14 @@ import {
   SiRedis,
   SiRender,
   SiSocketdotio,
+  SiStackoverflow,
   SiTailwindcss,
+  SiTelegram,
   SiTypescript,
   SiVercel,
+  SiWhatsapp,
+  SiX,
+  SiYoutube,
 } from "react-icons/si";
 
 /**
@@ -119,6 +130,7 @@ const LUCIDE: Record<string, ComponentType<LucideProps>> = {
   ArrowUp,
   ArrowUpRight,
   Award,
+  Bell,
   Briefcase,
   Building: Building2,
   Calendar: CalendarDays,
@@ -138,6 +150,7 @@ const LUCIDE: Record<string, ComponentType<LucideProps>> = {
   ExternalLink,
   Eye,
   EyeOff,
+  File,
   Filter,
   FolderCode,
   FolderKanban,
@@ -193,14 +206,18 @@ const LUCIDE: Record<string, ComponentType<LucideProps>> = {
 };
 
 const BRANDS: Record<string, BrandIconType> = {
+  SiDiscord,
   SiDocker,
   SiExpress,
+  SiFacebook,
   SiFigma,
   SiGit,
   SiGo,
   SiGithub,
   SiHeroui,
+  SiInstagram,
   SiJavascript,
+  SiLeetcode,
   SiLinux,
   SiMongodb,
   SiNeon,
@@ -213,9 +230,16 @@ const BRANDS: Record<string, BrandIconType> = {
   SiRedis,
   SiRender,
   SiSocketdotio,
+  SiStackoverflow,
   SiTailwindcss,
+  SiTelegram,
   SiTypescript,
   SiVercel,
+  SiWhatsapp,
+  // simple-icons renamed the Twitter mark to X; both names resolve.
+  SiTwitter: SiX,
+  SiX,
+  SiYoutube,
 };
 
 export interface IconProps extends Omit<LucideProps, "name"> {

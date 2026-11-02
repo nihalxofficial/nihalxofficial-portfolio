@@ -27,6 +27,9 @@ export function BrandLogo({
   const light = variant === "nav" ? branding?.navLogoLight : branding?.footerLogoLight;
   const dark = variant === "nav" ? branding?.navLogoDark : branding?.footerLogoDark;
   const label = branding?.logoAlt || alt;
+  // The dashboard can set an explicit initials mark; otherwise fall back to the
+  // computed one so the generated tile is never blank.
+  const mark = (branding?.mark?.trim() || fallback).slice(0, 3).toUpperCase();
 
   if (!light && !dark) {
     return (
@@ -42,7 +45,7 @@ export function BrandLogo({
         role="img"
         aria-label={label}
       >
-        {fallback}
+        {mark}
       </span>
     );
   }

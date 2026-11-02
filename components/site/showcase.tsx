@@ -10,11 +10,9 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import type { Project, SectionMeta } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-/**
- * The shelf keeps a fixed height and scrolls instead of growing: seven rows at
- * 3.5rem, six 0.375rem gaps and 1rem of panel padding = 27.75rem.
- */
-const LIST_WINDOW = "lg:max-h-[27.75rem]";
+/** The shelf never outgrows its neighbour: it stretches to the preview's height
+ * and scrolls inside. Rows are compact so more projects stay visible at once. */
+const ROW_HEIGHT = "lg:h-11";
 /** The tech row stays scannable: the most-used stacks only. */
 const TECH_LIMIT = 8;
 
@@ -148,15 +146,17 @@ export function Showcase({
             </p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-5 lg:grid-cols-[0.62fr_1fr] lg:items-start">
-            {/* The whole filtered shelf: seven rows high, the rest is a scroll away. */}
-            <Reveal>
-              <div className="panel overflow-hidden p-2">
+          <div className="mt-8 grid gap-5 lg:grid-cols-[0.62fr_1fr] lg:items-stretch">
+            {/* The whole filtered shelf: as tall as the preview, the rest is a
+                scroll away. `data-lenis-prevent` hands the wheel back to this
+                list so it scrolls without dragging the scrollbar. */}
+            <Reveal className="h-full">
+              <div className="panel h-full overflow-hidden p-2">
                 <ul
                   aria-label="Project list"
+                  data-lenis-prevent
                   className={cn(
-                    "thin-scroll flex gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-y-auto lg:pr-1",
-                    LIST_WINDOW,
+                    "thin-scroll flex h-full gap-1.5 overflow-x-auto pb-1 lg:flex-col lg:overflow-y-auto lg:pr-1",
                   )}
                 >
                   {matches.map((project, position) => {
@@ -168,7 +168,8 @@ export function Showcase({
                           onClick={() => setActiveSlug(project.slug)}
                           aria-current={isActive ? "true" : undefined}
                           className={cn(
-                            "group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors lg:h-14",
+                            "group flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors",
+                            ROW_HEIGHT,
                             isActive
                               ? "bg-accent/10 text-ink"
                               : "text-muted hover:bg-surface-2 hover:text-ink",
@@ -185,13 +186,13 @@ export function Showcase({
                           <span className="min-w-0 flex-1">
                             <span
                               className={cn(
-                                "block truncate text-[13px] font-medium",
+                                "block truncate text-[12.5px] font-medium",
                                 isActive && "text-accent",
                               )}
                             >
                               {project.title}
                             </span>
-                            <span className="mt-0.5 hidden truncate text-[10.5px] text-faint sm:block">
+                            <span className="mt-0.5 hidden truncate text-[10px] text-faint sm:block lg:leading-tight">
                               {project.category}
                             </span>
                           </span>
@@ -210,7 +211,7 @@ export function Showcase({
               </div>
             </Reveal>
 
-            <Reveal delay={90}>
+            <Reveal delay={90} className="h-full">
               {active ? (
                 <motion.div
                   key={active._id}

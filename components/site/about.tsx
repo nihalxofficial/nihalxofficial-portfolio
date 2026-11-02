@@ -58,30 +58,68 @@ function toSourceFiles(about: AboutContent): CodeFile[] {
     files.push({ name: "whoami.ts", lang: "TypeScript", lines });
   }
 
+  // A "passion" tab: each dashboard passion word expanded into a short line
+  // about coding, learning new things, building and growing.
+  const passions = (card.passion ?? []).filter(Boolean);
+  if (passions.length > 0) {
+    const PHRASES: Record<string, string> = {
+      code: "writing clean, readable software",
+      coding: "writing clean, readable software",
+      learn: "learning something new every day",
+      learning: "picking up new tools and ideas",
+      build: "turning ideas into real products",
+      building: "shipping things people actually use",
+      grow: "getting a little better each time",
+      problem: "solving problems that actually matter",
+      design: "sweating the small UI details",
+      teach: "mentoring others and sharing what I know",
+      read: "reading docs, code and good writing",
+      music: "a good soundtrack while I focus",
+    };
+
+    const lines: Token[][] = [
+      [cm("// What keeps me at the keyboard.")],
+      [],
+      [k("const"), pl(" passions"), pu(" = {")],
+    ];
+
+    passions.forEach((item, position) => {
+      const key =
+        item.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") ||
+        `thing_${position}`;
+      const note = PHRASES[key] ?? item.toLowerCase();
+      const last = position === passions.length - 1;
+      lines.push([pl("  "), pr(key), pu(": "), st(`"${note}"`), pu(last ? "" : ",")]);
+    });
+
+    lines.push([pu("};")]);
+    files.push({ name: "passion.ts", lang: "TypeScript", lines });
+  }
+
   if (about.highlights.length > 0) {
-    const json: Token[][] = [[pu("{")], [pl("  "), pr('"highlights"'), pu(": [")]];
+    // A second, complementary view: the dashboard highlight rows rendered as a
+    // typed `contact` record (email, location, status, work mode …) instead of
+    // a raw JSON array, so the panel reads as details rather than data.
+    const lines: Token[][] = [
+      [cm("// Reachable — anywhere the work is.")],
+      [],
+      [k("export const"), pl(" contact"), pu(": "), ty("Record"), pu("<"), ty("string"), pu(", "), ty("string"), pu("> = {")],
+    ];
 
     about.highlights.forEach((item, position) => {
-      json.push([
-        pl("    "),
-        pu("{ "),
-        pr('"label"'),
-        pu(": "),
-        st(`"${item.label}"`),
-        pu(", "),
-        pr('"icon"'),
-        pu(": "),
-        st(`"${item.icon}"`),
-        pu(", "),
-        pr('"value"'),
+      const key = item.label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") || `field_${position}`;
+      const last = position === about.highlights.length - 1;
+      lines.push([
+        pl("  "),
+        pr(key),
         pu(": "),
         st(`"${item.value}"`),
-        pu(` }${position < about.highlights.length - 1 ? "," : ""}`),
+        pu(last ? "" : ","),
       ]);
     });
 
-    json.push([pl("  "), pu("]")], [pu("}")]);
-    files.push({ name: "highlights.json", lang: "JSON", lines: json });
+    lines.push([pu("};")]);
+    files.push({ name: "contact.ts", lang: "TypeScript", lines });
   }
 
   return files;

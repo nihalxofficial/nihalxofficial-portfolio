@@ -3,9 +3,11 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
+import { Analytics } from "@/components/site/analytics";
 import { getSiteSettings } from "@/lib/api";
+import { markFavicon } from "@/lib/favicon";
 import { resolveTypography } from "@/lib/fonts";
-import { absoluteUrl } from "@/lib/utils";
+import { absoluteUrl, initials } from "@/lib/utils";
 
 const FALLBACK = {
   siteName: "Md. Nihal Uddin Bijoy",
@@ -32,8 +34,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = settings?.metaTitle || FALLBACK.metaTitle;
   const description = settings?.metaDescription || FALLBACK.metaDescription;
   const ogImage = absoluteUrl(settings?.ogImageUrl || FALLBACK.ogImageUrl, siteUrl);
-  // The favicon is a dashboard asset: uploaded to ImgBB or kept in /public.
-  const favicon = settings?.branding?.faviconUrl || "/favicon.png";
+  // The favicon is a dashboard asset: an uploaded image, otherwise a generated
+  // gradient tile carrying the brand mark (defaults to the name's initials).
+  const siteName = settings?.siteName || FALLBACK.siteName;
+  const favicon =
+    settings?.branding?.faviconUrl ||
+    markFavicon(settings?.branding?.mark?.trim() || initials(siteName));
 
   return {
     metadataBase: new URL(siteUrl),
@@ -95,6 +101,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <MotionProvider>
             <SmoothScroll>{children}</SmoothScroll>
           </MotionProvider>
+          {/* Passive visitor beacon; ignores the dashboard internally. */}
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

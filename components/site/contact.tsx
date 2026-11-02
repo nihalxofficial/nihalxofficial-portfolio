@@ -2,11 +2,13 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Icon } from "@/components/ui/icon";
+import { TerminalText } from "@/components/ui/terminal-text";
 import { PlusMarks, WindowBar } from "@/components/ui/panel-chrome";
 import { Reveal } from "@/components/ui/reveal";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { sendContactMessage } from "@/lib/api";
 import { coordinatesOf, formatCoordinates, mapEmbedUrl, mapsLink } from "@/lib/map";
+import { tokenizeCommand, tokenizeOutput } from "@/lib/terminal";
 import type { SectionMeta, SiteSettings } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -163,10 +165,11 @@ export function Contact({
                     <div key={line.cmd}>
                       <p className="mono text-[11.5px] leading-relaxed">
                         <span className="text-accent">$</span>{" "}
-                        <span className="text-ink">{line.cmd}</span>
+                        <TerminalText tokens={tokenizeCommand(line.cmd)} className="text-ink" />
                       </p>
-                      <p className="mono text-[11.5px] leading-relaxed text-muted">
-                        <span className="text-success">›</span> {line.out}
+                      <p className="mono text-[11.5px] leading-relaxed">
+                        <span className="text-success">›</span>{" "}
+                        <TerminalText tokens={tokenizeOutput(line.out)} className="text-muted" />
                       </p>
                     </div>
                   ))}

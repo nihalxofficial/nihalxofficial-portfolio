@@ -25,6 +25,8 @@ export interface Hero extends DocMeta {
   primaryCta: CtaLink;
   secondaryCta: CtaLink;
   terminal: { command: string; lines: string[] };
+  /** Banner typewriter: cycles through `lines` behind an optional `prefix`. */
+  rotator?: { prefix?: string; lines: string[] };
   portraitUrl: string;
   /** Handwritten-style note floating beside the portrait. */
   tagline?: string;
@@ -194,6 +196,8 @@ export interface SiteBranding {
   footerLogoDark?: string;
   faviconUrl?: string;
   logoAlt?: string;
+  /** Short initials mark (e.g. "NB") shown when no logo image is uploaded. */
+  mark?: string;
   /** Text wordmark shown next to the mark in the header and footer. */
   wordmark?: string;
 }

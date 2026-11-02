@@ -114,6 +114,43 @@ UID in `ADMIN_UIDS` — the browser is never the authority on who is an admin.
 server rendering uses the compose service name (`http://api:5000/api/v1`) while the browser
 keeps using the public `NEXT_PUBLIC_API_URL`.
 
+### Where to get the Firebase values
+
+The six `NEXT_PUBLIC_FIREBASE_*` variables are the **public web config** of the *same* Firebase
+project the API authenticates against (this site uses project `ultra-badge-403914`). They are safe
+to expose — being able to see them does not grant dashboard access; the server still has to verify
+the ID token **and** find your UID in `ADMIN_UIDS`.
+
+1. Open <https://console.firebase.google.com> and select the project.
+2. **Project settings** (gear icon, top left) → **General** tab → scroll to **Your apps**.
+   - If a Web app (`</>` icon) already exists, click it. If not: **Add app → Web**, give it a
+     nickname, **Register app**.
+3. In **SDK setup and configuration** turn off "Use a configuration snippet" if shown, and copy
+   the `firebaseConfig` object. Paste each value into `.env.local`:
+
+   | `firebaseConfig` key | `.env.local` variable |
+   | --- | --- |
+   | `apiKey` | `NEXT_PUBLIC_FIREBASE_API_KEY` |
+   | `authDomain` | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` |
+   | `projectId` | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` |
+   | `appId` | `NEXT_PUBLIC_FIREBASE_APP_ID` |
+   | `messagingSenderId` | `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` |
+   | `storageBucket` | `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` |
+
+   `isFirebaseConfigured()` only needs `apiKey`, `authDomain`, `projectId` and `appId`; the last
+   two are optional unless you use Cloud Messaging / Firebase Storage.
+4. **Authentication → Sign-in method**: enable **Email/Password** (and **Google** / **GitHub** if
+   you want those buttons on the login page).
+5. **Authentication → Users**: create your admin (or use `/control-centre/register`), then copy
+   that **User UID** into the server's `ADMIN_UIDS`. Without this the sign-in succeeds but the API
+   rejects the session.
+6. Keep the frontend `NEXT_PUBLIC_FIREBASE_PROJECT_ID` identical to the server's
+   `FIREBASE_PROJECT_ID` — they must be the same project or tokens will not verify.
+
+> **Restart `npm run dev` after editing `.env.local`.** `NEXT_PUBLIC_*` values are inlined into the
+> client bundle at server start, so the running dev server keeps the old (empty) config until you
+> restart it. In a Docker/Vercel build the same rule applies: change the value, then rebuild.
+
 ## Local development
 
 ```bash

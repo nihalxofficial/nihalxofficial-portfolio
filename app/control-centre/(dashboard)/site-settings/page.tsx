@@ -20,7 +20,7 @@ import {
   type FontRole,
 } from "@/lib/fonts";
 import { mapEmbedUrl } from "@/lib/map";
-import type { SiteSettings } from "@/lib/types";
+import type { SiteSettings, SocialLink } from "@/lib/types";
 
 /**
  * Appearance settings.
@@ -90,7 +90,34 @@ const EMPTY_MAP: ContactMap = {
   mapEmbedUrl: "",
 };
 
-type SavingSection = "branding" | "typography" | "map" | null;
+/**
+ * Platform presets for the social links editor.
+ *
+ * Picking one stores its display name and the icon key the public site resolves
+ * (hero, contact and footer all render the same `socialLinks` array), so no
+ * icon has to be typed by hand. "Custom" keeps a free-text name.
+ */
+const SOCIAL_PLATFORMS: Array<{ name: string; icon: string }> = [
+  { name: "GitHub", icon: "Github" },
+  { name: "LinkedIn", icon: "Linkedin" },
+  { name: "Facebook", icon: "SiFacebook" },
+  { name: "Twitter / X", icon: "SiX" },
+  { name: "WhatsApp", icon: "SiWhatsapp" },
+  { name: "Discord", icon: "SiDiscord" },
+  { name: "LeetCode", icon: "SiLeetcode" },
+  { name: "Stack Overflow", icon: "SiStackoverflow" },
+  { name: "Instagram", icon: "SiInstagram" },
+  { name: "YouTube", icon: "SiYoutube" },
+  { name: "Telegram", icon: "SiTelegram" },
+  { name: "Docker Hub", icon: "Container" },
+];
+
+/** Icon for a stored platform name; unknown names fall back to the generic link. */
+function iconFor(platform: string): string {
+  return SOCIAL_PLATFORMS.find((entry) => entry.name === platform)?.icon || "Globe";
+}
+
+type SavingSection = "branding" | "typography" | "contact" | null;
 
 type Flash = { tone: "success" | "error"; text: string } | null;
 
@@ -101,11 +128,13 @@ function toMessage(cause: unknown, fallback: string) {
 export default function SiteSettingsPage() {
   const [branding, setBranding] = useState<Record<BrandingKey, string>>(EMPTY_BRANDING);
   const [logoAlt, setLogoAlt] = useState("");
+  const [mark, setMark] = useState("");
   const [wordmark, setWordmark] = useState("");
   const [typography, setTypography] = useState<Record<FontRole, string>>({
     ...DEFAULT_TYPOGRAPHY,
   });
   const [contact, setContact] = useState<ContactMap>(EMPTY_MAP);
+  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [sections, setSections] = useState<EntityRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<SavingSection>(null);
@@ -127,7 +156,7 @@ export default function SiteSettingsPage() {
       ]);
 
       const stored = (settings.branding ?? {}) as Partial<
-        Record<BrandingKey | "logoAlt" | "wordmark", string>
+        Record<BrandingKey | "logoAlt" | "mark" | "wordmark", string>
       >;
 
       setBranding({
@@ -138,6 +167,7 @@ export default function SiteSettingsPage() {
         faviconUrl: stored.faviconUrl ?? "",
       });
       setLogoAlt(stored.logoAlt ?? "");
+      setMark(stored.mark ?? "");
       setWordmark(stored.wordmark ?? "");
 
       const type = (settings.typography ?? {}) as Partial<Record<FontRole, string>>;
@@ -147,9 +177,15 @@ export default function SiteSettingsPage() {
         mono: type.mono || DEFAULT_TYPOGRAPHY.mono,
       });
 
-      // The whole contact object is sent back on save, so keep the parts this
-      // page does not edit (email, phone, availability) exactly as stored.
+      // The whole contact object is sent back on save, so map-only fields
+      // (coordinates, zoom, embed) survive edits made on this page.
       setContact({ ...EMPTY_MAP, ...((settings.contact ?? {}) as ContactMap) });
+
+      setSocialLinks(
+        Array.isArray(settings.socialLinks)
+          ? (settings.socialLinks as SocialLink[])
+          : [],
+      );
 
       setSections(list.items);
       setFlash(null);
@@ -170,13 +206,23 @@ export default function SiteSettingsPage() {
   const patchContact = (field: keyof ContactMap, value: string | number) =>
     setContact((current) => ({ ...current, [field]: value }));
 
+  const patchSocial = (index: number, next: Partial<SocialLink>) =>
+    setSocialLinks((rows) =>
+      rows.map((row, position) => (position === index ? { ...row, ...next } : row)),
+    );
+
   async function saveBranding() {
     setSaving("branding");
     setFlash(null);
 
     try {
       await updateContent("settings", "current", {
-        branding: { ...branding, logoAlt: logoAlt.trim(), wordmark: wordmark.trim() },
+        branding: {
+          ...branding,
+          logoAlt: logoAlt.trim(),
+          mark: mark.trim().slice(0, 3),
+          wordmark: wordmark.trim(),
+        },
       });
       setFlash({ tone: "success", text: "Branding saved. The public site updates within a minute." });
     } catch (cause) {
@@ -200,15 +246,29 @@ export default function SiteSettingsPage() {
     }
   }
 
-  async function saveMap() {
-    setSaving("map");
+  async function saveContact() {
+    setSaving("contact");
     setFlash(null);
 
     try {
-      await updateContent("settings", "current", { contact });
-      setFlash({ tone: "success", text: "Map saved. The contact section re-renders the pin." });
+      // Rows with no URL are drafts: they are dropped so the public site never
+      // renders an empty icon.
+      const links = socialLinks
+        .filter((link) => link.platform.trim() && link.url.trim())
+        .map((link) => ({
+          platform: link.platform.trim(),
+          url: link.url.trim(),
+          icon: link.icon || iconFor(link.platform.trim()),
+        }));
+
+      await updateContent("settings", "current", { contact, socialLinks: links });
+      setSocialLinks(links);
+      setFlash({
+        tone: "success",
+        text: "Contact details saved. Hero, contact and footer pick up the links on the next revalidation.",
+      });
     } catch (cause) {
-      setFlash({ tone: "error", text: toMessage(cause, "Could not save the map settings.") });
+      setFlash({ tone: "error", text: toMessage(cause, "Could not save the contact settings.") });
     } finally {
       setSaving(null);
     }
@@ -376,6 +436,23 @@ export default function SiteSettingsPage() {
 
           <label className="flex flex-col gap-1.5">
             <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
+              Logo mark
+            </span>
+            <input
+              value={mark}
+              onChange={(event) => setMark(event.target.value)}
+              placeholder="NB"
+              maxLength={3}
+              className="h-9 rounded-lg border border-line bg-surface-2/50 px-3 text-[12px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+            />
+            <span className="text-[10.5px] text-faint">
+              Up to 3 initials shown in the gradient tile and the favicon when no logo image is
+              uploaded. Empty falls back to your name’s initials.
+            </span>
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
               Wordmark
             </span>
             <input
@@ -468,31 +545,46 @@ export default function SiteSettingsPage() {
         </div>
       </section>
 
-      {/* ── Contact map ──────────────────────────────────────────────────── */}
+      {/* ── Contact & social ────────────────────────────────────────────── */}
       <section className="panel p-4 sm:p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-[13.5px] font-semibold text-ink">Contact map</h2>
+            <h2 className="text-[13.5px] font-semibold text-ink">Contact &amp; social links</h2>
             <p className="mono mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
-              key-free google maps embed · no sdk needed
+              email · phone · location · availability · map · social profiles
             </p>
           </div>
 
           <button
             type="button"
-            onClick={() => void saveMap()}
+            onClick={() => void saveContact()}
             disabled={saving !== null}
             className="inline-flex items-center gap-2 rounded-lg grad-accent px-3.5 py-2 text-[12px] font-semibold text-accent-ink disabled:opacity-60"
           >
             <Icon
-              name={saving === "map" ? "Loader" : "Save"}
-              className={`h-3.5 w-3.5 ${saving === "map" ? "animate-spin" : ""}`}
+              name={saving === "contact" ? "Loader" : "Save"}
+              className={`h-3.5 w-3.5 ${saving === "contact" ? "animate-spin" : ""}`}
             />
-            {saving === "map" ? "Saving…" : "Save map"}
+            {saving === "contact" ? "Saving…" : "Save contact"}
           </button>
         </div>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <MapField
+            label="Email"
+            value={contact.email ?? ""}
+            onChange={(value) => patchContact("email", value)}
+            placeholder="you@example.com"
+            type="email"
+            hint="Shown in the contact section as a mailto link."
+          />
+          <MapField
+            label="Phone"
+            value={contact.phone ?? ""}
+            onChange={(value) => patchContact("phone", value)}
+            placeholder="+880 1XXX-XXXXXX"
+            hint="Optional. Shown as a tel link when set."
+          />
           <MapField
             label="Location"
             value={contact.location ?? ""}
@@ -500,6 +592,141 @@ export default function SiteSettingsPage() {
             placeholder="Mirsarai, Chattogram"
             hint="Shown in the contact list and used to centre the map when no pin is set."
           />
+          <MapField
+            label="Availability"
+            value={contact.availability ?? ""}
+            onChange={(value) => patchContact("availability", value)}
+            placeholder="Open to offers / Ready to interview"
+            hint="Shown in the contact list and the terminal column."
+          />
+        </div>
+
+        {/* Social links — hero, contact and footer all render this one list. */}
+        <div className="mt-5">
+          <div className="flex items-center justify-between gap-2">
+            <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
+              Social profiles
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                setSocialLinks((rows) => [...rows, { platform: "", url: "", icon: "" }])
+              }
+              className="mono inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 text-[9.5px] uppercase tracking-[0.14em] text-faint transition-colors hover:border-line-strong hover:text-accent"
+            >
+              <Icon name="Plus" className="h-3 w-3" />
+              add link
+            </button>
+          </div>
+
+          {socialLinks.length === 0 ? (
+            <p className="mt-2 rounded-lg border border-dashed border-line px-3 py-2.5 text-[11.5px] text-faint">
+              No social profiles yet. Add as many as you like — they appear in the
+              hero, the contact section and the footer.
+            </p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {socialLinks.map((link, index) => (
+                <li
+                  key={index}
+                  className="flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface-2/40 p-2.5"
+                >
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line bg-page text-accent">
+                    <Icon name={link.icon || iconFor(link.platform)} className="h-4 w-4" />
+                  </span>
+
+                  <select
+                    value={SOCIAL_PLATFORMS.some((entry) => entry.name === link.platform) ? link.platform : ""}
+                    onChange={(event) => {
+                      const picked = event.target.value;
+                      patchSocial(
+                        index,
+                        picked
+                          ? { platform: picked, icon: iconFor(picked) }
+                          : { platform: "", icon: "" },
+                      );
+                    }}
+                    className="h-9 w-36 shrink-0 rounded-lg border border-line bg-page px-2 text-[12px] text-ink outline-none transition-colors focus:border-accent"
+                    aria-label={`Platform ${index + 1}`}
+                  >
+                    <option value="">— pick —</option>
+                    {SOCIAL_PLATFORMS.map((entry) => (
+                      <option key={entry.name} value={entry.name}>
+                        {entry.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <input
+                    value={link.platform}
+                    onChange={(event) => patchSocial(index, { platform: event.target.value })}
+                    placeholder="Platform name"
+                    className="h-9 w-32 shrink-0 rounded-lg border border-line bg-page px-2.5 text-[12px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+                    aria-label={`Platform name ${index + 1}`}
+                  />
+
+                  <input
+                    value={link.url}
+                    onChange={(event) => patchSocial(index, { url: event.target.value })}
+                    placeholder="https://…"
+                    className="h-9 min-w-40 flex-1 rounded-lg border border-line bg-page px-2.5 text-[11.5px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
+                    aria-label={`Profile URL ${index + 1}`}
+                  />
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      onClick={() =>
+                        setSocialLinks((rows) => {
+                          const copy = [...rows];
+                          [copy[index - 1], copy[index]] = [copy[index], copy[index - 1]];
+                          return copy;
+                        })
+                      }
+                      aria-label="Move link up"
+                      className="grid h-8 w-7 place-items-center rounded-md border border-line text-faint transition-colors hover:text-accent disabled:opacity-40"
+                    >
+                      <Icon name="ChevronDown" className="h-3.5 w-3.5 rotate-180" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={index === socialLinks.length - 1}
+                      onClick={() =>
+                        setSocialLinks((rows) => {
+                          const copy = [...rows];
+                          [copy[index], copy[index + 1]] = [copy[index + 1], copy[index]];
+                          return copy;
+                        })
+                      }
+                      aria-label="Move link down"
+                      className="grid h-8 w-7 place-items-center rounded-md border border-line text-faint transition-colors hover:text-accent disabled:opacity-40"
+                    >
+                      <Icon name="ChevronDown" className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSocialLinks((rows) => rows.filter((_, position) => position !== index))
+                      }
+                      aria-label="Remove link"
+                      className="grid h-8 w-7 place-items-center rounded-md border border-line text-faint transition-colors hover:border-danger/40 hover:text-danger"
+                    >
+                      <Icon name="Trash" className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <p className="mono mt-2 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[10.5px] leading-relaxed text-faint">
+            Rows keep their order. The same list feeds the hero, contact and footer —
+            one place to manage every profile.
+          </p>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <MapField
             label="Latitude"
             value={String(contact.mapLat ?? "")}
@@ -627,10 +854,10 @@ export default function SiteSettingsPage() {
       {/* ── Elsewhere ────────────────────────────────────────────────────── */}
       <section className="panel flex flex-wrap items-center justify-between gap-3 p-4">
         <div>
-          <h2 className="text-[13px] font-semibold text-ink">SEO, contact &amp; social links</h2>
+          <h2 className="text-[13px] font-semibold text-ink">SEO &amp; meta</h2>
           <p className="mt-0.5 text-[11.5px] text-muted">
-            Site name, meta description, email, phone and social profiles live in the full settings
-            form.
+            Site name, meta description and keywords live in the full settings form.
+            Contact details and social profiles are edited above, on this page.
           </p>
         </div>
         <Link
@@ -743,7 +970,7 @@ function MapField({
   value: string;
   placeholder?: string;
   hint?: string;
-  type?: "text" | "number";
+  type?: "text" | "number" | "email";
   onChange: (value: string) => void;
 }) {
   return (

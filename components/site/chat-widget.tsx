@@ -216,6 +216,7 @@ export function ChatWidget() {
           <div
             ref={scrollRef}
             onScroll={trackScroll}
+            data-lenis-prevent
             className="thin-scroll h-[min(24rem,52vh)] min-h-[12rem] space-y-2.5 overflow-y-auto overscroll-contain px-3.5 py-3.5"
           >
             {messages.map((message, index) => (

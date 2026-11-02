@@ -417,33 +417,35 @@ function CollectionEditor({ type }: { type: ContentType }) {
           <TextField
             value={query}
             onChange={setQuery}
-            className="flex min-w-[190px] flex-1 items-center gap-2"
+            className="w-full min-w-[190px] sm:w-72"
           >
             <Label className="sr-only">Search {type.label}</Label>
             <Input placeholder={`Search ${type.label.toLowerCase()}…`} />
           </TextField>
 
-          <span className="mono hidden text-[10px] uppercase tracking-[0.14em] text-faint sm:block">
-            {total} record{total === 1 ? "" : "s"}
-          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="mono hidden text-[10px] uppercase tracking-[0.14em] text-faint sm:block">
+              {total} record{total === 1 ? "" : "s"}
+            </span>
 
-          <button
-            type="button"
-            onClick={() => setNonce((value) => value + 1)}
-            className="grid h-9 w-9 place-items-center rounded-lg border border-line text-faint transition-colors hover:border-line-strong hover:text-accent"
-            aria-label="Refresh"
-          >
-            <Icon name="Loader" className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          </button>
+            <button
+              type="button"
+              onClick={() => setNonce((value) => value + 1)}
+              className="grid h-9 w-9 place-items-center rounded-lg border border-line text-faint transition-colors hover:border-line-strong hover:text-accent"
+              aria-label="Refresh"
+            >
+              <Icon name="Loader" className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+            </button>
 
-          <Button
-            type="button"
-            onPress={openCreate}
-            className="h-9 rounded-lg grad-accent px-3 text-[12px] font-semibold text-accent-ink"
-          >
-            <Icon name="Plus" className="h-3.5 w-3.5" />
-            New
-          </Button>
+            <Button
+              type="button"
+              onPress={openCreate}
+              className="h-9 rounded-lg grad-accent px-3 text-[12px] font-semibold text-accent-ink"
+            >
+              <Icon name="Plus" className="h-3.5 w-3.5" />
+              New
+            </Button>
+          </div>
         </div>
 
         {loading && items.length === 0 ? (

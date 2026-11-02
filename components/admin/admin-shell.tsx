@@ -5,16 +5,27 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/admin/auth-provider";
 import { useAdminData } from "@/components/admin/admin-context";
+import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { Icon } from "@/components/ui/icon";
 import { ADMIN_BASE, adminHref } from "@/lib/admin-routes";
 import { initials } from "@/lib/utils";
 
-const FIXED_LINKS = [
+type NavLink = { href: string; label: string; icon: string };
+
+/** Primary dashboard actions, shown under a "Manage" heading. */
+const MANAGE_LINKS: NavLink[] = [
   { href: ADMIN_BASE, label: "Overview", icon: "LayoutDashboard" },
-  { href: adminHref("site-settings"), label: "Site settings", icon: "Settings" },
+  { href: adminHref("analytics"), label: "Analytics", icon: "Gauge" },
   { href: adminHref("messages"), label: "Messages", icon: "Inbox" },
   { href: adminHref("media"), label: "Media", icon: "Image" },
 ];
+
+/** Pinned to the very bottom of the sidebar, separate from the scroll groups. */
+const SETTINGS_LINK: NavLink = {
+  href: adminHref("site-settings"),
+  label: "Site settings",
+  icon: "Settings",
+};
 
 /** Edited from the Site settings page instead of the generic form. */
 const HIDDEN_ENTITIES = ["settings"];
@@ -65,19 +76,36 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const nav = [
-    ...FIXED_LINKS,
-    ...types
-      .filter((type) => !HIDDEN_ENTITIES.includes(type.key))
-      .map((type) => ({
-        href: adminHref(type.key),
-        label: type.label,
-        icon: type.singleton ? "Settings" : "FolderKanban",
-      })),
-  ];
+  const contentLinks: NavLink[] = types
+    .filter((type) => !HIDDEN_ENTITIES.includes(type.key))
+    .map((type) => ({
+      href: adminHref(type.key),
+      label: type.label,
+      icon: type.singleton ? "Settings" : "FolderKanban",
+    }));
 
   const isActive = (href: string) =>
     href === ADMIN_BASE ? pathname === ADMIN_BASE : pathname === href;
+
+  const current = [...MANAGE_LINKS, ...contentLinks, SETTINGS_LINK].find((item) =>
+    isActive(item.href),
+  );
+
+  const navItem = (item: NavLink) => {
+    const active = isActive(item.href);
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] transition-colors ${
+          active ? "bg-accent/12 text-accent" : "text-muted hover:bg-surface-2 hover:text-ink"
+        }`}
+      >
+        <Icon name={item.icon} className="h-4 w-4 shrink-0" />
+        <span className="truncate">{item.label}</span>
+      </Link>
+    );
+  };
 
   const sidebar = (
     <div className="flex h-full flex-col">
@@ -95,34 +123,29 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </span>
       </Link>
 
-      <nav className="scrollbar-none flex-1 space-y-0.5 overflow-y-auto px-2 pb-4">
-        {nav.map((item, index) => {
-          const active = isActive(item.href);
-          const firstContent = index === FIXED_LINKS.length;
+      <nav className="scrollbar-none flex-1 overflow-y-auto px-2 pb-4">
+        <p className="mono px-2 pb-1.5 pt-1 text-[9.5px] uppercase tracking-[0.2em] text-faint">
+          Manage
+        </p>
+        <div className="space-y-0.5">{MANAGE_LINKS.map(navItem)}</div>
 
-          return (
-            <div key={item.href}>
-              {firstContent ? (
-                <p className="mono mt-4 px-2 pb-1.5 text-[9.5px] uppercase tracking-[0.2em] text-faint">
-                  Content
-                </p>
-              ) : null}
-
-              <Link
-                href={item.href}
-                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] transition-colors ${
-                  active
-                    ? "bg-accent/12 text-accent"
-                    : "text-muted hover:bg-surface-2 hover:text-ink"
-                }`}
-              >
-                <Icon name={item.icon} className="h-4 w-4 shrink-0" />
-                <span className="truncate">{item.label}</span>
-              </Link>
-            </div>
-          );
-        })}
+        {contentLinks.length ? (
+          <>
+            <p className="mono mt-4 px-2 pb-1.5 text-[9.5px] uppercase tracking-[0.2em] text-faint">
+              Content
+            </p>
+            <div className="space-y-0.5">{contentLinks.map(navItem)}</div>
+          </>
+        ) : null}
       </nav>
+
+      {/* Site settings stays pinned to the bottom, above the account footer. */}
+      <div className="border-t border-line px-2 py-2">
+        <p className="mono px-2 pb-1.5 text-[9.5px] uppercase tracking-[0.2em] text-faint">
+          System
+        </p>
+        {navItem(SETTINGS_LINK)}
+      </div>
 
       <div className="border-t border-line p-2">
         <Link
@@ -151,32 +174,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
         {sidebar}
       </aside>
 
-      {/* Mobile top bar */}
-      <div className="sticky top-0 z-40 flex items-center gap-3 border-b border-line bg-page/90 px-4 py-3 backdrop-blur-xl lg:hidden">
-        <button
-          type="button"
-          onClick={() => setMenuOpen((value) => !value)}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-line text-ink"
-        >
-          <Icon name={menuOpen ? "X" : "Menu"} className="h-4 w-4" />
-        </button>
-        <span className="text-[13px] font-semibold text-ink">Dashboard</span>
-        <Link
-          href="/"
-          className="mono ml-auto text-[10px] uppercase tracking-[0.16em] text-faint hover:text-accent"
-        >
-          View site
-        </Link>
-      </div>
-
+      {/* Mobile sidebar drawer (opened from the top bar) */}
       {menuOpen ? (
-        <div className="fixed inset-0 top-[57px] z-30 bg-page lg:hidden">
+        <div className="fixed inset-0 top-14 z-30 bg-page lg:hidden">
           <div className="h-full overflow-y-auto">{sidebar}</div>
         </div>
       ) : null}
 
       <div className="lg:pl-60">
+        <AdminTopbar
+          title={current?.label ?? "Dashboard"}
+          menuOpen={menuOpen}
+          onToggleMenu={() => setMenuOpen((value) => !value)}
+        />
         <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-8">{children}</div>
       </div>
     </div>
