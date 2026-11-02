@@ -91,6 +91,9 @@ export function Hero({
   const secondaryHref = hero.secondaryCta?.href || "#contact";
   const secondaryExternal = /^https?:\/\//i.test(secondaryHref);
 
+  const rawPrimaryHref = hero.primaryCta?.href || "#showcase";
+  const primaryHref = rawPrimaryHref === "#projects" ? "#showcase" : rawPrimaryHref;
+
   const nav = navigation ?? [];
   const quickLinks = nav.filter((n) => {
     const k = keyFor(n.href);
@@ -149,11 +152,11 @@ export function Hero({
           {/* CTAs */}
           <div className="mt-7 flex flex-wrap gap-4">
             <a
-              href={hero.primaryCta?.href || "#projects"}
+              href={primaryHref}
               onClick={(e) => {
-                if (!hero.primaryCta?.href?.startsWith("http")) {
+                if (!primaryHref.startsWith("http")) {
                   e.preventDefault();
-                  scrollToHref(hero.primaryCta?.href || "#projects");
+                  scrollToHref(primaryHref);
                 }
               }}
               className="btn-primary rounded-full px-7 py-3 flex items-center gap-2 text-sm font-semibold"

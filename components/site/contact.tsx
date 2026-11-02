@@ -26,7 +26,7 @@ const SEND_LOG = [
 /* ── Ping radar for location ─────────────────────────────────────────── */
 function PingRadar() {
   return (
-    <div className="relative w-full aspect-square max-w-[200px] mx-auto">
+    <div className="relative w-full aspect-square max-w-[150px] mx-auto">
       {[1, 0.72, 0.44].map((s) => (
         <div
           key={s}
@@ -56,7 +56,7 @@ function PingRadar() {
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <span className="block w-3 h-3 rounded-full bg-acc shadow-[0_0_16px_var(--acc)]" />
       </div>
-      <div className="absolute left-1/2 top-1/2 translate-x-3 -translate-y-8 font-mono text-[9px] text-acc whitespace-nowrap">
+      <div className="absolute left-1/2 top-1/2 translate-x-2 -translate-y-6 font-mono text-[9px] text-acc whitespace-nowrap font-bold">
         DHAKA · BD
       </div>
     </div>
@@ -172,7 +172,7 @@ export function Contact({
   ].filter(Boolean) as Array<{ icon: string; label: string; value: string; href?: string }>;
 
   const session = [
-    { cmd: "ping creative_ideas",     out: "Pinging your ideas…" },
+    { cmd: "ping creative_ideas",     out: "Pinging ideas… latency < 20ms" },
     { cmd: "whoami",                  out: contact.availability || "full-stack developer" },
     { cmd: "./start-conversation.sh", out: "Building something awesome together!" },
   ];
@@ -180,160 +180,213 @@ export function Contact({
   const inputCls = "w-full bg-transparent outline-none px-3 py-2.5 text-sm placeholder:text-slate-600";
 
   return (
-    <section id="contact" className="relative py-12">
+    <section id="contact" className="relative py-14">
       {/* ViewHeader */}
-      <p className="eyebrow mb-2 font-mono text-xs text-acc">{"// get in touch"}</p>
-      <h2 className="text-3xl font-bold mb-2">
-        Let&apos;s Work <span className="text-grad">Together</span>
-      </h2>
-      {section?.description && (
-        <p className="text-sm text-slate-400 mb-8 max-w-xl">{section.description}</p>
-      )}
+      <div className="mb-8">
+        <p className="eyebrow mb-2 font-mono text-xs text-acc">{"// get in touch"}</p>
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+          Let&apos;s Work <span className="text-grad">Together</span>
+        </h2>
+        {section?.description && (
+          <p className="text-sm text-slate-400 max-w-xl">{section.description}</p>
+        )}
+      </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr]">
-        {/* ── Form ─────────────────────────────────────────── */}
-        <Reveal>
-          <div className="hud overflow-hidden h-full">
-            {/* Mac chrome */}
-            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/10 bg-white/[0.02]">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-              <span className="font-mono ml-3 text-xs text-slate-400">contact.sh — compose message</span>
-            </div>
+      {/* Balanced 2-Column Grid */}
+      <div className="grid gap-6 xl:grid-cols-[1.15fr_1fr] items-start min-w-0 max-w-full">
+        {/* ── LEFT COLUMN: Form + Terminal Console ────────────────────── */}
+        <div className="space-y-5 min-w-0">
+          {/* Main Message Form */}
+          <Reveal>
+            <div className="hud !rounded-2xl overflow-hidden border border-white/10 hover:border-acc/40 transition-colors">
+              {/* Window Bar Header */}
+              <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/10 bg-white/[0.02]">
+                <span className="h-2.5 w-2.5 rounded-full bg-red-500/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-amber-400/80" />
+                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+                <span className="font-mono ml-3 text-xs text-slate-400">
+                  contact.sh — compose message
+                </span>
+                <span className="ml-auto font-mono text-[10px] text-acc uppercase tracking-widest">
+                  PORT:5000
+                </span>
+              </div>
 
-            {/* Idle: form */}
-            {status === "idle" && (
-              <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4" noValidate>
-                {/* Subject chips */}
-                <div>
-                  <span className="font-mono text-[9.5px] text-acc">{">"} subject</span>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {SUBJECTS.map((s) => (
-                      <button
-                        type="button"
-                        key={s}
-                        onClick={() => setSubject(s)}
-                        className={`chip !text-xs !py-1.5 ${subject === s ? "on" : ""}`}
-                      >
-                        {s}
-                      </button>
-                    ))}
+              {/* Idle: form */}
+              {status === "idle" && (
+                <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4" noValidate>
+                  {/* Subject chips */}
+                  <div>
+                    <span className="font-mono text-[9.5px] text-acc uppercase tracking-widest">
+                      {">"} select subject
+                    </span>
+                    <div className="mt-2 flex flex-wrap gap-1.5 sm:gap-2">
+                      {SUBJECTS.map((s) => (
+                        <button
+                          type="button"
+                          key={s}
+                          onClick={() => setSubject(s)}
+                          className={`chip !text-xs !py-1.5 cursor-pointer transition ${
+                            subject === s ? "on !border-acc text-acc bg-acc/10" : ""
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Name + email */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <Field id="contact-name" label="// your name" error={errors.name}>
+                      <input
+                        id="contact-name"
+                        className={inputCls}
+                        placeholder="John Doe"
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      />
+                    </Field>
+                    <Field id="contact-email" label="// email address" error={errors.email}>
+                      <input
+                        id="contact-email"
+                        type="email"
+                        className={inputCls}
+                        placeholder="john@example.com"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      />
+                    </Field>
+                  </div>
+
+                  {/* Message */}
+                  <Field id="contact-message" label="// message brief" error={errors.message}>
+                    <textarea
+                      id="contact-message"
+                      className={`${inputCls} resize-none h-32`}
+                      maxLength={500}
+                      placeholder="Tell me about your project, timeline, budget or inquiry…"
+                      value={form.message}
+                      onChange={(e) => setForm({ ...form, message: e.target.value })}
+                    />
+                  </Field>
+
+                  <div className="flex items-center justify-between gap-3 pt-1">
+                    <span className="font-mono text-[11px] text-slate-500">
+                      {form.message.length}/500 chars
+                    </span>
+                    <button
+                      type="submit"
+                      className="btn-primary inline-flex items-center justify-center gap-2 whitespace-nowrap px-6 py-2.5 rounded-xl font-mono text-xs font-bold cursor-pointer"
+                    >
+                      <span>Send Message</span>
+                      <Send size={13} className="shrink-0" />
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Sending: animated log */}
+              {status === "sending" && (
+                <div className="p-6 min-h-[300px] font-mono text-sm space-y-2.5">
+                  <div className="flex items-center gap-2 text-acc font-bold">
+                    <Loader2 size={16} className="animate-spin" /> transmitting payload…
+                  </div>
+                  {SEND_LOG.slice(0, sendLog).map((line, i) => (
+                    <div key={i} className="rise text-slate-300 flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span>
+                      <span>{line}</span>
+                    </div>
+                  ))}
+                  <div className="mt-5 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div
+                      className="h-full bg-grad transition-all duration-500"
+                      style={{ width: `${(sendLog / SEND_LOG.length) * 100}%` }}
+                    />
                   </div>
                 </div>
+              )}
 
-                {/* Name + email */}
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <Field id="contact-name" label="// name" error={errors.name}>
-                    <input
-                      id="contact-name"
-                      className={inputCls}
-                      placeholder="Ada Lovelace"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    />
-                  </Field>
-                  <Field id="contact-email" label="// email" error={errors.email}>
-                    <input
-                      id="contact-email"
-                      type="email"
-                      className={inputCls}
-                      placeholder="ada@example.com"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    />
-                  </Field>
-                </div>
-
-                {/* Message */}
-                <Field id="contact-message" label="// message" error={errors.message}>
-                  <textarea
-                    id="contact-message"
-                    className={`${inputCls} resize-none h-36`}
-                    maxLength={500}
-                    placeholder="Tell me about your project, idea or opportunity…"
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  />
-                </Field>
-
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-mono text-[11px] text-slate-500">{form.message.length}/500</span>
+              {/* Sent: success */}
+              {status === "sent" && (
+                <div className="p-8 sm:p-10 text-center rise space-y-3">
+                  <div className="mx-auto w-14 h-14 rounded-full grid place-items-center bg-emerald-400/10 border-2 border-emerald-400 text-emerald-300 shadow-[0_0_25px_rgba(52,211,153,.5)]">
+                    <Check size={28} />
+                  </div>
+                  <h3 className="font-display text-2xl font-bold mt-3 text-white">
+                    Transmission Sent!
+                  </h3>
+                  <p className="text-slate-400 text-sm max-w-sm mx-auto">
+                    Thanks {form.name.split(" ")[0] || "there"}! Your message has been safely received. I&apos;ll reply within 24 hours.
+                  </p>
                   <button
-                    type="submit"
-                    className="btn-primary rounded-lg px-6 py-3 text-sm flex items-center gap-2 cursor-pointer"
+                    onClick={reset}
+                    className="mt-4 btn-ghost inline-flex items-center gap-1.5 rounded-xl px-5 py-2 text-xs font-mono cursor-pointer"
                   >
-                    Send Message <Send size={15} />
+                    <span>Write another message</span>
                   </button>
                 </div>
-              </form>
-            )}
+              )}
 
-            {/* Sending: animated log */}
-            {status === "sending" && (
-              <div className="p-6 min-h-[340px] font-mono text-sm space-y-2">
-                <div className="flex items-center gap-2 text-acc">
-                  <Loader2 size={16} className="animate-spin" /> transmitting…
+              {/* Error */}
+              {status === "error" && (
+                <div className="p-8 text-center rise space-y-3">
+                  <div className="mx-auto w-14 h-14 rounded-full grid place-items-center bg-red-500/10 border-2 border-red-400 text-red-400">
+                    <X size={24} />
+                  </div>
+                  <h3 className="font-display text-xl font-bold mt-2 text-white">
+                    Transmission Failed
+                  </h3>
+                  <p className="text-slate-400 text-sm">{resultMsg}</p>
+                  <button
+                    onClick={reset}
+                    className="mt-4 btn-ghost inline-flex items-center gap-1.5 rounded-xl px-5 py-2 text-xs font-mono cursor-pointer"
+                  >
+                    <span>Try again</span>
+                  </button>
                 </div>
-                {SEND_LOG.slice(0, sendLog).map((line, i) => (
-                  <div key={i} className="rise text-slate-300">
-                    <span className="text-emerald-400">✓</span> {line}
+              )}
+            </div>
+          </Reveal>
+
+          {/* Interactive Bash Terminal (Balanced Left Bottom) */}
+          <Reveal delay={80}>
+            <div className="code-window relative flex flex-col overflow-hidden rounded-2xl border border-white/10">
+              <PlusMarks className="z-10" />
+              <WindowBar title="bash — contact session" />
+              <div className="flex-1 space-y-1.5 p-4 bg-[#020515]/90">
+                {session.map((line) => (
+                  <div key={line.cmd}>
+                    <p className="font-mono text-[11.5px] leading-relaxed">
+                      <span className="text-acc font-bold">$</span>{" "}
+                      <TerminalText tokens={tokenizeCommand(line.cmd)} className="text-slate-200" />
+                    </p>
+                    <p className="font-mono text-[11.5px] leading-relaxed">
+                      <span className="text-emerald-400">›</span>{" "}
+                      <TerminalText tokens={tokenizeOutput(line.out)} className="text-slate-400" />
+                    </p>
                   </div>
                 ))}
-                <div className="mt-4 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full bg-grad transition-all duration-500"
-                    style={{ width: `${(sendLog / SEND_LOG.length) * 100}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Sent: success */}
-            {status === "sent" && (
-              <div className="p-6 sm:p-10 text-center rise">
-                <div className="mx-auto w-16 h-16 rounded-full grid place-items-center bg-emerald-400/10 border-2 border-emerald-400 text-emerald-300 shadow-[0_0_30px_rgba(52,211,153,.5)]">
-                  <Check size={30} />
-                </div>
-                <h3 className="font-display text-2xl font-bold mt-5">Message sent!</h3>
-                <p className="text-slate-400 mt-2 text-sm">
-                  Thanks {form.name.split(" ")[0] || "you"}! I&apos;ll reply within 24 hours.
+                <p className="font-mono pt-1 text-[11.5px] text-acc flex items-center gap-1">
+                  <span className="text-slate-500">$</span>
+                  <span>ready for transmission</span>
+                  <span className="caret">▌</span>
                 </p>
-                <button
-                  onClick={reset}
-                  className="mt-6 btn-ghost rounded-lg px-5 py-2.5 text-sm cursor-pointer"
-                >
-                  Write another
-                </button>
               </div>
-            )}
+            </div>
+          </Reveal>
+        </div>
 
-            {/* Error */}
-            {status === "error" && (
-              <div className="p-6 text-center rise">
-                <div className="mx-auto w-14 h-14 rounded-full grid place-items-center bg-red-500/10 border-2 border-red-400 text-red-400">
-                  <X size={24} />
-                </div>
-                <h3 className="font-display text-xl font-bold mt-4">Send failed</h3>
-                <p className="text-slate-400 mt-2 text-sm">{resultMsg}</p>
-                <button
-                  onClick={reset}
-                  className="mt-5 btn-ghost rounded-lg px-5 py-2.5 text-sm cursor-pointer"
-                >
-                  Try again
-                </button>
+        {/* ── RIGHT COLUMN: Channels + Availability & Socials + Map ────── */}
+        <div className="space-y-5 min-w-0">
+          {/* Direct Communication Channels + Radar */}
+          <Reveal delay={60}>
+            <div className="hud !rounded-2xl p-5 border border-white/10 hover:border-acc/40 transition-colors">
+              <div className="font-mono text-[10.5px] text-acc uppercase tracking-widest mb-3">
+                {"// direct telemetry channels"}
               </div>
-            )}
-          </div>
-        </Reveal>
-
-        {/* ── Info column ─────────────────────────────────── */}
-        <div className="space-y-5">
-          {/* Contact rows + ping radar */}
-          <Reveal delay={80}>
-            <div className="hud p-5">
               <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                <div className="space-y-2">
+                <div className="space-y-2 min-w-0">
                   {/* Email copy row */}
                   {contact.email && (
                     <button
@@ -343,15 +396,19 @@ export function Contact({
                         setCopied(true);
                         setTimeout(() => setCopied(false), 1500);
                       }}
-                      className="w-full flex items-center gap-3 p-3 rounded-lg border border-white/10 hover:border-acc/60 bg-white/[0.02] cursor-pointer text-left transition group"
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:border-acc/60 bg-white/[0.02] cursor-pointer text-left transition group"
                     >
-                      <Icon name="Mail" className="h-4.5 w-4.5 text-acc shrink-0" />
-                      <span className="min-w-0">
-                        <span className="block text-[9.5px] font-mono text-slate-500 uppercase">email</span>
-                        <span className="block text-sm truncate">{contact.email}</span>
+                      <Icon name="Mail" className="h-4 w-4 text-acc shrink-0" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[9.5px] font-mono text-slate-500 uppercase">
+                          email
+                        </span>
+                        <span className="block text-xs sm:text-sm truncate text-white">
+                          {contact.email}
+                        </span>
                       </span>
                       <span className="ml-auto text-slate-500 group-hover:text-acc shrink-0">
-                        {copied ? <Check size={14} /> : <Copy size={14} />}
+                        {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
                       </span>
                     </button>
                   )}
@@ -362,122 +419,101 @@ export function Contact({
                     .map((row) => (
                       <div
                         key={row.label}
-                        className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]"
+                        className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-white/[0.02]"
                       >
                         <Icon name={row.icon} className="h-4 w-4 text-acc shrink-0" />
-                        <span>
-                          <span className="block text-[9.5px] font-mono text-slate-500 uppercase">{row.label}</span>
-                          <span className="block text-sm">{row.value}</span>
+                        <span className="min-w-0">
+                          <span className="block text-[9.5px] font-mono text-slate-500 uppercase">
+                            {row.label}
+                          </span>
+                          <span className="block text-xs sm:text-sm text-slate-200 truncate">
+                            {row.value}
+                          </span>
                         </span>
                       </div>
                     ))}
                 </div>
 
                 {/* Ping radar */}
-                <div className="hidden sm:block w-[140px]">
+                <div className="hidden sm:block w-[120px] shrink-0">
                   <PingRadar />
                 </div>
               </div>
               {coords && (
-                <div className="mt-3 font-mono text-[10px] text-slate-500 text-center">
+                <div className="mt-3 font-mono text-[10px] text-slate-500 text-center border-t border-white/5 pt-2">
                   {formatCoordinates(coords)}
                 </div>
               )}
             </div>
           </Reveal>
 
-          {/* Availability panel */}
+          {/* Availability & Social Matrix (Integrated & Balanced) */}
           <Reveal delay={100}>
-            <div className="hud p-5">
-              <div className="font-mono text-[11px] text-acc uppercase tracking-widest mb-3">{"// availability"}</div>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                {contact.availability || "Open for freelance & full-time roles"}
-              </div>
-              <div className="mt-4 space-y-3">
-                {[
-                  ["Response time", 92, "< 24h"],
-                  ["Project capacity", 60, "2 slots left"],
-                ].map(([label, v, tag]) => (
-                  <div key={label as string}>
-                    <div className="flex justify-between text-xs">
-                      <span className="text-slate-400">{label}</span>
-                      <span className="font-mono text-acc">{tag}</span>
+            <div className="hud !rounded-2xl p-5 border border-white/10 hover:border-acc/40 transition-colors space-y-4">
+              <div>
+                <div className="font-mono text-[10.5px] text-acc uppercase tracking-widest mb-2">
+                  {"// availability & engagement"}
+                </div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-white">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                  <span>{contact.availability || "Open for freelance & full-time roles"}</span>
+                </div>
+                <div className="mt-3.5 space-y-2.5">
+                  {[
+                    ["Response Time", 95, "< 24 Hours"],
+                    ["Contract Capacity", 65, "2 Slots Open"],
+                  ].map(([label, v, tag]) => (
+                    <div key={label as string}>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">{label}</span>
+                        <span className="font-mono text-acc font-semibold">{tag}</span>
+                      </div>
+                      <div className="mt-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                        <div className="fill h-full bg-grad" style={{ width: `${v}%` }} />
+                      </div>
                     </div>
-                    <div className="mt-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                      <div className="fill h-full bg-grad" style={{ width: `${v}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
-                <Zap size={13} className="text-acc shrink-0" />
-                Tip: include a budget & timeline for a faster reply.
-              </div>
-            </div>
-          </Reveal>
-
-          {/* Socials */}
-          {socials.length > 0 && (
-            <Reveal delay={130}>
-              <div className="hud p-5">
-                <div className="font-mono text-[11px] text-acc uppercase tracking-widest mb-3">{"// find me online"}</div>
-                <div className="grid grid-cols-5 gap-2">
-                  {socials.map((link) => (
-                    <a
-                      key={link.platform}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={link.platform}
-                      title={link.platform}
-                      className="aspect-square rounded-lg border border-white/10 grid place-items-center text-slate-300 hover:text-acc hover:border-acc/60 hover:-translate-y-1 hover:glow-sm transition"
-                    >
-                      <Icon name={link.icon || link.platform} className="h-5 w-5" />
-                    </a>
                   ))}
                 </div>
               </div>
-            </Reveal>
-          )}
 
-          {/* Terminal panel */}
-          <Reveal delay={150}>
-            <div className="code-window relative flex flex-col overflow-hidden">
-              <PlusMarks className="z-10" />
-              <WindowBar title="bash — contact" />
-              <div className="flex-1 space-y-1.5 p-4">
-                {session.map((line) => (
-                  <div key={line.cmd}>
-                    <p className="font-mono text-[11.5px] leading-relaxed">
-                      <span className="text-acc">$</span>{" "}
-                      <TerminalText tokens={tokenizeCommand(line.cmd)} className="text-slate-200" />
-                    </p>
-                    <p className="font-mono text-[11.5px] leading-relaxed">
-                      <span className="text-emerald-400">›</span>{" "}
-                      <TerminalText tokens={tokenizeOutput(line.out)} className="text-slate-400" />
-                    </p>
+              {/* Social Matrix */}
+              {socials.length > 0 && (
+                <div className="pt-3 border-t border-white/5">
+                  <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest mb-2.5">
+                    {"// connect across network"}
                   </div>
-                ))}
-                <p className="font-mono pt-0.5 text-[11.5px] text-acc">
-                  <span className="text-slate-500">$</span> <span className="caret">▌</span>
-                </p>
-              </div>
+                  <div className="flex flex-wrap gap-2">
+                    {socials.map((link) => (
+                      <a
+                        key={link.platform}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={link.platform}
+                        title={link.platform}
+                        className="h-9 w-9 rounded-xl border border-white/10 grid place-items-center text-slate-300 hover:text-acc hover:border-acc/60 hover:-translate-y-0.5 hover:glow-sm transition"
+                      >
+                        <Icon name={link.icon || link.platform} className="h-4 w-4" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </Reveal>
 
-          {/* Map */}
+          {/* Map Window */}
           {mapSrc && (
-            <Reveal delay={170}>
-              <div className="code-window relative flex flex-col overflow-hidden">
+            <Reveal delay={140}>
+              <div className="code-window relative flex flex-col overflow-hidden rounded-2xl border border-white/10">
                 <PlusMarks className="z-10" />
-                <WindowBar title="location · live map">
+                <WindowBar title="location · live telemetry map">
                   {externalMap && (
                     <a
                       href={externalMap}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-mono inline-flex items-center gap-1 text-[9.5px] uppercase tracking-widest text-slate-500 hover:text-acc transition-colors"
+                      className="font-mono inline-flex items-center gap-1 text-[9.5px] uppercase tracking-widest text-slate-400 hover:text-acc transition-colors"
                     >
                       open in maps
                       <Icon name="ArrowUpRight" className="h-3 w-3" />
@@ -489,15 +525,15 @@ export function Contact({
                   title={`Map of ${contact.location || "my location"}`}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  className="block min-h-40 w-full border-0 grayscale-[80%] contrast-[1.1] hue-rotate-180 invert"
+                  className="block h-36 w-full border-0 grayscale-[80%] contrast-[1.1] hue-rotate-180 invert"
                 />
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/5 px-4 py-2">
-                  <span className="font-mono inline-flex items-center gap-1.5 text-[9.5px] uppercase tracking-widest text-slate-500">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/5 px-4 py-2 bg-white/[0.02]">
+                  <span className="font-mono inline-flex items-center gap-1.5 text-[9.5px] uppercase tracking-widest text-slate-400">
                     <Icon name="MapPin" className="h-3 w-3 text-acc" />
                     {contact.location || "coordinates"}
                   </span>
                   {coords && (
-                    <span className="font-mono ml-auto text-[10.5px] text-acc">
+                    <span className="font-mono ml-auto text-[10px] text-acc">
                       {formatCoordinates(coords)}
                     </span>
                   )}

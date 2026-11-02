@@ -1,17 +1,14 @@
 import { About } from "@/components/site/about";
-import { Blog } from "@/components/site/blog";
 import { ChatWidget } from "@/components/site/chat-widget";
 import { Contact } from "@/components/site/contact";
 import { ExperienceEducation } from "@/components/site/experience-education";
 import { Footer } from "@/components/site/footer";
 import { Hero } from "@/components/site/hero";
 import { PortfolioShell } from "@/components/site/portfolio-shell";
-import { Projects } from "@/components/site/projects";
 import { Services } from "@/components/site/services";
 import { Showcase } from "@/components/site/showcase";
 import { Skills } from "@/components/site/skills";
 import { Stats } from "@/components/site/stats";
-import { Testimonials } from "@/components/site/testimonials";
 import { getPortfolio } from "@/lib/api";
 import type { NavigationItem, SectionMeta } from "@/lib/types";
 
@@ -45,8 +42,9 @@ export default async function Page() {
   const meta = (key: string): SectionMeta | undefined =>
     data.sections.find((section) => section.key === key);
 
-  // User explicitly requested to show ALL components on the portfolio
-  const shown = (_key: string) => true;
+  // Hidden components: blog, review (testimonials), featured projects (projects)
+  const HIDDEN_SECTION_COMPONENTS = new Set(["projects", "testimonials", "blog"]);
+  const shown = (key: string) => !HIDDEN_SECTION_COMPONENTS.has(key);
 
   const heroVisible = Boolean(data.hero);
 
@@ -55,12 +53,12 @@ export default async function Page() {
     { key: "stats", visible: true },
     { key: "services", visible: true },
     { key: "skills", visible: true },
-    { key: "projects", visible: true },
+    { key: "projects", visible: false },
     { key: "showcase", visible: true },
     { key: "journey", visible: true },
     { key: "education", visible: true },
-    { key: "testimonials", visible: true },
-    { key: "blog", visible: true },
+    { key: "testimonials", visible: false },
+    { key: "blog", visible: false },
     { key: "contact", visible: true },
   ];
 
@@ -71,7 +69,8 @@ export default async function Page() {
 
   const at = (key: string) => order.get(key) ?? 1;
 
-  // Complete navigation map for all active sections shown on the page
+  // Active navigation items displayed in navbar, dock, mobile dock & footer
+  // User requested to hide: stats, featured projects, reviews, blog, services, and journey
   const ALL_SECTION_NAV: Array<{
     key: string;
     href: string;
@@ -81,16 +80,58 @@ export default async function Page() {
   }> = [
     { key: "hero", href: "#hero", defaultLabel: "Home", icon: "Home", isPrimary: true },
     { key: "about", href: "#about", defaultLabel: "About", icon: "User" },
-    { key: "stats", href: "#stats", defaultLabel: "Stats", icon: "Cpu" },
-    { key: "services", href: "#services", defaultLabel: "Services", icon: "Layers" },
     { key: "skills", href: "#skills", defaultLabel: "Skills", icon: "Wrench" },
-    { key: "projects", href: "#projects", defaultLabel: "Projects", icon: "FolderKanban", isPrimary: true },
-    { key: "showcase", href: "#showcase", defaultLabel: "Showcase", icon: "Rocket" },
-    { key: "journey", href: "#journey", defaultLabel: "Journey", icon: "Briefcase" },
-    { key: "testimonials", href: "#testimonials", defaultLabel: "Reviews", icon: "Star" },
-    { key: "blog", href: "#blog", defaultLabel: "Blog", icon: "BookOpen" },
+    { key: "showcase", href: "#showcase", defaultLabel: "Showcase", icon: "Rocket", isPrimary: true },
     { key: "contact", href: "#contact", defaultLabel: "Contact", icon: "Mail", isPrimary: true },
   ];
+
+  const HIDDEN_NAV_KEYS = new Set([
+    "stats",
+    "services",
+    "projects",
+    "testimonials",
+    "reviews",
+    "review",
+    "blog",
+    "journey",
+  ]);
+
+  const HIDDEN_NAV_HREFS = new Set([
+    "#stats",
+    "#services",
+    "#projects",
+    "#testimonials",
+    "#reviews",
+    "#blog",
+    "/blog",
+    "/projects",
+    "#journey",
+  ]);
+
+  const isHiddenNav = (href: string, label?: string) => {
+    const cleanHref = (href || "").toLowerCase().trim();
+    const cleanLabel = (label || "").toLowerCase().trim();
+    if (HIDDEN_NAV_HREFS.has(cleanHref)) return true;
+    const cleanKey = cleanHref.replace(/^#/, "").split("/")[0];
+    if (HIDDEN_NAV_KEYS.has(cleanKey)) return true;
+    if (
+      [
+        "stats",
+        "services",
+        "projects",
+        "featured projects",
+        "reviews",
+        "review",
+        "testimonials",
+        "blog",
+        "journey",
+        "experience",
+      ].includes(cleanLabel)
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   const existingNavByHref = new Map(
     (data.navigation || []).map((item) => [item.href.toLowerCase(), item])
@@ -115,20 +156,18 @@ export default async function Page() {
       order: idx + 1,
       isVisible: true,
     };
-  });
+  }).filter((item) => !isHiddenNav(item.href, item.label));
 
-  // Preserve any custom CMS navigation links that are not section anchors
+  // Preserve any custom CMS navigation links that are not section anchors and not hidden
   for (const item of data.navigation || []) {
     if (
       item.isVisible &&
+      !isHiddenNav(item.href, item.label) &&
       !ALL_SECTION_NAV.some((c) => c.href.toLowerCase() === item.href.toLowerCase())
     ) {
       nav.push(item);
     }
   }
-
-  const featuredPool = data.projects.filter((project) => project.isFeatured);
-  const featured = featuredPool.length > 0 ? featuredPool : data.projects.slice(0, 4);
 
   return (
     <PortfolioShell navigation={nav} settings={data.settings}>
@@ -148,13 +187,6 @@ export default async function Page() {
 
       <Skills groups={data.skills} projects={data.projects} section={meta("skills")} index={at("skills")} />
 
-      <Projects
-        projects={featured}
-        total={data.projects.length}
-        section={meta("projects")}
-        index={at("projects")}
-      />
-
       <Showcase
         projects={data.projects}
         section={meta("showcase")}
@@ -169,14 +201,6 @@ export default async function Page() {
         journeyIndex={at("journey")}
         educationIndex={at("education")}
       />
-
-      <Testimonials
-        testimonials={data.testimonials}
-        section={meta("testimonials")}
-        index={at("testimonials")}
-      />
-
-      <Blog posts={data.posts} section={meta("blog")} index={at("blog")} />
 
       <Contact settings={data.settings} section={meta("contact")} index={at("contact")} />
 
