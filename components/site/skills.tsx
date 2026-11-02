@@ -143,13 +143,25 @@ function proficiencyLabel(p: Skill["proficiency"]): string {
   }
 }
 
-/* ── Segmented bar ────────────────────────────────────────────────────── */
-function SegBar({ filled, total = 10 }: { filled: number; total?: number }) {
+/* ── Clean Smooth Progress Bar ────────────────────────────────────────── */
+function CleanProgressBar({
+  level,
+  brandColor,
+}: {
+  level: number;
+  brandColor?: string;
+}) {
+  const color = brandColor || "var(--acc)";
   return (
-    <div className="seg">
-      {Array.from({ length: total }).map((_, i) => (
-        <i key={i} className={i < filled ? "on" : ""} />
-      ))}
+    <div className="mt-3.5 w-full h-[5px] rounded-full bg-white/[0.08] overflow-hidden relative">
+      <div
+        className="h-full rounded-full transition-all duration-700 ease-out"
+        style={{
+          width: `${Math.min(100, Math.max(0, level))}%`,
+          background: `linear-gradient(90deg, ${color}99, ${color})`,
+          boxShadow: `0 0 10px ${color}88`,
+        }}
+      />
     </div>
   );
 }
@@ -523,7 +535,10 @@ export function Skills({
                         {proficiencyToLevel(skill.proficiency)}
                       </span>
                     </div>
-                    <SegBar filled={segs} />
+                    <CleanProgressBar
+                      level={proficiencyToLevel(skill.proficiency)}
+                      brandColor={skill.brandColor}
+                    />
                   </button>
                 );
               })}

@@ -128,7 +128,7 @@ export default async function Page() {
   }
 
   const featuredPool = data.projects.filter((project) => project.isFeatured);
-  const featured = (featuredPool.length > 0 ? featuredPool : data.projects).slice(0, 3);
+  const featured = featuredPool.length > 0 ? featuredPool : data.projects.slice(0, 4);
 
   return (
     <PortfolioShell navigation={nav} settings={data.settings}>

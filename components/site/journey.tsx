@@ -301,6 +301,17 @@ export function JourneySection({
   experience: Experience[];
   education: EducationEntry[];
 }) {
+  const cleanEducation = useMemo(() => {
+    return education
+      .filter((e) => !/ssc|school/i.test(e.degree) && !/ssc/i.test(e.field))
+      .map((e) => {
+        if (/diploma/i.test(e.degree) || /polytechnic/i.test(e.institution)) {
+          return { ...e, period: "2023 - Present" };
+        }
+        return e;
+      });
+  }, [education]);
+
   const [filter, setFilter] = useState<"all" | "work" | "edu" | "milestone">("all");
   const [openId, setOpenId] = useState<string>(experience[0]?._id ?? "");
 
@@ -367,7 +378,7 @@ export function JourneySection({
             ))}
 
             {/* Education entries */}
-            {(filter === "all" || filter === "edu") && education.map((entry, i) => (
+            {(filter === "all" || filter === "edu") && cleanEducation.map((entry, i) => (
               <EduCard key={entry._id} entry={entry} index={i} />
             ))}
 
