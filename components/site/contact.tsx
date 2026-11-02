@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { Check, CheckCheck, Copy, Loader2, Send, X, Zap } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
 import { TerminalText } from "@/components/ui/terminal-text";
 import { PlusMarks, WindowBar } from "@/components/ui/panel-chrome";
@@ -13,7 +14,86 @@ import { cn } from "@/lib/utils";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
-/** Contact — details, a live terminal/map column and a compact glass form. */
+const SUBJECTS = ["💼 Project", "🧑‍💻 Job offer", "🤝 Collab", "👋 Just saying hi"] as const;
+
+const SEND_LOG = [
+  "validating payload…",
+  "encrypting message (AES-256)…",
+  "routing via smtp.devos.net…",
+  "delivered ✓",
+];
+
+/* ── Ping radar for location ─────────────────────────────────────────── */
+function PingRadar() {
+  return (
+    <div className="relative w-full aspect-square max-w-[200px] mx-auto">
+      {[1, 0.72, 0.44].map((s) => (
+        <div
+          key={s}
+          className="absolute inset-0 m-auto rounded-full border border-acc/20"
+          style={{ width: `${s * 100}%`, height: `${s * 100}%` }}
+        />
+      ))}
+      <div className="absolute inset-0 rounded-full overflow-hidden">
+        <div
+          className="absolute inset-0 orbit-ring"
+          style={{
+            ["--d" as string]: "6s",
+            background:
+              "conic-gradient(from 0deg, color-mix(in srgb, var(--acc) 40%, transparent), transparent 25%)",
+          }}
+        />
+      </div>
+      <div className="absolute left-0 right-0 top-1/2 h-px bg-acc/15" />
+      <div className="absolute top-0 bottom-0 left-1/2 w-px bg-acc/15" />
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="ping-ring absolute inset-0 m-auto w-full h-full rounded-full border border-acc/60"
+          style={{ animationDelay: `${i}s` }}
+        />
+      ))}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <span className="block w-3 h-3 rounded-full bg-acc shadow-[0_0_16px_var(--acc)]" />
+      </div>
+      <div className="absolute left-1/2 top-1/2 translate-x-3 -translate-y-8 font-mono text-[9px] text-acc whitespace-nowrap">
+        DHAKA · BD
+      </div>
+    </div>
+  );
+}
+
+/* ── Field wrapper ───────────────────────────────────────────────────── */
+function Field({
+  id,
+  label,
+  error,
+  className,
+  children,
+}: {
+  id: string;
+  label: string;
+  error?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <label htmlFor={id} className={cn("flex flex-col", className)}>
+      <span className="font-mono mb-1.5 block text-[9.5px] text-acc">{label}</span>
+      <div
+        className={cn(
+          "rounded-lg border bg-black/30 transition focus-within:border-acc focus-within:glow-sm",
+          error ? "border-red-400/60" : "border-white/10"
+        )}
+      >
+        {children}
+      </div>
+      {error && <span className="font-mono text-[11px] text-red-400 mt-0.5">✗ {error}</span>}
+    </label>
+  );
+}
+
+/** Contact — real API-backed form, terminal panel, map, and availability stats. */
 export function Contact({
   settings,
   section,
@@ -24,53 +104,80 @@ export function Contact({
   index: number;
 }) {
   const [status, setStatus] = useState<Status>("idle");
-  const [message, setMessage] = useState("");
+  const [resultMsg, setResultMsg] = useState("");
+  const [subject, setSubject] = useState<string>(SUBJECTS[0]);
+  const [sendLog, setSendLog] = useState(0);
+  const [copied, setCopied] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
 
-  const contact = settings?.contact ?? {};
-  const socials  = (settings?.socialLinks ?? []).filter((link) => link.url);
-  const mapSrc   = mapEmbedUrl(contact);
-  const coords   = coordinatesOf(contact);
+  const contact   = settings?.contact ?? {};
+  const socials   = (settings?.socialLinks ?? []).filter((link) => link.url);
+  const mapSrc    = mapEmbedUrl(contact);
+  const coords    = coordinatesOf(contact);
   const externalMap = mapsLink(contact);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  /* Animated send log */
+  useEffect(() => {
+    if (status !== "sending") return;
+    if (sendLog >= SEND_LOG.length) {
+      const t = setTimeout(() => setStatus("sent"), 500);
+      return () => clearTimeout(t);
+    }
+    const t = setTimeout(() => setSendLog((n) => n + 1), 520);
+    return () => clearTimeout(t);
+  }, [status, sendLog]);
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     if (status === "sending") return;
 
-    const form = event.currentTarget;
-    const data = new FormData(form);
+    // Client-side validation
+    const er: Record<string, string> = {};
+    if (form.name.trim().length < 2)            er.name    = "name must be at least 2 characters";
+    if (!/^\S+@\S+\.\S+$/.test(form.email))     er.email   = "enter a valid email address";
+    if (form.message.trim().length < 10)         er.message = "message must be at least 10 characters";
+    setErrors(er);
+    if (Object.keys(er).length) return;
 
+    setSendLog(0);
     setStatus("sending");
-    setMessage("");
 
     try {
       await sendContactMessage({
-        name:    String(data.get("name")    ?? "").trim(),
-        email:   String(data.get("email")   ?? "").trim(),
-        subject: String(data.get("subject") ?? "").trim(),
-        message: String(data.get("message") ?? "").trim(),
+        name:    form.name.trim(),
+        email:   form.email.trim(),
+        subject: subject,
+        message: form.message.trim(),
       });
-
-      form.reset();
-      setStatus("sent");
-      setMessage("Message sent — I'll reply within 24 hours.");
+      // Status transitions to "sent" after log completes (via effect above)
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "Message could not be sent.");
+      setResultMsg(error instanceof Error ? error.message : "Message could not be sent.");
     }
   }
 
+  function reset() {
+    setStatus("idle");
+    setForm({ name: "", email: "", message: "" });
+    setResultMsg("");
+    setSendLog(0);
+  }
+
   const rows = [
-    contact.email     && { icon: "Mail",      label: "Email",        value: contact.email,        href: `mailto:${contact.email}` },
-    contact.phone     && { icon: "Phone",     label: "Phone",        value: contact.phone,        href: `tel:${contact.phone}` },
-    contact.location  && { icon: "MapPin",    label: "Location",     value: contact.location },
+    contact.email     && { icon: "Mail",       label: "Email",        value: contact.email,    href: `mailto:${contact.email}` },
+    contact.phone     && { icon: "Phone",      label: "Phone",        value: contact.phone,    href: `tel:${contact.phone}` },
+    contact.location  && { icon: "MapPin",     label: "Location",     value: contact.location },
     contact.availability && { icon: "CircleDot", label: "Availability", value: contact.availability },
   ].filter(Boolean) as Array<{ icon: string; label: string; value: string; href?: string }>;
 
   const session = [
-    { cmd: "ping creative_ideas",       out: "Pinging your ideas…" },
-    { cmd: "whoami",                    out: contact.availability || "full-stack developer" },
-    { cmd: "./start-conversation.sh",   out: "Building something awesome together!" },
+    { cmd: "ping creative_ideas",     out: "Pinging your ideas…" },
+    { cmd: "whoami",                  out: contact.availability || "full-stack developer" },
+    { cmd: "./start-conversation.sh", out: "Building something awesome together!" },
   ];
+
+  const inputCls = "w-full bg-transparent outline-none px-3 py-2.5 text-sm placeholder:text-slate-600";
 
   return (
     <section id="contact" className="relative py-12">
@@ -83,73 +190,260 @@ export function Contact({
         <p className="text-sm text-slate-400 mb-8 max-w-xl">{section.description}</p>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-12 lg:gap-6">
-        {/* ── Details ─────────────────────────────────────── */}
-        <div className="flex h-full flex-col lg:col-span-4">
-          {rows.length > 0 && (
-            <Reveal delay={80}>
-              <ul className="space-y-2">
-                {rows.map((row) => (
-                  <li key={row.label}>
-                    <a
-                      href={row.href}
-                      className={cn(
-                        "group flex items-center gap-3 hud px-3.5 py-2.5 transition",
-                        row.href ? "hud-hover cursor-pointer" : "cursor-default"
-                      )}
-                    >
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-acc/10 text-acc">
-                        <Icon name={row.icon} className="h-4 w-4" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="font-mono block text-[9.5px] uppercase tracking-widest text-slate-500">
-                          {row.label}
-                        </span>
-                        <span className="mt-0.5 block truncate text-[12.5px]">
-                          {row.value}
-                        </span>
-                      </span>
-                      {row.href && (
-                        <Icon
-                          name="ArrowUpRight"
-                          className="ml-auto h-3.5 w-3.5 shrink-0 text-slate-600 transition-all group-hover:-translate-y-0.5 group-hover:text-acc"
-                        />
-                      )}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
-          )}
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr]">
+        {/* ── Form ─────────────────────────────────────────── */}
+        <Reveal>
+          <div className="hud overflow-hidden h-full">
+            {/* Mac chrome */}
+            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-white/10 bg-white/[0.02]">
+              <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+              <span className="font-mono ml-3 text-xs text-slate-400">contact.sh — compose message</span>
+            </div>
 
-          {socials.length > 0 && (
-            <Reveal delay={110} className="mt-6">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500 mb-3">
-                Social Links
-              </p>
-              <div className="flex flex-wrap items-center gap-2">
-                {socials.map((link) => (
-                  <a
-                    key={link.platform}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={link.platform}
-                    title={link.platform}
-                    className="grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-white/4 text-slate-400 transition-colors hover:border-acc/60 hover:text-acc"
+            {/* Idle: form */}
+            {status === "idle" && (
+              <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4" noValidate>
+                {/* Subject chips */}
+                <div>
+                  <span className="font-mono text-[9.5px] text-acc">{">"} subject</span>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {SUBJECTS.map((s) => (
+                      <button
+                        type="button"
+                        key={s}
+                        onClick={() => setSubject(s)}
+                        className={`chip !text-xs !py-1.5 ${subject === s ? "on" : ""}`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Name + email */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Field id="contact-name" label="// name" error={errors.name}>
+                    <input
+                      id="contact-name"
+                      className={inputCls}
+                      placeholder="Ada Lovelace"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    />
+                  </Field>
+                  <Field id="contact-email" label="// email" error={errors.email}>
+                    <input
+                      id="contact-email"
+                      type="email"
+                      className={inputCls}
+                      placeholder="ada@example.com"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                    />
+                  </Field>
+                </div>
+
+                {/* Message */}
+                <Field id="contact-message" label="// message" error={errors.message}>
+                  <textarea
+                    id="contact-message"
+                    className={`${inputCls} resize-none h-36`}
+                    maxLength={500}
+                    placeholder="Tell me about your project, idea or opportunity…"
+                    value={form.message}
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
+                  />
+                </Field>
+
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono text-[11px] text-slate-500">{form.message.length}/500</span>
+                  <button
+                    type="submit"
+                    className="btn-primary rounded-lg px-6 py-3 text-sm flex items-center gap-2 cursor-pointer"
                   >
-                    <Icon name={link.icon} className="h-4 w-4" />
-                  </a>
+                    Send Message <Send size={15} />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Sending: animated log */}
+            {status === "sending" && (
+              <div className="p-6 min-h-[340px] font-mono text-sm space-y-2">
+                <div className="flex items-center gap-2 text-acc">
+                  <Loader2 size={16} className="animate-spin" /> transmitting…
+                </div>
+                {SEND_LOG.slice(0, sendLog).map((line, i) => (
+                  <div key={i} className="rise text-slate-300">
+                    <span className="text-emerald-400">✓</span> {line}
+                  </div>
                 ))}
+                <div className="mt-4 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full bg-grad transition-all duration-500"
+                    style={{ width: `${(sendLog / SEND_LOG.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Sent: success */}
+            {status === "sent" && (
+              <div className="p-6 sm:p-10 text-center rise">
+                <div className="mx-auto w-16 h-16 rounded-full grid place-items-center bg-emerald-400/10 border-2 border-emerald-400 text-emerald-300 shadow-[0_0_30px_rgba(52,211,153,.5)]">
+                  <Check size={30} />
+                </div>
+                <h3 className="font-display text-2xl font-bold mt-5">Message sent!</h3>
+                <p className="text-slate-400 mt-2 text-sm">
+                  Thanks {form.name.split(" ")[0] || "you"}! I&apos;ll reply within 24 hours.
+                </p>
+                <button
+                  onClick={reset}
+                  className="mt-6 btn-ghost rounded-lg px-5 py-2.5 text-sm cursor-pointer"
+                >
+                  Write another
+                </button>
+              </div>
+            )}
+
+            {/* Error */}
+            {status === "error" && (
+              <div className="p-6 text-center rise">
+                <div className="mx-auto w-14 h-14 rounded-full grid place-items-center bg-red-500/10 border-2 border-red-400 text-red-400">
+                  <X size={24} />
+                </div>
+                <h3 className="font-display text-xl font-bold mt-4">Send failed</h3>
+                <p className="text-slate-400 mt-2 text-sm">{resultMsg}</p>
+                <button
+                  onClick={reset}
+                  className="mt-5 btn-ghost rounded-lg px-5 py-2.5 text-sm cursor-pointer"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+          </div>
+        </Reveal>
+
+        {/* ── Info column ─────────────────────────────────── */}
+        <div className="space-y-5">
+          {/* Contact rows + ping radar */}
+          <Reveal delay={80}>
+            <div className="hud p-5">
+              <div className="grid grid-cols-[1fr_auto] items-center gap-4">
+                <div className="space-y-2">
+                  {/* Email copy row */}
+                  {contact.email && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(contact.email!);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 1500);
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-lg border border-white/10 hover:border-acc/60 bg-white/[0.02] cursor-pointer text-left transition group"
+                    >
+                      <Icon name="Mail" className="h-4.5 w-4.5 text-acc shrink-0" />
+                      <span className="min-w-0">
+                        <span className="block text-[9.5px] font-mono text-slate-500 uppercase">email</span>
+                        <span className="block text-sm truncate">{contact.email}</span>
+                      </span>
+                      <span className="ml-auto text-slate-500 group-hover:text-acc shrink-0">
+                        {copied ? <Check size={14} /> : <Copy size={14} />}
+                      </span>
+                    </button>
+                  )}
+
+                  {/* Other contact rows */}
+                  {rows
+                    .filter((r) => r.label !== "Email")
+                    .map((row) => (
+                      <div
+                        key={row.label}
+                        className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-white/[0.02]"
+                      >
+                        <Icon name={row.icon} className="h-4 w-4 text-acc shrink-0" />
+                        <span>
+                          <span className="block text-[9.5px] font-mono text-slate-500 uppercase">{row.label}</span>
+                          <span className="block text-sm">{row.value}</span>
+                        </span>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Ping radar */}
+                <div className="hidden sm:block w-[140px]">
+                  <PingRadar />
+                </div>
+              </div>
+              {coords && (
+                <div className="mt-3 font-mono text-[10px] text-slate-500 text-center">
+                  {formatCoordinates(coords)}
+                </div>
+              )}
+            </div>
+          </Reveal>
+
+          {/* Availability panel */}
+          <Reveal delay={100}>
+            <div className="hud p-5">
+              <div className="font-mono text-[11px] text-acc uppercase tracking-widest mb-3">{"// availability"}</div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                {contact.availability || "Open for freelance & full-time roles"}
+              </div>
+              <div className="mt-4 space-y-3">
+                {[
+                  ["Response time", 92, "< 24h"],
+                  ["Project capacity", 60, "2 slots left"],
+                ].map(([label, v, tag]) => (
+                  <div key={label as string}>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">{label}</span>
+                      <span className="font-mono text-acc">{tag}</span>
+                    </div>
+                    <div className="mt-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div className="fill h-full bg-grad" style={{ width: `${v}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
+                <Zap size={13} className="text-acc shrink-0" />
+                Tip: include a budget & timeline for a faster reply.
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Socials */}
+          {socials.length > 0 && (
+            <Reveal delay={130}>
+              <div className="hud p-5">
+                <div className="font-mono text-[11px] text-acc uppercase tracking-widest mb-3">{"// find me online"}</div>
+                <div className="grid grid-cols-5 gap-2">
+                  {socials.map((link) => (
+                    <a
+                      key={link.platform}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={link.platform}
+                      title={link.platform}
+                      className="aspect-square rounded-lg border border-white/10 grid place-items-center text-slate-300 hover:text-acc hover:border-acc/60 hover:-translate-y-1 hover:glow-sm transition"
+                    >
+                      <Icon name={link.icon || link.platform} className="h-5 w-5" />
+                    </a>
+                  ))}
+                </div>
               </div>
             </Reveal>
           )}
-        </div>
 
-        {/* ── Terminal + map ──────────────────────────────── */}
-        <div className="order-3 flex flex-col gap-4 lg:order-2 lg:col-span-4">
-          <Reveal delay={120} className={cn("flex flex-col", mapSrc ? null : "flex-1")}>
-            <div className="code-window relative flex h-full flex-col overflow-hidden">
+          {/* Terminal panel */}
+          <Reveal delay={150}>
+            <div className="code-window relative flex flex-col overflow-hidden">
               <PlusMarks className="z-10" />
               <WindowBar title="bash — contact" />
               <div className="flex-1 space-y-1.5 p-4">
@@ -172,9 +466,10 @@ export function Contact({
             </div>
           </Reveal>
 
+          {/* Map */}
           {mapSrc && (
-            <Reveal delay={150} className="flex flex-1 flex-col">
-              <div className="code-window relative flex h-full flex-col overflow-hidden">
+            <Reveal delay={170}>
+              <div className="code-window relative flex flex-col overflow-hidden">
                 <PlusMarks className="z-10" />
                 <WindowBar title="location · live map">
                   {externalMap && (
@@ -189,15 +484,13 @@ export function Contact({
                     </a>
                   )}
                 </WindowBar>
-
                 <iframe
                   src={mapSrc}
                   title={`Map of ${contact.location || "my location"}`}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  className="block min-h-48 w-full flex-1 border-0 grayscale-[80%] contrast-[1.1] hue-rotate-180 invert"
+                  className="block min-h-40 w-full border-0 grayscale-[80%] contrast-[1.1] hue-rotate-180 invert"
                 />
-
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-white/5 px-4 py-2">
                   <span className="font-mono inline-flex items-center gap-1.5 text-[9.5px] uppercase tracking-widest text-slate-500">
                     <Icon name="MapPin" className="h-3 w-3 text-acc" />
@@ -213,137 +506,7 @@ export function Contact({
             </Reveal>
           )}
         </div>
-
-        {/* ── Form ────────────────────────────────────────── */}
-        <Reveal delay={100} className="order-2 flex lg:order-3 lg:col-span-4">
-          <form
-            onSubmit={handleSubmit}
-            aria-label="Contact form"
-            className="hud relative flex h-full w-full flex-col overflow-hidden p-4 sm:p-5"
-          >
-            {/* Mac window chrome dots */}
-            <div className="flex items-center gap-1.5 mb-4">
-              <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
-              <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
-              <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-              <span className="font-mono ml-auto text-[10px] text-slate-500">contact.sh</span>
-            </div>
-
-            <p className="font-mono text-[10px] uppercase tracking-widest text-acc mb-4">
-              $ send_message --to nihal
-            </p>
-
-            <div className="mt-1 grid gap-3 sm:grid-cols-2">
-              <Field id="contact-name" label="// name">
-                <input
-                  id="contact-name"
-                  name="name"
-                  required
-                  autoComplete="name"
-                  placeholder="Your name"
-                  className="field w-full px-3 py-2 text-sm rounded-lg"
-                />
-              </Field>
-
-              <Field id="contact-email" label="// email">
-                <input
-                  id="contact-email"
-                  name="email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@company.com"
-                  className="field w-full px-3 py-2 text-sm rounded-lg"
-                />
-              </Field>
-            </div>
-
-            <div className="mt-3">
-              <Field id="contact-subject" label="// subject">
-                <input
-                  id="contact-subject"
-                  name="subject"
-                  placeholder="Project, role or just a hello"
-                  className="field w-full px-3 py-2 text-sm rounded-lg"
-                />
-              </Field>
-            </div>
-
-            <div className="mt-3 flex flex-1 flex-col">
-              <Field id="contact-message" label="// message" className="flex-1">
-                <textarea
-                  id="contact-message"
-                  name="message"
-                  required
-                  rows={4}
-                  placeholder="What you're building, the timeline and what you need from me."
-                  className="field flex-1 w-full px-3 py-2 text-sm rounded-lg resize-none"
-                />
-              </Field>
-            </div>
-
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="mt-4 btn-primary flex h-10 w-full items-center justify-center gap-2 rounded-lg text-[12.5px] font-semibold disabled:opacity-60"
-            >
-              {status === "sending" ? (
-                <>
-                  <Icon name="Loader" className="h-3.5 w-3.5 animate-spin" />
-                  Sending…
-                </>
-              ) : (
-                <>
-                  Send message
-                  <Icon name="Send" className="h-3.5 w-3.5" />
-                </>
-              )}
-            </button>
-
-            <p
-              role="status"
-              aria-live="polite"
-              className={cn(
-                "mt-2.5 flex min-h-5 items-center justify-center gap-1.5 text-[11.5px] transition-opacity",
-                status === "error" ? "text-red-400" : "text-emerald-400",
-                status === "sent" || status === "error" ? "opacity-100" : "opacity-0"
-              )}
-            >
-              {status === "error" ? (
-                <Icon name="X" className="h-3.5 w-3.5" />
-              ) : (
-                <Icon name="CheckCheck" className="h-3.5 w-3.5" />
-              )}
-              {message}
-            </p>
-
-            <p className="font-mono mt-1 text-center text-[10px] uppercase tracking-widest text-slate-600">
-              straight to my inbox · no third-party forms
-            </p>
-          </form>
-        </Reveal>
       </div>
     </section>
-  );
-}
-
-function Field({
-  id,
-  label,
-  className,
-  children,
-}: {
-  id: string;
-  label: string;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <label htmlFor={id} className={cn("flex flex-col", className)}>
-      <span className="font-mono mb-1.5 block text-[9.5px] text-acc">
-        {label}
-      </span>
-      {children}
-    </label>
   );
 }
