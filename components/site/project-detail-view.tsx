@@ -506,43 +506,30 @@ export async function init() {
           )}
         </div>
 
-        {/* Right Column: High-Tech Sidebar Dossier (Exact Reference Drawer Design) */}
-        <aside className="hud !bg-[#050a24] overflow-hidden lg:sticky lg:top-20 space-y-6">
-          {/* Hero Banner in Sidebar */}
-          <div className="relative h-52 sm:h-60 overflow-hidden">
-            {project.thumbnailUrl ? (
-              <Image
-                src={project.thumbnailUrl}
-                alt={project.title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 420px"
-              />
-            ) : (
-              <div className="w-full h-full bg-[#03050f]" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050a24] via-[#050a24]/40 to-transparent" />
-            <div className="scanline" />
-
-            {/* Bottom info inside hero banner */}
-            <div className="absolute bottom-4 left-5 right-5 flex items-end justify-between">
-              <div>
-                <div className="font-mono text-[11px] text-acc">
-                  {project.category} · {year}
-                </div>
-                <h1 className="font-display text-2xl font-bold text-white leading-tight mt-0.5">
-                  {project.title}
-                </h1>
-                <div className="text-xs text-slate-300 mt-0.5">
-                  {project.isFeatured ? "★ Featured Production Build" : "Case File"}
-                </div>
-              </div>
+        {/* Right Column: High-Tech Sidebar Dossier */}
+        <aside className="hud !bg-[#050a24] overflow-hidden lg:sticky lg:top-20 space-y-5">
+          {/* Dossier Header in Sidebar (No duplicate image, clean cyber HUD header) */}
+          <div className="relative p-5 sm:p-6 pb-4 border-b border-white/10 bg-gradient-to-b from-white/[0.04] to-transparent">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <span className="font-mono text-[11px] text-acc tracking-widest uppercase flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-acc animate-ping" />
+                {project.category} · {year}
+              </span>
               <span
                 className={`font-mono text-[10px] px-2.5 py-1 rounded-full border flex items-center gap-1.5 ${statusInfo.cls}`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${statusInfo.dotCls}`} />
                 {statusInfo.label}
               </span>
+            </div>
+
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-white leading-tight">
+              {project.title}
+            </h1>
+
+            <div className="mt-1.5 text-xs text-slate-400 font-mono flex items-center gap-2">
+              <span className="text-acc">{"//"}</span>
+              {project.isFeatured ? "★ Featured Production Build" : "Dossier Case File"}
             </div>
           </div>
 
@@ -729,3 +716,4 @@ export async function init() {
     </article>
   );
 }
+
