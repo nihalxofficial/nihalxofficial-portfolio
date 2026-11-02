@@ -58,10 +58,10 @@ export function Dock({ navigation, settings, activeSection = "" }: DockProps) {
   )?.url ?? "#";
 
   return (
-    <aside className="hidden md:flex w-[92px] shrink-0 flex-col items-center py-4 pl-3 relative z-10">
-      <div className="hud !rounded-2xl w-full flex-1 min-h-0 flex flex-col items-center py-2.5 px-1.5 overflow-y-auto no-scrollbar">
-        {/* Nav items */}
-        <div className="flex flex-col gap-1 w-full">
+    <aside className="hidden md:flex w-[100px] shrink-0 flex-col items-center py-4 pl-3 relative z-10">
+      <div className="hud !rounded-2xl w-full flex-1 min-h-0 flex flex-col items-center py-3 px-2 overflow-y-auto no-scrollbar">
+        {/* Nav items — sized prominently and spaced evenly across the vertical bar */}
+        <div className="flex-1 flex flex-col justify-evenly w-full py-1">
           {navigation.map((item, i) => {
             const key = keyFor(item.href);
             const Icon: LucideIcon = ICON_BY_KEY[key] ?? Home;
@@ -83,29 +83,29 @@ export function Dock({ navigation, settings, activeSection = "" }: DockProps) {
                   }
                 }}
                 title={`${item.label} — press ${i + 1}`}
-                className={`relative group flex flex-col items-center gap-0.5 py-1.5 sm:py-2 rounded-xl text-[10px] font-medium cursor-pointer transition ${
+                className={`relative group flex flex-col items-center justify-center gap-1.5 py-3 px-1.5 rounded-xl text-[11px] font-semibold cursor-pointer transition-all duration-200 ${
                   isActive
-                    ? "text-acc bg-acc/10 ring-acc glow-sm"
+                    ? "text-acc bg-acc/15 ring-1 ring-acc/50 glow-sm"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 }`}
               >
                 {/* Active left indicator */}
                 {isActive && (
-                  <span className="absolute -left-1.5 top-2.5 bottom-2.5 w-[3px] rounded-full bg-acc shadow-[0_0_10px_var(--acc)]" />
+                  <span className="absolute -left-2 top-3 bottom-3 w-[3.5px] rounded-full bg-acc shadow-[0_0_12px_var(--acc)]" />
                 )}
                 {/* Number shortcut */}
-                <span className="absolute top-1 right-1 font-mono text-[8.5px] text-slate-600 group-hover:text-acc">
+                <span className="absolute top-1.5 right-1.5 font-mono text-[9px] text-slate-500 group-hover:text-acc font-semibold">
                   {i + 1}
                 </span>
-                <Icon size={18} />
-                <span className="truncate max-w-[70px] leading-tight">{item.label}</span>
+                <Icon size={22} className="transition-transform group-hover:scale-110" />
+                <span className="truncate max-w-[76px] leading-tight text-center">{item.label}</span>
               </a>
             );
           })}
         </div>
 
         {/* Bottom: avatar + status + socials */}
-        <div className="mt-auto pt-3 flex flex-col items-center gap-2 w-full">
+        <div className="mt-auto pt-3 border-t border-white/5 flex flex-col items-center gap-2.5 w-full shrink-0">
           {/* Bot avatar */}
           <div className="floaty w-11 h-11 rounded-full grid place-items-center bg-gradient-to-b from-acc/30 to-acc2/30 ring-acc glow">
             <Bot size={22} className="text-acc" />

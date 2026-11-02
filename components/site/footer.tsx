@@ -27,9 +27,9 @@ export function Footer({
       {/* Top accent line */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-acc/40 to-transparent" />
 
-      <div className="py-12 grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
+      <div className="py-12 grid grid-cols-2 gap-x-6 gap-y-10 sm:gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
         {/* Brand column */}
-        <div>
+        <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-3">
             {hasLogo ? (
               <BrandLogo branding={branding} variant="footer" fallback={mark} alt={name} />
@@ -73,7 +73,7 @@ export function Footer({
         </div>
 
         {/* Navigate column */}
-        <div>
+        <div className="col-span-1">
           <p className="font-mono text-[10px] uppercase tracking-widest text-acc mb-4">Navigate</p>
           <ul className="space-y-2.5">
             {navigation.map((item) => (
@@ -97,7 +97,7 @@ export function Footer({
         </div>
 
         {/* Contact column */}
-        <div>
+        <div className="col-span-1">
           <p className="font-mono text-[10px] uppercase tracking-widest text-acc mb-4">Elsewhere</p>
           <ul className="space-y-2.5">
             {settings?.contact?.email && (

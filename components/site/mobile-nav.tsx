@@ -46,7 +46,7 @@ function keyFor(href: string) {
 
 function NavIcon({ href }: { href: string }) {
   const Icon = ICON_BY_KEY[keyFor(href)] ?? Home;
-  return <Icon size={19} />;
+  return <Icon size={21} />;
 }
 
 function scrollToHref(href: string) {
@@ -142,14 +142,14 @@ export function MobileNav({
             <button
               key={item._id}
               onClick={() => scrollToHref(item.href)}
-              className={`flex flex-col items-center gap-0.5 py-2 px-1.5 text-[9px] flex-1 cursor-pointer transition-colors ${
-                isActive ? "text-acc" : "text-slate-500"
+              className={`flex flex-col items-center gap-1 py-2.5 px-2 text-[10.5px] font-medium flex-1 cursor-pointer transition-colors ${
+                isActive ? "text-acc font-semibold" : "text-slate-400 hover:text-slate-200"
               }`}
             >
-              <span className={isActive ? "drop-shadow-[0_0_6px_var(--acc)]" : ""}>
+              <span className={isActive ? "drop-shadow-[0_0_8px_var(--acc)] scale-110 transition-transform" : "transition-transform"}>
                 <NavIcon href={item.href} />
               </span>
-              {item.label}
+              <span className="leading-tight">{item.label}</span>
             </button>
           );
         })}

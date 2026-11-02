@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { ArrowRight, Download, BookOpen, FolderKanban, Cpu, Mail, User, Briefcase, Home } from "lucide-react";
+import { ArrowRight, Download } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
 import type { Hero as HeroContent, SiteSettings, NavigationItem } from "@/lib/types";
 
@@ -48,24 +48,6 @@ function RoleTypewriter({ lines }: { lines: string[] }) {
   );
 }
 
-const NAV_ICONS: Record<string, typeof Home> = {
-  hero: Home,
-  about: User,
-  stats: Cpu,
-  services: Cpu,
-  skills: Cpu,
-  projects: FolderKanban,
-  showcase: FolderKanban,
-  journey: Briefcase,
-  education: Briefcase,
-  blog: BookOpen,
-  contact: Mail,
-};
-
-function keyFor(href: string) {
-  return href.replace(/^#/, "").split("/")[0] || "hero";
-}
-
 function scrollToHref(href: string) {
   const id = href.replace(/^#/, "");
   const el = document.getElementById(id);
@@ -95,10 +77,6 @@ export function Hero({
   const primaryHref = rawPrimaryHref === "#projects" ? "#showcase" : rawPrimaryHref;
 
   const nav = navigation ?? [];
-  const quickLinks = nav.filter((n) => {
-    const k = keyFor(n.href);
-    return k !== "hero" && k !== "stats";
-  });
 
   return (
     <section id="hero" className="relative pt-6 pb-12">
@@ -235,45 +213,6 @@ export function Hero({
           )}
         </div>
       </div>
-
-      {/* Quick launch nav cards */}
-      {quickLinks.length > 0 && (
-        <div className="mt-12">
-          <div className="font-mono text-xs text-acc tracking-widest uppercase mb-3">
-            {"// quick launch — choose a module"}
-          </div>
-          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {quickLinks.slice(0, 6).map((item, i) => {
-              const k = keyFor(item.href);
-              const NavIcon = NAV_ICONS[k] ?? Home;
-              return (
-                <button
-                  key={item._id}
-                  onClick={() => scrollToHref(item.href)}
-                  style={{ animationDelay: `${i * 70}ms` }}
-                  className="hud hud-hover rise group text-left p-5 cursor-pointer hover:-translate-y-1 transition-transform"
-                >
-                  <div className="flex items-start justify-between">
-                    <span className="w-11 h-11 rounded-lg grid place-items-center bg-acc/10 ring-acc text-acc group-hover:glow transition">
-                      <NavIcon size={21} />
-                    </span>
-                    <span className="font-mono text-[10px] text-slate-500 border border-white/10 rounded px-1.5 py-0.5">
-                      {i + 1}
-                    </span>
-                  </div>
-                  <div className="mt-4 font-display text-lg font-bold flex items-center gap-2">
-                    {item.label}
-                    <ArrowRight size={15} className="text-acc -translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition" />
-                  </div>
-                  <div className="text-sm text-slate-400 mt-1 mono text-[11px]">
-                    {item.href}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </section>
   );
 }
