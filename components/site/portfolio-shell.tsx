@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { AccentProvider, ACCENTS, useAccent } from "@/components/site/accent-context";
 import { AiChatProvider } from "@/components/site/ai-chat-context";
 import { BootScreen } from "@/components/site/boot-screen";
+import { ChatWidget } from "@/components/site/chat-widget";
 import { CommandPalette } from "@/components/site/command-palette";
 import { Dock } from "@/components/site/dock";
 import { MobileNav } from "@/components/site/mobile-nav";
+import { ScrollToTop } from "@/components/site/scroll-to-top";
 import { BackgroundMode, SiteBackground } from "@/components/site/site-background";
 import { StatusBar } from "@/components/site/status-bar";
 import { TopBar } from "@/components/site/top-bar";
@@ -189,6 +191,10 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
           {toast}
         </div>
       )}
+
+      {/* Fixed bottom-right action controls (viewport-fixed, outside #stage & .view-in) */}
+      <ScrollToTop />
+      <ChatWidget />
     </div>
   );
 }

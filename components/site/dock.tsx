@@ -2,7 +2,6 @@
 
 import {
   BookOpen,
-  Bot,
   Briefcase,
   Cpu,
   FolderKanban,
@@ -16,7 +15,6 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
-import { useAiChat } from "@/components/site/ai-chat-context";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 
 /** Maps section/href key → Lucide icon */
@@ -50,8 +48,6 @@ interface DockProps {
  * Exactly matches the reference Dock component visual design.
  */
 export function Dock({ navigation, settings, activeSection = "" }: DockProps) {
-  const { toggleChat, openChat, isOpen, unreadCount, showTeaser, dismissTeaser } = useAiChat();
-
   const email = settings?.contact?.email ?? "";
   const githubLink = settings?.socialLinks?.find(
     (s) => s.platform?.toLowerCase() === "github"
@@ -107,19 +103,8 @@ export function Dock({ navigation, settings, activeSection = "" }: DockProps) {
           })}
         </div>
 
-        {/* Bottom: avatar + status + socials */}
+        {/* Bottom: status + socials */}
         <div className="mt-auto pt-3 border-t border-white/5 flex flex-col items-center gap-2.5 w-full shrink-0">
-          {/* Bot avatar (can trigger chat) */}
-          <button
-            type="button"
-            onClick={toggleChat}
-            aria-label="Ask Nihal's Agentic AI Assistant"
-            title="Open Nihal's Agentic AI Assistant"
-            className="floaty w-11 h-11 rounded-full grid place-items-center bg-gradient-to-b from-acc/30 to-acc2/30 ring-acc glow cursor-pointer hover:scale-105 active:scale-95 transition-all group"
-          >
-            <Bot size={22} className="text-acc transition-transform group-hover:scale-110" />
-          </button>
-
           {/* Availability status */}
           <div className="w-full rounded-lg ring-acc bg-acc/5 py-1 text-center">
             <div className="text-[10px] font-semibold text-acc flex items-center justify-center gap-1">

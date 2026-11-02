@@ -186,7 +186,7 @@ export function ChatWidget() {
       {!isOpen && showTeaser && (
         <div
           onClick={toggleChat}
-          className="fixed right-18 sm:right-20 md:right-22 bottom-[calc(64px+env(safe-area-inset-bottom))] md:bottom-6 z-[69] flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-right-3 max-w-[calc(100vw-6.5rem)]"
+          className="fixed right-[72px] sm:right-[84px] md:right-[88px] bottom-[calc(64px+env(safe-area-inset-bottom)+2px)] md:bottom-[26px] z-[69] w-max max-w-[calc(100vw-6rem)] sm:max-w-xs flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-right-3"
         >
           <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
