@@ -61,7 +61,8 @@ export function TopBar({
   const hasCustomLogo = Boolean(branding?.navLogoLight || branding?.navLogoDark);
 
   return (
-    <header className="relative z-30 h-16 shrink-0 flex items-center gap-3 px-3 sm:px-5 border-b border-white/5 bg-ink/60 backdrop-blur-xl">
+    // bg-[#03050f]/60 — matches reference bg-ink/60 (reference --color-ink = #03050f = page bg)
+    <header className="relative z-30 h-16 shrink-0 flex items-center gap-3 px-3 sm:px-5 border-b border-white/5 bg-[#03050f]/60 backdrop-blur-xl">
       {/* Brand / logo */}
       <button
         onClick={() => {
