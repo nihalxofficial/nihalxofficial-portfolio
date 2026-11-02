@@ -2,7 +2,117 @@
 
 import { useMemo, useState } from "react";
 import { LayoutGrid, Orbit, Search, ArrowUpRight } from "lucide-react";
+import { Icon } from "@/components/ui/icon";
 import type { Project, SectionMeta, SkillGroup, Skill } from "@/lib/types";
+
+/* ── Common Tech Brand Aliases ────────────────────────────────────────── */
+const BRAND_ALIASES: Record<string, string> = {
+  "next.js": "SiNextdotjs",
+  "nextjs": "SiNextdotjs",
+  "next": "SiNextdotjs",
+  "react": "SiReact",
+  "react.js": "SiReact",
+  "reactjs": "SiReact",
+  "typescript": "SiTypescript",
+  "ts": "SiTypescript",
+  "javascript": "SiJavascript",
+  "js": "SiJavascript",
+  "node.js": "SiNodedotjs",
+  "nodejs": "SiNodedotjs",
+  "node": "SiNodedotjs",
+  "express": "SiExpress",
+  "express.js": "SiExpress",
+  "expressjs": "SiExpress",
+  "mongodb": "SiMongodb",
+  "mongo": "SiMongodb",
+  "postgresql": "SiPostgresql",
+  "postgres": "SiPostgresql",
+  "prisma": "SiPrisma",
+  "tailwind": "SiTailwindcss",
+  "tailwindcss": "SiTailwindcss",
+  "tailwind css": "SiTailwindcss",
+  "docker": "SiDocker",
+  "docker hub": "SiDocker",
+  "git": "SiGit",
+  "github": "SiGithub",
+  "figma": "SiFigma",
+  "vercel": "SiVercel",
+  "render": "SiRender",
+  "redis": "SiRedis",
+  "linux": "SiLinux",
+  "postman": "SiPostman",
+  "go": "SiGo",
+  "golang": "SiGo",
+  "socket.io": "SiSocketdotio",
+  "socketio": "SiSocketdotio",
+  "heroui": "SiHeroui",
+  "neon": "SiNeon",
+};
+
+/**
+ * Universal Skill / Tech Icon component
+ * Resolves both image URLs and react-icons Simple Icons (e.g. SiReact, SiNextdotjs)
+ */
+export function SkillIcon({
+  icon,
+  name,
+  className = "w-5 h-5",
+  size = 20,
+}: {
+  icon?: string;
+  name: string;
+  className?: string;
+  size?: number;
+}) {
+  const isUrl = Boolean(
+    icon &&
+      (icon.startsWith("http://") ||
+        icon.startsWith("https://") ||
+        icon.startsWith("/") ||
+        icon.startsWith("data:"))
+  );
+
+  if (isUrl && icon) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={icon}
+        alt={name}
+        className={`${className} object-contain`}
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+      />
+    );
+  }
+
+  // Resolve from explicit icon name or from brand name alias
+  const normalizedKey = name.toLowerCase().trim();
+  const strippedKey = normalizedKey.replace(/[^a-z0-9]/g, "");
+  const iconName =
+    icon || BRAND_ALIASES[normalizedKey] || BRAND_ALIASES[strippedKey];
+
+  if (iconName) {
+    return (
+      <Icon
+        name={iconName}
+        className={className}
+        size={size}
+        fallback={() => (
+          <span className="font-mono text-xs font-bold uppercase leading-none">
+            {name.slice(0, 2)}
+          </span>
+        )}
+      />
+    );
+  }
+
+  return (
+    <span className="font-mono text-xs font-bold uppercase leading-none">
+      {name.slice(0, 2)}
+    </span>
+  );
+}
 
 /* ── Proficiency helpers ─────────────────────────────────────────────── */
 function proficiencyToLevel(p: Skill["proficiency"]): number {
@@ -113,7 +223,12 @@ function OrbitView({
   onPick: (s: Skill) => void;
 }) {
   const [hovered, setHovered] = useState<Skill | null>(null);
-  const sorted = [...skills].sort((a, b) => proficiencyToLevel(b.proficiency) - proficiencyToLevel(a.proficiency));
+  const sorted = [...skills].sort((a, b) => {
+    // Next.js always core
+    if (a.name.toLowerCase().includes("next")) return -1;
+    if (b.name.toLowerCase().includes("next")) return 1;
+    return proficiencyToLevel(b.proficiency) - proficiencyToLevel(a.proficiency);
+  });
   const rings = [
     { r: 15, d: 36, list: sorted.slice(0, 5) },
     { r: 28, d: 60, list: sorted.slice(5, 13) },
@@ -175,20 +290,12 @@ function OrbitView({
                           boxShadow: `0 0 ${isSelected ? 20 : 10}px ${color}55`,
                         }}
                       >
-                        {s.icon ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={s.icon}
-                            alt=""
-                            className="object-contain"
-                            style={{ width: "5cqw", height: "5cqw" }}
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          s.name.slice(0, 2).toUpperCase()
-                        )}
+                        <SkillIcon
+                          icon={s.icon}
+                          name={s.name}
+                          className="w-[5cqw] h-[5cqw]"
+                          size={18}
+                        />
                       </button>
                     </div>
                   </div>
@@ -234,31 +341,68 @@ export function Skills({
 }) {
   if (groups.length === 0) return null;
 
+  // Prioritize "Tech Stack" group first, and prioritize Next.js as the first skill
+  const orderedGroups = useMemo(() => {
+    return [...groups]
+      .sort((a, b) => {
+        const aIsTech = /tech|core|stack|frontend/i.test(a.category);
+        const bIsTech = /tech|core|stack|frontend/i.test(b.category);
+        if (aIsTech && !bIsTech) return -1;
+        if (!aIsTech && bIsTech) return 1;
+        return 0;
+      })
+      .map((g) => {
+        const nextIdx = g.skills.findIndex((s) => s.name.toLowerCase().includes("next"));
+        if (nextIdx > 0) {
+          const copy = [...g.skills];
+          const [nextItem] = copy.splice(nextIdx, 1);
+          return { ...g, skills: [nextItem, ...copy] };
+        }
+        return g;
+      });
+  }, [groups]);
+
+  const allSkills = useMemo(() => {
+    const flat = orderedGroups.flatMap((g) => g.skills);
+    const nextIdx = flat.findIndex((s) => s.name.toLowerCase().includes("next"));
+    if (nextIdx > 0) {
+      const copy = [...flat];
+      const [nextItem] = copy.splice(nextIdx, 1);
+      return [nextItem, ...copy];
+    }
+    return flat;
+  }, [orderedGroups]);
+
   const [selectedCat, setSelectedCat] = useState<string>("all");
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<"grid" | "orbit">("grid");
-  const allSkills = useMemo(() => groups.flatMap((g) => g.skills), [groups]);
-  const [selected, setSelected] = useState<Skill>(allSkills[0] ?? ({} as Skill));
+
+  // Keep Next.js selected by default
+  const defaultSkill = useMemo(() => {
+    return allSkills.find((s) => s.name.toLowerCase().includes("next")) ?? allSkills[0] ?? ({} as Skill);
+  }, [allSkills]);
+
+  const [selected, setSelected] = useState<Skill>(defaultSkill);
 
   // Radar data — avg proficiency per category
   const radarData = useMemo(
     () =>
-      groups.map((g) => ({
+      orderedGroups.map((g) => ({
         label: g.category,
         v: Math.round(g.skills.reduce((a, s) => a + proficiencyToLevel(s.proficiency), 0) / g.skills.length),
       })),
-    [groups]
+    [orderedGroups]
   );
 
-  // Filtered skills
+  // Filtered skills with Next.js prioritized
   const filteredSkills = useMemo(() => {
-    let base = selectedCat === "all" ? allSkills : groups.find((g) => g.category === selectedCat)?.skills ?? [];
+    let base = selectedCat === "all" ? allSkills : orderedGroups.find((g) => g.category === selectedCat)?.skills ?? [];
     if (query.trim()) {
       const q = query.toLowerCase();
       base = base.filter((s) => s.name.toLowerCase().includes(q));
     }
     return base;
-  }, [allSkills, groups, selectedCat, query]);
+  }, [allSkills, orderedGroups, selectedCat, query]);
 
   // "Used in" — projects that include the selected skill in their techStack
   const usedIn = useMemo(() => {
@@ -313,7 +457,7 @@ export function Skills({
             >
               All <span className="ml-1.5 opacity-60">{allSkills.length}</span>
             </button>
-            {groups.map((g) => (
+            {orderedGroups.map((g) => (
               <button
                 key={g.category}
                 className={`chip${selectedCat === g.category ? " on" : ""}`}
@@ -362,19 +506,12 @@ export function Skills({
                           boxShadow: `0 0 14px ${skill.brandColor || "var(--acc)"}22`,
                         }}
                       >
-                        {skill.icon ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={skill.icon}
-                            alt={skill.name}
-                            className="w-5 h-5 object-contain"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          skill.name.slice(0, 2).toUpperCase()
-                        )}
+                        <SkillIcon
+                          icon={skill.icon}
+                          name={skill.name}
+                          className="w-5 h-5"
+                          size={20}
+                        />
                       </span>
                       <div className="min-w-0">
                         <div className="font-semibold text-sm truncate">{skill.name}</div>
@@ -401,7 +538,7 @@ export function Skills({
             <div className="hud p-4">
               <OrbitView
                 skills={filteredSkills.length ? filteredSkills : allSkills}
-                selected={selected ?? allSkills[0]}
+                selected={selected ?? defaultSkill}
                 onPick={setSelected}
               />
               <p className="text-center text-[11px] font-mono text-slate-500 mt-2">
@@ -430,19 +567,12 @@ export function Skills({
                       boxShadow: `0 0 14px ${selected.brandColor || "var(--acc)"}22`,
                     }}
                   >
-                    {selected.icon ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={selected.icon}
-                        alt=""
-                        className="w-6 h-6 object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    ) : (
-                      selected.name.slice(0, 2).toUpperCase()
-                    )}
+                    <SkillIcon
+                      icon={selected.icon}
+                      name={selected.name}
+                      className="w-6 h-6"
+                      size={24}
+                    />
                   </span>
                   <div>
                     <div className="font-display text-xl font-bold">{selected.name}</div>
@@ -498,7 +628,7 @@ export function Skills({
           {/* Category summary */}
           <div className="hud p-5">
             <div className="space-y-2">
-              {groups.map((g) => (
+              {orderedGroups.map((g) => (
                 <div key={g.category} className="flex items-center justify-between text-[11px]">
                   <span className="text-slate-400">{g.category}</span>
                   <span className="font-mono text-acc">{g.skills.length}</span>

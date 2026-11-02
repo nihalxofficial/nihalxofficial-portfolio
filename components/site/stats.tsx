@@ -78,9 +78,39 @@ export function Stats({
 }) {
   const [activeTab, setActiveTab] = useState<"processes" | "vitals" | "milestones">("processes");
 
-  if (statistics.length === 0) return null;
+  // Add real non-fake stat card (20+ Technologies & Tools) placed BEFORE "Learning Never Stops"
+  const enhancedStats = useMemo(() => {
+    const list = [...statistics];
 
-  const goals = section?.items ?? [];
+    const techStat: Statistic = {
+      _id: "stat-tech-stack",
+      value: "20+",
+      label: "Technologies & Tools",
+      description: "Modern languages, frameworks & databases",
+      icon: "Cpu",
+      order: 3,
+      isVisible: true,
+    };
+
+    // Find "Learning Never Stops" or infinity stat
+    const learningIdx = list.findIndex(
+      (s) =>
+        s.label?.toLowerCase().includes("learning") ||
+        s.value === "∞" ||
+        s.value?.toLowerCase().includes("infinity")
+    );
+
+    if (learningIdx !== -1) {
+      // Insert right before "Learning Never Stops"
+      list.splice(learningIdx, 0, techStat);
+    } else {
+      list.push(techStat);
+    }
+
+    return list;
+  }, [statistics]);
+
+  if (enhancedStats.length === 0) return null;
 
   // System processes simulation for developer telemetry
   const processes = [
@@ -134,7 +164,7 @@ export function Stats({
 
       {/* Primary Statistics HUD Grid (Cards with sparklines, icons, and segment bars) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {statistics.map((stat, i) => {
+        {enhancedStats.map((stat, i) => {
           const filledPips = 7 + (i % 4);
           return (
             <div
@@ -283,7 +313,7 @@ export function Stats({
           </div>
         </div>
 
-        {/* Right Console: Engineering Quality Vitals Matrix */}
+        {/* Right Console: Engineering Quality Vitals Matrix (Current Objective removed as requested) */}
         <div className="hud p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-white/5 pb-3">
             <div className="flex items-center gap-2">
@@ -320,23 +350,6 @@ export function Stats({
               );
             })}
           </div>
-
-          {/* Database Goals items if configured in admin */}
-          {goals.length > 0 && (
-            <div className="pt-3 border-t border-white/5 space-y-2">
-              <span className="font-mono text-[10px] text-acc uppercase tracking-widest block">
-                {"// current objectives"}
-              </span>
-              <div className="space-y-1.5">
-                {goals.map((g) => (
-                  <div key={g} className="flex items-start gap-2 text-xs text-slate-300">
-                    <span className="text-emerald-400 font-mono mt-0.5">▹</span>
-                    <span>{g}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </section>

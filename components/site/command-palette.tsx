@@ -8,6 +8,7 @@ import {
   Command,
   Copy,
   CornerDownLeft,
+  Cpu,
   FolderKanban,
   GraduationCap,
   Home,
@@ -17,6 +18,7 @@ import {
   Rocket,
   Search,
   Send,
+  Star,
   User,
   Wrench,
   type LucideIcon,
@@ -28,14 +30,14 @@ import type { NavigationItem, SiteSettings } from "@/lib/types";
 const ICON_BY_KEY: Record<string, LucideIcon> = {
   hero:         Home,
   about:        User,
-  stats:        Wrench,
+  stats:        Cpu,
   services:     Layers,
   skills:       Wrench,
   projects:     FolderKanban,
   showcase:     Rocket,
   journey:      Briefcase,
   education:    GraduationCap,
-  testimonials: Layers,
+  testimonials: Star,
   blog:         BookOpen,
   contact:      Mail,
 };
@@ -120,73 +122,96 @@ export function CommandPalette({
         icon: Copy,
         group: "Actions",
         run: () => {
-          if (email) {
-            navigator.clipboard?.writeText(email);
-            notify("Email copied to clipboard ✓");
-          }
+          if (!email) return notify("No email configured");
+          navigator.clipboard?.writeText(email);
+          notify(`Copied ${email}`);
         },
       },
       {
-        id: "hire",
-        label: "Let's talk",
-        hint: "Scroll to contact section",
+        id: "hire-me",
+        label: "Contact & Hire",
+        hint: "Jump to contact form",
         icon: Send,
         group: "Actions",
         run: () => scrollTo("#contact"),
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [navigation, setAccentId, rain, setRain, notify, email]
+    [navigation, email, rain, setRain, setAccentId, notify]
   );
 
-  const list = actions.filter((a) =>
-    (a.label + a.hint + a.group).toLowerCase().includes(q.toLowerCase())
-  );
+  const list = useMemo(() => {
+    if (!q.trim()) return actions;
+    const term = q.toLowerCase();
+    return actions.filter(
+      (a) =>
+        a.label.toLowerCase().includes(term) ||
+        a.hint.toLowerCase().includes(term) ||
+        a.group.toLowerCase().includes(term)
+    );
+  }, [actions, q]);
 
+  // Reset index when search query changes
+  useEffect(() => {
+    setIdx(0);
+  }, [q]);
+
+  // Focus input when opened
   useEffect(() => {
     if (open) {
       setQ("");
       setIdx(0);
-      setTimeout(() => inputRef.current?.focus(), 30);
+      setTimeout(() => inputRef.current?.focus(), 40);
     }
   }, [open]);
 
-  useEffect(() => setIdx(0), [q]);
+  // Keyboard navigation within palette
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setIdx((i) => (i + 1) % Math.max(1, list.length));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setIdx((i) => (i - 1 + list.length) % Math.max(1, list.length));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const target = list[idx];
+      if (target) {
+        target.run();
+        close();
+      }
+    } else if (e.key === "Escape") {
+      close();
+    }
+  };
 
-  if (!open) return null;
-
-  const exec = (a?: Action) => {
-    if (!a) return;
+  const exec = (a: Action) => {
     a.run();
     close();
   };
 
+  if (!open) return null;
+
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-[12vh] px-4 bg-black/60 backdrop-blur-sm fade"
-      onMouseDown={close}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
+      onClick={close}
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-20 p-4"
     >
       <div
-        className="hud pop w-full max-w-xl !bg-[#050a24] overflow-hidden"
-        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={onKeyDown}
+        className="hud !rounded-2xl w-full max-w-xl overflow-hidden shadow-2xl rise border border-acc/40"
       >
-        {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
+        {/* Input */}
+        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-white/10">
           <Search size={16} className="text-acc" />
           <input
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "ArrowDown") {
-                e.preventDefault();
-                setIdx((i) => Math.min(list.length - 1, i + 1));
-              }
-              if (e.key === "ArrowUp") {
-                e.preventDefault();
-                setIdx((i) => Math.max(0, i - 1));
-              }
-              if (e.key === "Enter") exec(list[idx]);
               if (e.key === "Escape") close();
             }}
             placeholder="Type a command or search…"
@@ -245,4 +270,3 @@ export function CommandPalette({
     </div>
   );
 }
-

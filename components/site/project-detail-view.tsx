@@ -21,6 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { Project } from "@/lib/types";
+import { SkillIcon } from "@/components/site/skills";
 
 /* ─── Status Config ───────────────────────────────────────────────────── */
 const STATUS_CONFIG: Record<
@@ -566,8 +567,9 @@ export const manifest = defineProject({
                   {project.techStack.map((tech) => (
                     <span
                       key={tech}
-                      className="font-mono text-[11px] px-2.5 py-1 rounded bg-acc/10 text-acc border border-acc/25 whitespace-nowrap"
+                      className="font-mono text-[11px] px-2.5 py-1 rounded bg-acc/10 text-acc border border-acc/25 inline-flex items-center gap-1.5 whitespace-nowrap"
                     >
+                      <SkillIcon name={tech} className="w-3.5 h-3.5 text-current shrink-0" size={13} />
                       {tech}
                     </span>
                   ))}

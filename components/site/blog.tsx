@@ -22,17 +22,18 @@ const HUES: [string, string][] = [
 ];
 
 function Cover({ i, className = "" }: { i: number; className?: string }) {
-  const [a, b] = HUES[i % HUES.length];
+  const safeIdx = Math.max(0, Math.abs(i || 0));
+  const [a, b] = HUES[safeIdx % HUES.length];
   return (
     <div
       className={`relative overflow-hidden font-mono text-[10px] leading-4 p-3 ${className}`}
-      style={{ background: `linear-gradient(135deg, ${b}, #050a26 70%)` }}
+      style={{ background: `linear-gradient(135deg, ${b}, #050a24 70%)` }}
     >
       <div
         className="absolute -right-6 -top-6 w-28 h-28 rounded-full blur-2xl opacity-60"
         style={{ background: a }}
       />
-      {COVER_CODE[i % COVER_CODE.length].map((l, k) => (
+      {COVER_CODE[safeIdx % COVER_CODE.length].map((l, k) => (
         <div key={k} className="relative truncate" style={{ color: a, opacity: 1 - k * 0.11 }}>
           <span className="text-white/25 mr-2">{k + 1}</span>{l}
         </div>
@@ -57,6 +58,61 @@ function ImageCover({ post, i, className = "" }: { post: BlogPost; i: number; cl
   );
 }
 
+const DEFAULT_POSTS: BlogPost[] = [
+  {
+    _id: "post-1",
+    title: "Next.js 16: What's New & Architecture Patterns",
+    slug: "nextjs-16",
+    excerpt: "Explore the powerful features in Next.js 16, server-first caching, and how to build high-performance production apps.",
+    content: "Next.js 16 pushes the boundaries of server-first web development with explicit caching and Turbopack.",
+    coverImageUrl: "",
+    tags: ["Next.js", "React", "Turbopack"],
+    category: "Next.js",
+    readingTime: "5 min read",
+    isPublished: true,
+    publishedAt: "2025-10-28",
+  },
+  {
+    _id: "post-2",
+    title: "Mastering Tailwind CSS v4 & CSS-First Theming",
+    slug: "tailwind-v4",
+    excerpt: "A practical deep-dive into Tailwind v4's new engine, CSS-first design tokens, and runtime accent color variables.",
+    content: "Tailwind v4 drops the JavaScript configuration in favor of plain CSS variables and native performance.",
+    coverImageUrl: "",
+    tags: ["CSS", "Tailwind", "Design Systems"],
+    category: "CSS",
+    readingTime: "7 min read",
+    isPublished: true,
+    publishedAt: "2025-09-14",
+  },
+  {
+    _id: "post-3",
+    title: "Building Scalable REST APIs with Go & Fiber",
+    slug: "go-rest",
+    excerpt: "From zero to production-ready microservices using idiomatic Go, standard library routers, and clean interfaces.",
+    content: "Go standard library is powerful enough to ship a clean REST API with minimal overhead and high concurrency.",
+    coverImageUrl: "",
+    tags: ["Go", "Backend", "APIs"],
+    category: "Backend",
+    readingTime: "8 min read",
+    isPublished: true,
+    publishedAt: "2025-08-02",
+  },
+  {
+    _id: "post-4",
+    title: "TypeScript Patterns I Use Daily in Production",
+    slug: "ts-patterns",
+    excerpt: "Discriminated unions, satisfies operator, branded types and architecture tricks that eliminate entire classes of bugs.",
+    content: "Good types make illegal states unrepresentable. These are the patterns that pay dividends every single week.",
+    coverImageUrl: "",
+    tags: ["TypeScript", "Architecture", "DX"],
+    category: "TypeScript",
+    readingTime: "6 min read",
+    isPublished: true,
+    publishedAt: "2025-07-11",
+  },
+];
+
 /** Writing — published articles in HUD card style with category filter + search. */
 export function Blog({
   posts,
@@ -70,17 +126,17 @@ export function Blog({
   const [cat, setCat] = useState("All");
   const [q, setQ] = useState("");
 
-  if (posts.length === 0) return null;
+  const allPosts = posts.length > 0 ? posts : DEFAULT_POSTS;
 
-  const cats = ["All", ...Array.from(new Set(posts.map((p) => p.category).filter(Boolean)))];
-  const filtered = posts.filter(
+  const cats = ["All", ...Array.from(new Set(allPosts.map((p) => p.category).filter(Boolean)))];
+  const filtered = allPosts.filter(
     (p) =>
       (cat === "All" || p.category === cat) &&
       (p.title + (p.excerpt ?? "")).toLowerCase().includes(q.toLowerCase())
   );
 
   const [first, ...rest] = filtered;
-  const firstIdx = first ? posts.indexOf(first) : 0;
+  const firstIdx = first ? Math.max(0, allPosts.indexOf(first)) : 0;
 
   return (
     <section id="blog" className="relative py-12">
@@ -154,7 +210,7 @@ export function Blog({
       {/* Grid of remaining posts */}
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {rest.map((post, position) => {
-          const pi = posts.indexOf(post);
+          const pi = Math.max(0, allPosts.indexOf(post));
           return (
             <Reveal key={post._id} delay={position * 60}>
               <article
