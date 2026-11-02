@@ -1,58 +1,63 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Tracks which `#anchor` section the visitor is looking at.
  *
- * Shared by the desktop pill and the mobile dock so both highlight the same
- * section. An IntersectionObserver drives the state (never click handlers), so
- * the indicator also follows manual scrolling, keyboard scrolling and restored
- * scroll positions.
+ * Uses IntersectionObserver with the `#stage` scroll container as root,
+ * since `body { overflow: hidden }` and all scrolling happens inside `#stage`.
  */
 export function useActiveSection(hrefs: string[]): string {
   const [active, setActive] = useState("");
-  // Join into one string so the observer is rebuilt only when the targets change,
-  // not on every render of the caller.
   const key = hrefs.join("|");
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    const targets = key
+    const ids = key
       .split("|")
       .filter((href) => href.startsWith("#"))
-      .map((href) => document.getElementById(href.slice(1)))
-      .filter((element): element is HTMLElement => element !== null);
+      .map((href) => href.slice(1));
 
-    if (targets.length === 0) return;
+    if (ids.length === 0) return;
 
-    const viewport = () => window.innerHeight || document.documentElement.clientHeight;
+    const timer = setTimeout(() => {
+      const stage = document.getElementById("stage");
+      const targets = ids
+        .map((id) => document.getElementById(id))
+        .filter((el): el is HTMLElement => el !== null);
 
-    /** The section covering most of the viewport, used as the observer baseline. */
-    const best = () => {
-      let winner: HTMLElement | null = null;
-      let largest = 0;
+      if (targets.length === 0) return;
 
-      for (const element of targets) {
-        const { top, bottom } = element.getBoundingClientRect();
-        const visible = Math.min(bottom, viewport()) - Math.max(top, 0);
-        if (visible > largest) {
-          largest = visible;
-          winner = element;
-        }
-      }
+      const observer = new IntersectionObserver(
+        (entries) => {
+          // Pick the entry with the highest intersection ratio that is intersecting
+          let bestId = "";
+          let bestRatio = 0;
+          for (const entry of entries) {
+            if (entry.isIntersecting && entry.intersectionRatio > bestRatio) {
+              bestRatio = entry.intersectionRatio;
+              bestId = entry.target.id;
+            }
+          }
+          if (bestId) setActive(`#${bestId}`);
+        },
+        {
+          root: stage ?? null,
+          rootMargin: "-5% 0px -40% 0px",
+          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0],
+        },
+      );
 
-      return winner ? `#${winner.id}` : "";
+      targets.forEach((el) => observer.observe(el));
+      cleanupRef.current = () => observer.disconnect();
+    }, 150);
+
+    return () => {
+      clearTimeout(timer);
+      cleanupRef.current?.();
+      cleanupRef.current = null;
     };
-
-    // The observer fires once per target immediately after `observe`, so the
-    // indicator is positioned on mount without measuring here.
-    const observer = new IntersectionObserver(
-      () => setActive(best()),
-      { rootMargin: "-10% 0px -10% 0px", threshold: [0, 0.15, 0.35, 0.6] },
-    );
-
-    targets.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
   }, [key]);
 
   return active;
