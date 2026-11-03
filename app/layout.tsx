@@ -84,6 +84,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="stylesheet" href={type.href} />
       </head>
       <body
+        suppressHydrationWarning
         style={
           {
             "--site-font-sans": type.sans,

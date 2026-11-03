@@ -48,7 +48,8 @@ export function ScrollToTop() {
       onClick={scrollToTop}
       title="Back to top"
       aria-label="Back to top"
-      className="fixed z-[68] right-4 md:right-6 bottom-[138px] md:bottom-20 grid h-12 w-12 place-items-center rounded-2xl hud !border-acc/40 bg-[#070c30] text-slate-200 shadow-[0_0_24px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-acc hover:text-acc hover:glow active:scale-95 group cursor-pointer animate-in fade-in zoom-in-95"
+      style={{ position: "fixed" }}
+      className="fixed z-[68] right-4 md:right-6 bottom-[136px] md:bottom-24 grid h-12 w-12 place-items-center rounded-2xl hud !border-acc/40 bg-[#070c30] text-slate-200 shadow-[0_0_24px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:border-acc hover:text-acc hover:glow active:scale-95 group cursor-pointer animate-in fade-in zoom-in-95"
     >
       <ArrowUp size={20} className="transition-transform group-hover:-translate-y-0.5 text-acc" />
       <span className="sr-only">Back to top</span>
