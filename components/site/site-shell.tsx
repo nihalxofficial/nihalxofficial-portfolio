@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
-import { ChatWidget } from "@/components/site/chat-widget";
 import { Footer } from "@/components/site/footer";
 import { PortfolioShell } from "@/components/site/portfolio-shell";
-import { ScrollToTop } from "@/components/site/scroll-to-top";
 import { getPortfolio } from "@/lib/api";
 
 const HIDDEN_NAV_KEYS = new Set([
@@ -72,8 +70,6 @@ export async function SiteShell({ children }: { children: ReactNode }) {
         navigation={navigation}
         year={new Date().getFullYear()}
       />
-      <ScrollToTop />
-      <ChatWidget />
     </PortfolioShell>
   );
 }

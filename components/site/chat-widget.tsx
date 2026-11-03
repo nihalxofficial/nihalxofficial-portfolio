@@ -186,7 +186,7 @@ export function ChatWidget() {
       {!isOpen && showTeaser && (
         <div
           onClick={toggleChat}
-          className="fixed right-[72px] sm:right-[84px] md:right-[88px] bottom-[calc(64px+env(safe-area-inset-bottom)+2px)] md:bottom-[26px] z-[69] w-max max-w-[calc(100vw-6rem)] sm:max-w-xs flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-right-3"
+          className="fixed right-20 md:right-22 bottom-[82px] md:bottom-[26px] z-[69] w-max max-w-[calc(100vw-6rem)] sm:max-w-xs flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-right-3"
         >
           <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -219,7 +219,7 @@ export function ChatWidget() {
         aria-label={isOpen ? "Close assistant" : "Ask Nihal's Agentic AI"}
         aria-expanded={isOpen}
         className={cn(
-          "fixed right-4 sm:right-6 bottom-[calc(64px+env(safe-area-inset-bottom))] md:bottom-6 z-[70] grid h-12 w-12 place-items-center rounded-2xl hud !border-acc/40 bg-[#070c30] text-acc shadow-[0_0_24px_rgba(0,229,255,0.35)] backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:glow active:scale-95 cursor-pointer",
+          "fixed right-4 md:right-6 bottom-20 md:bottom-6 z-[70] grid h-12 w-12 place-items-center rounded-2xl hud !border-acc/40 bg-[#070c30] text-acc shadow-[0_0_24px_rgba(0,229,255,0.35)] backdrop-blur-xl transition-all duration-300 hover:scale-105 hover:glow active:scale-95 cursor-pointer",
           isOpen && "rotate-90 !border-red-400/40 text-red-400 shadow-[0_0_20px_rgba(248,113,113,0.3)]",
         )}
       >
@@ -234,7 +234,7 @@ export function ChatWidget() {
       {/* ── Chat Window Dialog ── */}
       <div
         className={cn(
-          "fixed right-4 sm:right-6 bottom-[calc(64px+env(safe-area-inset-bottom)+3.8rem)] md:bottom-20 z-[75] w-[min(26rem,calc(100vw-2rem))] max-h-[min(34rem,calc(100dvh-130px))] flex flex-col origin-bottom-right overflow-hidden rounded-2xl hud !border-white/15 bg-[#03050f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300",
+          "fixed inset-x-3 md:inset-auto md:right-6 bottom-20 md:bottom-20 z-[75] md:w-[26rem] max-h-[min(34rem,calc(100dvh-130px))] flex flex-col origin-bottom-right overflow-hidden rounded-2xl hud !border-white/15 bg-[#03050f]/95 shadow-[0_20px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all duration-300",
           isOpen
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none translate-y-4 scale-95 opacity-0",
