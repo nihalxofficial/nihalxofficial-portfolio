@@ -345,7 +345,7 @@ export const manifest = defineProject({
       {/* Top Breadcrumb Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-white/5 min-w-0">
         <Link
-          href="/#projects"
+          href="/#showcase"
           className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-slate-400 hover:text-acc transition"
         >
           <ArrowLeft size={14} />
@@ -682,7 +682,7 @@ export const manifest = defineProject({
               </h2>
             </div>
             <Link
-              href="/#projects"
+              href="/#showcase"
               className="font-mono text-xs text-slate-400 hover:text-acc transition"
             >
               View all projects ↗

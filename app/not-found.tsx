@@ -6,7 +6,7 @@ import { getPortfolio } from "@/lib/api";
 
 const FALLBACK_LINKS = [
   { label: "Home", href: "/" },
-  { label: "Projects", href: "/#projects" },
+  { label: "Projects", href: "/#showcase" },
   { label: "About", href: "/#about" },
   { label: "Contact", href: "/#contact" },
 ];
