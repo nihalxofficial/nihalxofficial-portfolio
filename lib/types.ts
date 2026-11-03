@@ -179,6 +179,8 @@ export interface NavigationItem extends DocMeta {
   icon?: string;
   /** Pinned to the mobile bottom dock; the rest fold into "More". */
   isPrimary?: boolean;
+  /** Opens the link in a new browser tab (external links). */
+  opensInNewTab?: boolean;
   order: number;
   isVisible: boolean;
 }
@@ -209,6 +211,21 @@ export interface SiteTypography {
   mono?: string;
 }
 
+/** Owner-controlled global theme; empty values keep the built-in design. */
+export interface SiteTheme {
+  /** Key from the site's ACCENTS list (e.g. "cyan"). */
+  accentId?: string;
+  /** Animated background engine, matching the frontend BackgroundMode union. */
+  backgroundEffect?: string;
+  /** Optional palette overrides; empty fields fall back to the accent preset. */
+  palette?: {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    text?: string;
+  };
+}
+
 export interface SiteSettings extends DocMeta {
   siteName: string;
   siteUrl: string;
@@ -218,6 +235,7 @@ export interface SiteSettings extends DocMeta {
   ogImageUrl: string;
   branding?: SiteBranding;
   typography?: SiteTypography;
+  theme?: SiteTheme;
   contact: {
     email?: string;
     phone?: string;
