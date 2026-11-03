@@ -28,6 +28,9 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   const { scrollTo } = useLenis();
 
   const [booted, setBooted] = useState(false);
+  // Owner-selected background default (persisted on `settings.theme`).
+  const defaultBg = ((settings?.theme?.backgroundEffect ||
+    settings?.backgroundEffect) as BackgroundMode) || "dna";
   const [bgMode, setBgMode] = useState<BackgroundMode>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -38,7 +41,7 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
         }
       } catch {}
     }
-    return (settings?.backgroundEffect as BackgroundMode) || "dna";
+    return defaultBg;
   });
   const [palette, setPalette] = useState(false);
   const [toast, setToast] = useState("");
@@ -58,12 +61,12 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
         localStorage.getItem("bg_mode")) as BackgroundMode | null;
       if (saved && (saved === "dna" || saved === "rain" || saved === "none")) {
         setBgMode(saved);
-      } else if (settings?.backgroundEffect) {
-        setBgMode(settings.backgroundEffect as BackgroundMode);
+      } else if (defaultBg) {
+        setBgMode(defaultBg);
       }
     } catch {}
     isBgHydrated.current = true;
-  }, [settings?.backgroundEffect]);
+  }, [defaultBg]);
 
   const changeBgMode = useCallback(
     (mode: BackgroundMode) => {
@@ -230,8 +233,15 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
  * Used in both the home page and sub-pages (project/blog detail routes).
  */
 export function PortfolioShell({ children, navigation, settings }: PortfolioShellProps) {
+  // Owner-selected defaults (persisted on `settings.theme`); a visitor's own
+  // localStorage choice still wins inside the providers.
+  const accentDefaults = {
+    accentId: settings?.theme?.accentId,
+    palette: settings?.theme?.palette,
+  };
+
   return (
-    <AccentProvider>
+    <AccentProvider defaults={accentDefaults}>
       <AiChatProvider>
         <SmoothScroll>
           <ShellInner navigation={navigation} settings={settings}>

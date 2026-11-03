@@ -18,6 +18,14 @@ const FALLBACK = {
   ogImageUrl: "/og-image.jpg",
 };
 
+/** Mirrors `components/site/accent-context.tsx` ACCENTS for the pre-paint script. */
+const ACCENT_PRESETS: Record<string, [string, string]> = {
+  cyan: ["#00e5ff", "#7c4dff"],
+  emerald: ["#22ff9c", "#00b3ff"],
+  magenta: ["#ff4ecd", "#7c4dff"],
+  amber: ["#ffb020", "#ff4e50"],
+};
+
 export const viewport: Viewport = {
   themeColor: [{ color: "#03050f" }],
   width: "device-width",
@@ -75,6 +83,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = await getSiteSettings();
   const type = resolveTypography(settings?.typography);
 
+  // Resolve the owner-selected default accent for the pre-paint script:
+  // custom palette wins over the preset, and both fall back to the built-in
+  // cyan default so the shipped design is unchanged until the theme is edited.
+  const theme = settings?.theme;
+  const preset = (theme?.accentId && ACCENT_PRESETS[theme.accentId]) || ACCENT_PRESETS.cyan;
+  const defaultAccent = {
+    a: theme?.palette?.primary?.trim() || preset[0],
+    b: theme?.palette?.secondary?.trim() || preset[1],
+  };
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
@@ -82,10 +100,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Only the families chosen in Site settings are requested. */}
         <link rel="stylesheet" href={type.href} />
-        {/* Instant pre-hydration: restore user's saved accent color preference before paint */}
+        {/* Instant pre-hydration: a visitor's saved accent wins, otherwise the
+            owner-selected default (palette overrides → preset → built-in cyan). */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var a=localStorage.getItem("portfolio_accent")||localStorage.getItem("accent");var c={cyan:["#00e5ff","#7c4dff"],emerald:["#22ff9c","#00b3ff"],magenta:["#ff4ecd","#7c4dff"],amber:["#ffb020","#ff4e50"]};if(a&&c[a]){document.documentElement.style.setProperty("--acc",c[a][0]);document.documentElement.style.setProperty("--acc2",c[a][1]);}}catch(e){}})();`,
+            __html: `(function(){try{var a=localStorage.getItem("portfolio_accent")||localStorage.getItem("accent");var c=${JSON.stringify(ACCENT_PRESETS)};var d=${JSON.stringify(defaultAccent)};var p=(a&&c[a])?c[a]:[d.a,d.b];if(p){document.documentElement.style.setProperty("--acc",p[0]);document.documentElement.style.setProperty("--acc2",p[1]);}}catch(e){}})();`,
           }}
         />
       </head>

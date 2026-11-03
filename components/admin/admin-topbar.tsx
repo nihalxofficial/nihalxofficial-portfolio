@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/admin/auth-provider";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { ThemeCustomizerMenu } from "@/components/admin/theme-customizer";
 import { Icon } from "@/components/ui/icon";
 import { adminHref } from "@/lib/admin-routes";
 import { fetchOverview } from "@/lib/admin";
@@ -105,6 +106,8 @@ export function AdminTopbar({
             </span>
           ) : null}
         </Link>
+
+        <ThemeCustomizerMenu />
 
         <ThemeToggle className="h-9 w-9 rounded-lg" />
 

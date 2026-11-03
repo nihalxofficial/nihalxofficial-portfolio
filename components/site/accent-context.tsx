@@ -23,6 +23,8 @@ export const ACCENTS: Accent[] = [
   { id: "amber",   name: "Solar Amber",   a: "#ffb020", b: "#ff4e50" },
 ];
 
+const STORAGE_KEYS = ["portfolio_accent", "accent"] as const;
+
 interface AccentContextValue {
   accent: Accent;
   accentId: string;
@@ -35,47 +37,74 @@ const AccentContext = createContext<AccentContextValue>({
   setAccentId: () => {},
 });
 
-export function AccentProvider({ children }: { children: ReactNode }) {
-  // Synchronous client-side lazy initializer: restores user's choice on first frame
-  const [accentId, setAccentIdState] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved =
-          localStorage.getItem("portfolio_accent") || localStorage.getItem("accent");
-        if (saved && ACCENTS.some((a) => a.id === saved)) {
-          return saved;
-        }
-      } catch {}
+/** Optional owner-selected default persisted on `settings.theme`. */
+export interface AccentDefaults {
+  accentId?: string;
+  palette?: { primary?: string; secondary?: string };
+}
+
+function readStoredAccentId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    for (const key of STORAGE_KEYS) {
+      const saved = localStorage.getItem(key);
+      if (saved && ACCENTS.some((a) => a.id === saved)) return saved;
     }
-    return "cyan";
+  } catch {}
+  return null;
+}
+
+function presetFor(id?: string): Accent {
+  return ACCENTS.find((a) => a.id === id) ?? ACCENTS[0];
+}
+
+function applyColors(a: string, b: string) {
+  document.documentElement.style.setProperty("--acc", a);
+  document.documentElement.style.setProperty("--acc2", b);
+}
+
+export function AccentProvider({
+  children,
+  defaults,
+}: {
+  children: ReactNode;
+  defaults?: AccentDefaults;
+}) {
+  // Precedence: visitor localStorage -> owner DB default -> built-in preset.
+  // The DB accent only drives the default a *new* visitor sees; anyone who has
+  // picked one themselves keeps their choice, so nothing about per-visitor
+  // control changes.
+  const [accentId, setAccentIdState] = useState(() => {
+    const stored = readStoredAccentId();
+    if (stored) return stored;
+    return ACCENTS.some((a) => a.id === defaults?.accentId) ? defaults!.accentId! : "cyan";
   });
 
-  // Ensure CSS variables match on client mount
+  // Paint the resolved colors as soon as we are on the client.
   useEffect(() => {
-    try {
-      const saved =
-        localStorage.getItem("portfolio_accent") || localStorage.getItem("accent");
-      const activeId = saved && ACCENTS.some((a) => a.id === saved) ? saved : accentId;
-      const match = ACCENTS.find((a) => a.id === activeId);
-      if (match) {
-        document.documentElement.style.setProperty("--acc", match.a);
-        document.documentElement.style.setProperty("--acc2", match.b);
-        if (activeId !== accentId) {
-          setAccentIdState(activeId);
-        }
-      }
-    } catch {}
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const stored = readStoredAccentId();
+    if (stored) {
+      const preset = presetFor(stored);
+      applyColors(preset.a, preset.b);
+      if (stored !== accentId) setAccentIdState(stored);
+      return;
+    }
 
-  const accent = ACCENTS.find((a) => a.id === accentId) ?? ACCENTS[0];
+    const preset = presetFor(defaults?.accentId);
+    const primary = defaults?.palette?.primary?.trim();
+    const secondary = defaults?.palette?.secondary?.trim();
+    applyColors(primary || preset.a, secondary || preset.b);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaults?.accentId, defaults?.palette?.primary, defaults?.palette?.secondary]);
+
+  const accent = presetFor(accentId);
 
   const setAccentId = useCallback((id: string) => {
     const match = ACCENTS.find((a) => a.id === id);
     if (!match) return;
 
     setAccentIdState(id);
-    document.documentElement.style.setProperty("--acc", match.a);
-    document.documentElement.style.setProperty("--acc2", match.b);
+    applyColors(match.a, match.b);
 
     try {
       localStorage.setItem("portfolio_accent", id);
