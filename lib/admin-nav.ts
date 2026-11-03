@@ -72,7 +72,7 @@ const CUSTOMIZATION: NavGroup = {
   id: "customization",
   label: "Customization",
   items: [
-    { href: adminHref("settings"), label: "Global Settings", icon: "Settings" },
+    { href: adminHref("settings/global"), label: "Global Settings", icon: "Globe" },
     { href: adminHref("settings/theme"), label: "Theme & Colors", icon: "Palette" },
     { href: adminHref("settings/background"), label: "Background Settings", icon: "Sparkles" },
     { href: adminHref("settings/typography"), label: "Typography", icon: "Type" },
@@ -85,7 +85,10 @@ const SYSTEM: NavGroup = {
   id: "system",
   label: "System",
   items: [
+    { href: adminHref("media"), label: "Media Library", icon: "Image" },
+    { href: adminHref("messages"), label: "Messages", icon: "Inbox" },
     { href: adminHref("profile"), label: "Profile & Security", icon: "UserCog" },
+    { href: adminHref("components"), label: "Component Visibility", icon: "LayoutGrid" },
     { href: "/", label: "View Site", icon: "Globe", external: true },
   ],
 };
