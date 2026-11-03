@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { ArrowRight, Download } from "lucide-react";
 import { Icon } from "@/components/ui/icon";
+import { scrollToTarget } from "@/components/providers/smooth-scroll";
 import type { Hero as HeroContent, SiteSettings, NavigationItem } from "@/lib/types";
 
 /** Typewriter that cycles through an array of role strings */
@@ -50,9 +51,11 @@ function RoleTypewriter({ lines }: { lines: string[] }) {
 
 function scrollToHref(href: string) {
   const id = href.replace(/^#/, "");
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: "smooth" });
-  else document.getElementById("stage")?.scrollTo({ top: 0, behavior: "smooth" });
+  if (id === "hero" || id === "") {
+    scrollToTarget(0, { duration: 1.25 });
+  } else {
+    scrollToTarget(`#${id}`, { offset: -24, duration: 1.25 });
+  }
 }
 
 export function Hero({

@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useInView } from "framer-motion";
 import {
   Activity,
   CheckCircle2,
@@ -13,6 +14,7 @@ import {
   Terminal,
   Zap,
 } from "lucide-react";
+import { AnimatedProgressBar } from "@/components/ui/animated-progress";
 import { Icon } from "@/components/ui/icon";
 import { StatValue } from "@/components/site/stat-value";
 import type { SectionMeta, Statistic } from "@/lib/types";
@@ -52,14 +54,27 @@ function Sparkline({ seed, color = "var(--acc)" }: { seed: number; color?: strin
 
 /* ─── Segmented Power Level Bar ────────────────────────────────────────── */
 function MetricBar({ filled = 8, total = 10 }: { filled?: number; total?: number }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { once: true });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    const t = setTimeout(() => {
+      setCount(filled);
+    }, 150);
+    return () => clearTimeout(t);
+  }, [inView, filled]);
+
   return (
-    <div className="flex gap-[3px] items-center">
+    <div ref={ref} className="flex gap-[3px] items-center">
       {Array.from({ length: total }).map((_, i) => (
         <span
           key={i}
-          className={`h-1.5 w-2 rounded-xs transition-colors ${
-            i < filled ? "bg-acc shadow-[0_0_5px_var(--acc)]" : "bg-white/10"
+          className={`h-1.5 w-2 rounded-xs transition-all duration-500 ${
+            i < count ? "bg-acc shadow-[0_0_5px_var(--acc)] opacity-100" : "bg-white/10 opacity-40"
           }`}
+          style={{ transitionDelay: `${i * 45}ms` }}
         />
       ))}
     </div>
@@ -335,14 +350,15 @@ export function Stats({
                       <VIcon size={14} className="text-acc" />
                       {v.label}
                     </span>
-                    <span className="font-mono text-acc font-bold">{v.value}</span>
+                    <span className="font-mono text-acc font-bold">
+                      <StatValue value={v.value} />
+                    </span>
                   </div>
-                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/10 p-[1px]">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-acc to-acc2 shadow-[0_0_8px_var(--acc)]"
-                      style={{ width: `${v.pct}%` }}
-                    />
-                  </div>
+                  <AnimatedProgressBar
+                    value={v.pct}
+                    className="h-1.5 border border-white/10 p-[1px] bg-white/5"
+                    barClassName="bg-gradient-to-r from-acc to-acc2 shadow-[0_0_8px_var(--acc)]"
+                  />
                   <span className="text-[10px] text-slate-500 font-mono block">
                     {v.desc}
                   </span>

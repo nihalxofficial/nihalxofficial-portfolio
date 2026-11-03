@@ -348,7 +348,7 @@ export function Services({
           <div className="w-px h-6 bg-white/10" />
           <div>
             <div className="text-[10px] text-slate-500 uppercase">Architecture</div>
-            <div className="text-emerald-400 font-bold">Modular</div>
+            <div className="text-emerald-400 font-bold">Layered</div>
           </div>
         </div>
       </div>

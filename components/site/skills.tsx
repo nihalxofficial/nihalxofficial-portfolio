@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { LayoutGrid, Orbit, Search, ArrowUpRight } from "lucide-react";
+import { AnimatedProgressBar, AnimatedNumber } from "@/components/ui/animated-progress";
 import { Icon } from "@/components/ui/icon";
 import type { Project, SectionMeta, SkillGroup, Skill } from "@/lib/types";
 
@@ -151,16 +152,12 @@ function CleanProgressBar({
   level: number;
   brandColor?: string;
 }) {
-  const color = brandColor || "var(--acc)";
   return (
-    <div className="mt-3.5 w-full h-[5px] rounded-full bg-white/[0.08] overflow-hidden relative">
-      <div
-        className="h-full rounded-full transition-all duration-700 ease-out"
-        style={{
-          width: `${Math.min(100, Math.max(0, level))}%`,
-          background: `linear-gradient(90deg, ${color}99, ${color})`,
-          boxShadow: `0 0 10px ${color}88`,
-        }}
+    <div className="mt-3.5 w-full">
+      <AnimatedProgressBar
+        value={level}
+        color={brandColor}
+        className="h-[5px]"
       />
     </div>
   );
@@ -327,8 +324,8 @@ function OrbitView({
           >
             {show.name}
           </div>
-          <div className="font-mono text-acc" style={{ fontSize: "2.6cqw" }}>
-            {proficiencyToLevel(show.proficiency)}%
+          <div className="font-mono text-acc flex items-center justify-center gap-0.5" style={{ fontSize: "2.6cqw" }}>
+            <AnimatedNumber value={proficiencyToLevel(show.proficiency)} suffix="%" />
           </div>
           <div className="text-slate-400 font-mono" style={{ fontSize: "2cqw" }}>
             {proficiencyLabel(show.proficiency)}
@@ -532,7 +529,7 @@ export function Skills({
                         </div>
                       </div>
                       <span className="ml-auto font-mono text-sm text-acc shrink-0">
-                        {proficiencyToLevel(skill.proficiency)}
+                        <AnimatedNumber value={proficiencyToLevel(skill.proficiency)} suffix="%" />
                       </span>
                     </div>
                     <CleanProgressBar
@@ -591,18 +588,20 @@ export function Skills({
                   </span>
                   <div>
                     <div className="font-display text-xl font-bold">{selected.name}</div>
-                    <div className="font-mono text-[11px] text-acc">
-                      {proficiencyLabel(selected.proficiency)} · {proficiencyToLevel(selected.proficiency)}%
+                    <div className="font-mono text-[11px] text-acc flex items-center gap-1">
+                      <span>{proficiencyLabel(selected.proficiency)} ·</span>
+                      <AnimatedNumber value={proficiencyToLevel(selected.proficiency)} suffix="%" />
                     </div>
                   </div>
                 </div>
 
                 {/* Progress bar */}
-                <div className="mt-4 h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div
+                <div className="mt-4">
+                  <AnimatedProgressBar
                     key={selected.id}
-                    className="fill h-full bg-grad"
-                    style={{ width: `${proficiencyToLevel(selected.proficiency)}%` }}
+                    value={proficiencyToLevel(selected.proficiency)}
+                    className="h-2 bg-white/10"
+                    barClassName="bg-grad shadow-[0_0_12px_var(--acc)]"
                   />
                 </div>
 

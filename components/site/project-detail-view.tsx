@@ -21,6 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import type { Project } from "@/lib/types";
+import { AnimatedProgressBar, AnimatedNumber } from "@/components/ui/animated-progress";
 import { SkillIcon } from "@/components/site/skills";
 
 /* ─── Status Config ───────────────────────────────────────────────────── */
@@ -515,19 +516,18 @@ export const manifest = defineProject({
                 <div className="flex items-center justify-between font-mono text-[11px]">
                   <span className="text-slate-400">Release Readiness</span>
                   <span className={project.isPublished ? "text-emerald-400" : "text-amber-400"}>
-                    {statusInfo.progress}% · {statusInfo.label}
+                    <AnimatedNumber value={statusInfo.progress} suffix="%" /> · {statusInfo.label}
                   </span>
                 </div>
-                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/10 p-[1px]">
-                  <div
-                    className={`h-full rounded-full transition-all duration-1000 ${
-                      project.isPublished
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_#10b981]"
-                        : "bg-gradient-to-r from-amber-500 to-yellow-400 shadow-[0_0_10px_#f59e0b]"
-                    }`}
-                    style={{ width: `${statusInfo.progress}%` }}
-                  />
-                </div>
+                <AnimatedProgressBar
+                  value={statusInfo.progress}
+                  className="h-1.5 bg-white/5 border border-white/10 p-[1px]"
+                  barClassName={
+                    project.isPublished
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_10px_#10b981]"
+                      : "bg-gradient-to-r from-amber-500 to-yellow-400 shadow-[0_0_10px_#f59e0b]"
+                  }
+                />
               </div>
 
               {/* 3 Metric HUD Boxes */}

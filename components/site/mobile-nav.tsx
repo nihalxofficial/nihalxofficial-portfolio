@@ -19,6 +19,7 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import { scrollToTarget } from "@/components/providers/smooth-scroll";
 import type { NavigationItem } from "@/lib/types";
 
 /** Beyond this the dock stops being one-thumb reachable. */
@@ -51,11 +52,10 @@ function NavIcon({ href }: { href: string }) {
 
 function scrollToHref(href: string) {
   const id = href.replace(/^#/, "");
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth" });
+  if (id === "hero" || id === "") {
+    scrollToTarget(0, { duration: 1.25 });
   } else {
-    document.getElementById("stage")?.scrollTo({ top: 0, behavior: "smooth" });
+    scrollToTarget(`#${id}`, { offset: -24, duration: 1.25 });
   }
 }
 

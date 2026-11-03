@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Check, CheckCheck, Copy, Loader2, Send, X, Zap } from "lucide-react";
+import { AnimatedProgressBar } from "@/components/ui/animated-progress";
 import { Icon } from "@/components/ui/icon";
 import { TerminalText } from "@/components/ui/terminal-text";
 import { PlusMarks, WindowBar } from "@/components/ui/panel-chrome";
@@ -57,7 +58,7 @@ function PingRadar() {
         <span className="block w-3 h-3 rounded-full bg-acc shadow-[0_0_16px_var(--acc)]" />
       </div>
       <div className="absolute left-1/2 top-1/2 translate-x-2 -translate-y-6 font-mono text-[9px] text-acc whitespace-nowrap font-bold">
-        DHAKA · BD
+        CHATTOGRAM · BD
       </div>
     </div>
   );
@@ -468,9 +469,11 @@ export function Contact({
                         <span className="text-slate-400">{label}</span>
                         <span className="font-mono text-acc font-semibold">{tag}</span>
                       </div>
-                      <div className="mt-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                        <div className="fill h-full bg-grad" style={{ width: `${v}%` }} />
-                      </div>
+                      <AnimatedProgressBar
+                        value={v as number}
+                        className="mt-1 h-1.5 bg-white/10"
+                        barClassName="bg-grad shadow-[0_0_8px_var(--acc)]"
+                      />
                     </div>
                   ))}
                 </div>

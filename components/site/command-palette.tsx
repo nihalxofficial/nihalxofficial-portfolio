@@ -27,6 +27,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { scrollToTarget } from "@/components/providers/smooth-scroll";
 import { ACCENTS } from "@/components/site/accent-context";
 import { useAiChat } from "@/components/site/ai-chat-context";
 import type { BackgroundMode } from "@/components/site/site-background";
@@ -92,9 +93,11 @@ export function CommandPalette({
 
   const scrollTo = (href: string) => {
     const id = href.replace(/^#/, "");
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-    else document.getElementById("stage")?.scrollTo({ top: 0, behavior: "smooth" });
+    if (id === "hero" || id === "") {
+      scrollToTarget(0, { duration: 1.25 });
+    } else {
+      scrollToTarget(`#${id}`, { offset: -24, duration: 1.25 });
+    }
   };
 
   const actions: Action[] = useMemo(

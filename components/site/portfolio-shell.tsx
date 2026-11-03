@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AccentProvider, ACCENTS, useAccent } from "@/components/site/accent-context";
 import { AiChatProvider } from "@/components/site/ai-chat-context";
 import { SmoothScroll, useLenis } from "@/components/providers/smooth-scroll";
@@ -32,29 +32,47 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   const [palette, setPalette] = useState(false);
   const [toast, setToast] = useState("");
 
+  const notify = useCallback((msg: string) => {
+    setToast(msg);
+    const t = setTimeout(() => setToast(""), 2200);
+    return () => clearTimeout(t);
+  }, []);
+
   // Hydrate background mode preference (default: "dna")
+  const isBgHydrated = useRef(false);
+
   useEffect(() => {
-    const saved = localStorage.getItem("bg_mode") as BackgroundMode | null;
-    if (saved && (saved === "dna" || saved === "rain" || saved === "none")) {
-      setBgMode(saved);
-    } else if (settings?.backgroundEffect) {
-      setBgMode(settings.backgroundEffect as BackgroundMode);
-    }
+    try {
+      const saved = (localStorage.getItem("portfolio_bg_mode") ||
+        localStorage.getItem("bg_mode")) as BackgroundMode | null;
+      if (saved && (saved === "dna" || saved === "rain" || saved === "none")) {
+        setBgMode(saved);
+      } else if (settings?.backgroundEffect) {
+        setBgMode(settings.backgroundEffect as BackgroundMode);
+      }
+    } catch {}
+    isBgHydrated.current = true;
   }, [settings?.backgroundEffect]);
 
-  const changeBgMode = useCallback((mode: BackgroundMode) => {
-    setBgMode(mode);
-    localStorage.setItem("bg_mode", mode);
-    notify(
-      `Background → ${
-        mode === "dna"
-          ? "DNA Mesh 🧬"
-          : mode === "rain"
-          ? "Matrix Rain 🌧️"
-          : "Minimal Grid"
-      }`
-    );
-  }, []);
+  const changeBgMode = useCallback(
+    (mode: BackgroundMode) => {
+      setBgMode(mode);
+      try {
+        localStorage.setItem("portfolio_bg_mode", mode);
+        localStorage.setItem("bg_mode", mode);
+      } catch {}
+      notify(
+        `Background → ${
+          mode === "dna"
+            ? "DNA Mesh 🧬"
+            : mode === "rain"
+            ? "Matrix Rain 🌧️"
+            : "Minimal Grid"
+        }`
+      );
+    },
+    [notify]
+  );
 
   // Active section tracking via IntersectionObserver
   const hrefs = navigation.map((n) => n.href);
@@ -68,12 +86,6 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   const finishBoot = useCallback(() => {
     sessionStorage.setItem("booted", "1");
     setBooted(true);
-  }, []);
-
-  const notify = useCallback((msg: string) => {
-    setToast(msg);
-    const t = setTimeout(() => setToast(""), 2200);
-    return () => clearTimeout(t);
   }, []);
 
   const changeAccent = useCallback(
