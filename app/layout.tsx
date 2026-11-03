@@ -82,6 +82,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         {/* Only the families chosen in Site settings are requested. */}
         <link rel="stylesheet" href={type.href} />
+        {/* Instant pre-hydration: restore user's saved accent color preference before paint */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var a=localStorage.getItem("portfolio_accent")||localStorage.getItem("accent");var c={cyan:["#00e5ff","#7c4dff"],emerald:["#22ff9c","#00b3ff"],magenta:["#ff4ecd","#7c4dff"],amber:["#ffb020","#ff4e50"]};if(a&&c[a]){document.documentElement.style.setProperty("--acc",c[a][0]);document.documentElement.style.setProperty("--acc2",c[a][1]);}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body
         suppressHydrationWarning

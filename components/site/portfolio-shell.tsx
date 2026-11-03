@@ -28,7 +28,18 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   const { scrollTo } = useLenis();
 
   const [booted, setBooted] = useState(false);
-  const [bgMode, setBgMode] = useState<BackgroundMode>("dna");
+  const [bgMode, setBgMode] = useState<BackgroundMode>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = (localStorage.getItem("portfolio_bg_mode") ||
+          localStorage.getItem("bg_mode")) as BackgroundMode | null;
+        if (saved && (saved === "dna" || saved === "rain" || saved === "none")) {
+          return saved;
+        }
+      } catch {}
+    }
+    return (settings?.backgroundEffect as BackgroundMode) || "dna";
+  });
   const [palette, setPalette] = useState(false);
   const [toast, setToast] = useState("");
 

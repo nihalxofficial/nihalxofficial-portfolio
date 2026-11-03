@@ -436,7 +436,7 @@ export function Contact({
                 </div>
 
                 {/* Ping radar */}
-                <div className="hidden sm:block w-[120px] shrink-0">
+                <div className="w-[120px] shrink-0 mx-auto sm:mx-0">
                   <PingRadar />
                 </div>
               </div>

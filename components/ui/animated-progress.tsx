@@ -116,3 +116,4 @@ export function AnimatedNumber({
     </span>
   );
 }
+

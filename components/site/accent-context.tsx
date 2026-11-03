@@ -5,7 +5,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -37,53 +36,51 @@ const AccentContext = createContext<AccentContextValue>({
 });
 
 export function AccentProvider({ children }: { children: ReactNode }) {
-  const [accentId, setAccentIdState] = useState("cyan");
-  const isHydrated = useRef(false);
+  // Synchronous client-side lazy initializer: restores user's choice on first frame
+  const [accentId, setAccentIdState] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved =
+          localStorage.getItem("portfolio_accent") || localStorage.getItem("accent");
+        if (saved && ACCENTS.some((a) => a.id === saved)) {
+          return saved;
+        }
+      } catch {}
+    }
+    return "cyan";
+  });
 
-  // 1. Initial hydration: read stored preference from localStorage
+  // Ensure CSS variables match on client mount
   useEffect(() => {
     try {
       const saved =
         localStorage.getItem("portfolio_accent") || localStorage.getItem("accent");
-      if (saved && ACCENTS.some((a) => a.id === saved)) {
-        setAccentIdState(saved);
-        const match = ACCENTS.find((a) => a.id === saved);
-        if (match) {
-          document.documentElement.style.setProperty("--acc", match.a);
-          document.documentElement.style.setProperty("--acc2", match.b);
-        }
-      }
-    } catch {}
-    isHydrated.current = true;
-  }, []);
-
-  const accent = ACCENTS.find((a) => a.id === accentId) ?? ACCENTS[0];
-
-  // 2. Persist to localStorage and documentElement only when changed after hydration
-  useEffect(() => {
-    if (!isHydrated.current) return;
-    const r = document.documentElement.style;
-    r.setProperty("--acc", accent.a);
-    r.setProperty("--acc2", accent.b);
-    try {
-      localStorage.setItem("portfolio_accent", accent.id);
-      localStorage.setItem("accent", accent.id);
-    } catch {}
-  }, [accent]);
-
-  const setAccentId = useCallback((id: string) => {
-    if (ACCENTS.some((a) => a.id === id)) {
-      setAccentIdState(id);
-      const match = ACCENTS.find((a) => a.id === id);
+      const activeId = saved && ACCENTS.some((a) => a.id === saved) ? saved : accentId;
+      const match = ACCENTS.find((a) => a.id === activeId);
       if (match) {
         document.documentElement.style.setProperty("--acc", match.a);
         document.documentElement.style.setProperty("--acc2", match.b);
-        try {
-          localStorage.setItem("portfolio_accent", id);
-          localStorage.setItem("accent", id);
-        } catch {}
+        if (activeId !== accentId) {
+          setAccentIdState(activeId);
+        }
       }
-    }
+    } catch {}
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const accent = ACCENTS.find((a) => a.id === accentId) ?? ACCENTS[0];
+
+  const setAccentId = useCallback((id: string) => {
+    const match = ACCENTS.find((a) => a.id === id);
+    if (!match) return;
+
+    setAccentIdState(id);
+    document.documentElement.style.setProperty("--acc", match.a);
+    document.documentElement.style.setProperty("--acc2", match.b);
+
+    try {
+      localStorage.setItem("portfolio_accent", id);
+      localStorage.setItem("accent", id);
+    } catch {}
   }, []);
 
   return (
