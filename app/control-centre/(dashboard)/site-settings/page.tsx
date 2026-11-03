@@ -1,83 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import {
   AdminApiError,
   listContent,
   readContent,
   updateContent,
-  uploadMedia,
   type EntityRecord,
 } from "@/lib/admin";
 import { adminHref } from "@/lib/admin-routes";
-import {
-  DEFAULT_TYPOGRAPHY,
-  findFont,
-  fontOptions,
-  resolveTypography,
-  type FontRole,
-} from "@/lib/fonts";
 import { mapEmbedUrl } from "@/lib/map";
 import type { SiteSettings, SocialLink } from "@/lib/types";
 
 /**
- * Appearance settings.
+ * Contact & homepage components.
  *
- * Jobs the generic form cannot do well: uploading four theme-specific logos
- * plus a favicon, picking the Google Fonts the site loads, pointing the contact
- * map, and flipping each public section on or off with one click. Everything is
- * stored on the `settings` / `sections` documents, so the public site picks it up
- * on its next revalidation.
+ * The settings slice the generic form cannot do well: the contact details + map
+ * pin, the social profile list shared by the hero / contact / footer, and
+ * one-click visibility for every homepage section. Brand assets, fonts, colours
+ * and backgrounds now live in their own Customization modules (linked below),
+ * all still stored on the same `settings` / `sections` documents.
  */
 
-type BrandingKey =
-  | "navLogoLight"
-  | "navLogoDark"
-  | "footerLogoLight"
-  | "footerLogoDark"
-  | "faviconUrl";
-
 type ContactMap = SiteSettings["contact"];
-
-const LOGO_SLOTS: Array<{ field: BrandingKey; label: string; hint: string }> = [
-  {
-    field: "navLogoLight",
-    label: "Navbar · light mode",
-    hint: "Used on the light theme header",
-  },
-  {
-    field: "navLogoDark",
-    label: "Navbar · dark mode",
-    hint: "Used on the dark theme header (main look)",
-  },
-  {
-    field: "footerLogoLight",
-    label: "Footer · light mode",
-    hint: "Used on the light theme footer",
-  },
-  {
-    field: "footerLogoDark",
-    label: "Footer · dark mode",
-    hint: "Used on the dark theme footer",
-  },
-];
-
-const EMPTY_BRANDING: Record<BrandingKey, string> = {
-  navLogoLight: "",
-  navLogoDark: "",
-  footerLogoLight: "",
-  footerLogoDark: "",
-  faviconUrl: "",
-};
-
-/** The three roles the public site resolves a typeface for. */
-const FONT_ROLES: Array<{ role: FontRole; label: string; hint: string }> = [
-  { role: "sans", label: "Body", hint: "Paragraphs, cards and form text" },
-  { role: "display", label: "Headings", hint: "Section titles and the hero name" },
-  { role: "mono", label: "Monospace", hint: "Terminal, code window and labels" },
-];
 
 const EMPTY_MAP: ContactMap = {
   email: "",
@@ -91,11 +38,9 @@ const EMPTY_MAP: ContactMap = {
 };
 
 /**
- * Platform presets for the social links editor.
- *
- * Picking one stores its display name and the icon key the public site resolves
- * (hero, contact and footer all render the same `socialLinks` array), so no
- * icon has to be typed by hand. "Custom" keeps a free-text name.
+ * Platform presets for the social links editor. Picking one stores its display
+ * name and the icon key the public site resolves (hero, contact and footer all
+ * render the same `socialLinks` array). "Custom" keeps a free-text name.
  */
 const SOCIAL_PLATFORMS: Array<{ name: string; icon: string }> = [
   { name: "GitHub", icon: "Github" },
@@ -112,12 +57,17 @@ const SOCIAL_PLATFORMS: Array<{ name: string; icon: string }> = [
   { name: "Docker Hub", icon: "Container" },
 ];
 
-/** Icon for a stored platform name; unknown names fall back to the generic link. */
 function iconFor(platform: string): string {
   return SOCIAL_PLATFORMS.find((entry) => entry.name === platform)?.icon || "Globe";
 }
 
-type SavingSection = "branding" | "typography" | "contact" | null;
+/** The Customization modules that own the rest of the `settings` document. */
+const MODULE_LINKS: Array<{ href: string; label: string; icon: string }> = [
+  { href: adminHref("settings/branding"), label: "Assets & Branding", icon: "ImagePlus" },
+  { href: adminHref("settings/theme"), label: "Theme & Colors", icon: "Palette" },
+  { href: adminHref("settings/background"), label: "Background", icon: "Sparkles" },
+  { href: adminHref("settings/typography"), label: "Typography", icon: "Type" },
+];
 
 type Flash = { tone: "success" | "error"; text: string } | null;
 
@@ -126,19 +76,11 @@ function toMessage(cause: unknown, fallback: string) {
 }
 
 export default function SiteSettingsPage() {
-  const [branding, setBranding] = useState<Record<BrandingKey, string>>(EMPTY_BRANDING);
-  const [logoAlt, setLogoAlt] = useState("");
-  const [mark, setMark] = useState("");
-  const [wordmark, setWordmark] = useState("");
-  const [typography, setTypography] = useState<Record<FontRole, string>>({
-    ...DEFAULT_TYPOGRAPHY,
-  });
   const [contact, setContact] = useState<ContactMap>(EMPTY_MAP);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
   const [sections, setSections] = useState<EntityRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState<SavingSection>(null);
-  const [uploading, setUploading] = useState<BrandingKey | null>(null);
+  const [saving, setSaving] = useState(false);
   const [toggling, setToggling] = useState<string | null>(null);
   const [flash, setFlash] = useState<Flash>(null);
 
@@ -155,36 +97,12 @@ export default function SiteSettingsPage() {
         listContent("sections", { limit: 100 }),
       ]);
 
-      const stored = (settings.branding ?? {}) as Partial<
-        Record<BrandingKey | "logoAlt" | "mark" | "wordmark", string>
-      >;
-
-      setBranding({
-        navLogoLight: stored.navLogoLight ?? "",
-        navLogoDark: stored.navLogoDark ?? "",
-        footerLogoLight: stored.footerLogoLight ?? "",
-        footerLogoDark: stored.footerLogoDark ?? "",
-        faviconUrl: stored.faviconUrl ?? "",
-      });
-      setLogoAlt(stored.logoAlt ?? "");
-      setMark(stored.mark ?? "");
-      setWordmark(stored.wordmark ?? "");
-
-      const type = (settings.typography ?? {}) as Partial<Record<FontRole, string>>;
-      setTypography({
-        sans: type.sans || DEFAULT_TYPOGRAPHY.sans,
-        display: type.display || DEFAULT_TYPOGRAPHY.display,
-        mono: type.mono || DEFAULT_TYPOGRAPHY.mono,
-      });
-
       // The whole contact object is sent back on save, so map-only fields
       // (coordinates, zoom, embed) survive edits made on this page.
       setContact({ ...EMPTY_MAP, ...((settings.contact ?? {}) as ContactMap) });
 
       setSocialLinks(
-        Array.isArray(settings.socialLinks)
-          ? (settings.socialLinks as SocialLink[])
-          : [],
+        Array.isArray(settings.socialLinks) ? (settings.socialLinks as SocialLink[]) : [],
       );
 
       setSections(list.items);
@@ -200,9 +118,6 @@ export default function SiteSettingsPage() {
     void load();
   }, [load]);
 
-  const patch = (field: BrandingKey, value: string) =>
-    setBranding((current) => ({ ...current, [field]: value }));
-
   const patchContact = (field: keyof ContactMap, value: string | number) =>
     setContact((current) => ({ ...current, [field]: value }));
 
@@ -211,43 +126,8 @@ export default function SiteSettingsPage() {
       rows.map((row, position) => (position === index ? { ...row, ...next } : row)),
     );
 
-  async function saveBranding() {
-    setSaving("branding");
-    setFlash(null);
-
-    try {
-      await updateContent("settings", "current", {
-        branding: {
-          ...branding,
-          logoAlt: logoAlt.trim(),
-          mark: mark.trim().slice(0, 3),
-          wordmark: wordmark.trim(),
-        },
-      });
-      setFlash({ tone: "success", text: "Branding saved. The public site updates within a minute." });
-    } catch (cause) {
-      setFlash({ tone: "error", text: toMessage(cause, "Could not save the branding.") });
-    } finally {
-      setSaving(null);
-    }
-  }
-
-  async function saveTypography() {
-    setSaving("typography");
-    setFlash(null);
-
-    try {
-      await updateContent("settings", "current", { typography });
-      setFlash({ tone: "success", text: "Fonts saved — the public site loads exactly these three." });
-    } catch (cause) {
-      setFlash({ tone: "error", text: toMessage(cause, "Could not save the typography.") });
-    } finally {
-      setSaving(null);
-    }
-  }
-
   async function saveContact() {
-    setSaving("contact");
+    setSaving(true);
     setFlash(null);
 
     try {
@@ -270,29 +150,7 @@ export default function SiteSettingsPage() {
     } catch (cause) {
       setFlash({ tone: "error", text: toMessage(cause, "Could not save the contact settings.") });
     } finally {
-      setSaving(null);
-    }
-  }
-
-  async function upload(field: BrandingKey, file: File) {
-    setUploading(field);
-    setFlash(null);
-
-    try {
-      const dataUrl = await readFile(file);
-      const asset = await uploadMedia({
-        image: dataUrl,
-        name: `${field}-${file.name}`.slice(0, 120),
-        mimeType: file.type,
-        folder: "branding",
-      });
-
-      patch(field, asset.url);
-      setFlash({ tone: "success", text: "Uploaded. Press “Save branding” to publish it." });
-    } catch (cause) {
-      setFlash({ tone: "error", text: toMessage(cause, "Upload failed. Check the ImgBB key.") });
-    } finally {
-      setUploading(null);
+      setSaving(false);
     }
   }
 
@@ -339,9 +197,9 @@ export default function SiteSettingsPage() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="mono text-[10px] uppercase tracking-[0.22em] text-accent">Site settings</p>
-          <h1 className="mt-1.5 text-2xl font-semibold text-ink">Appearance &amp; components</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold text-ink">Contact &amp; homepage components</h1>
           <p className="mt-1 text-[12.5px] text-muted">
-            Brand logos for both themes, the favicon, and which sections the homepage renders.
+            Contact details, the shared social list, and which sections the homepage renders.
           </p>
         </div>
 
@@ -368,180 +226,23 @@ export default function SiteSettingsPage() {
         </p>
       ) : null}
 
-      {/* ── Branding ─────────────────────────────────────────────────────── */}
-      <section className="panel p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-[13.5px] font-semibold text-ink">Brand logos</h2>
-            <p className="mono mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
-              one image per theme · png, webp or jpeg
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => void saveBranding()}
-            disabled={saving !== null}
-            className="inline-flex items-center gap-2 rounded-lg grad-accent px-3.5 py-2 text-[12px] font-semibold text-accent-ink disabled:opacity-60"
-          >
-            <Icon
-              name={saving === "branding" ? "Loader" : "Save"}
-              className={`h-3.5 w-3.5 ${saving === "branding" ? "animate-spin" : ""}`}
-            />
-            {saving === "branding" ? "Saving…" : "Save branding"}
-          </button>
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {LOGO_SLOTS.map((slot) => (
-            <LogoRow
-              key={slot.field}
-              field={slot.field}
-              label={slot.label}
-              hint={slot.hint}
-              value={branding[slot.field]}
-              uploading={uploading === slot.field}
-              onChange={(value) => patch(slot.field, value)}
-              onUpload={(file) => void upload(slot.field, file)}
-            />
-          ))}
-        </div>
-
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <LogoRow
-            field="faviconUrl"
-            label="Favicon"
-            hint="Browser tab icon — square png, 512px"
-            value={branding.faviconUrl}
-            uploading={uploading === "faviconUrl"}
-            onChange={(value) => patch("faviconUrl", value)}
-            onUpload={(file) => void upload("faviconUrl", file)}
-            compact
-          />
-
-          <label className="flex flex-col gap-1.5">
-            <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
-              Alt text
-            </span>
-            <input
-              value={logoAlt}
-              onChange={(event) => setLogoAlt(event.target.value)}
-              placeholder="Md. Nihal Uddin Bijoy"
-              className="h-9 rounded-lg border border-line bg-surface-2/50 px-3 text-[12px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
-            />
-            <span className="text-[10.5px] text-faint">
-              Used for screen readers and search engines when the logo replaces the name.
-            </span>
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
-              Logo mark
-            </span>
-            <input
-              value={mark}
-              onChange={(event) => setMark(event.target.value)}
-              placeholder="NB"
-              maxLength={3}
-              className="h-9 rounded-lg border border-line bg-surface-2/50 px-3 text-[12px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
-            />
-            <span className="text-[10.5px] text-faint">
-              Up to 3 initials shown in the gradient tile and the favicon when no logo image is
-              uploaded. Empty falls back to your name’s initials.
-            </span>
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
-              Wordmark
-            </span>
-            <input
-              value={wordmark}
-              onChange={(event) => setWordmark(event.target.value)}
-              placeholder="nihal.dev"
-              maxLength={40}
-              className="h-9 rounded-lg border border-line bg-surface-2/50 px-3 text-[12px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
-            />
-            <span className="text-[10.5px] text-faint">
-              Text beside the mark in the header. Empty falls back to the site name; the first half
-              stays white and the rest carries the gradient.
-            </span>
-          </label>
-        </div>
-
-        <p className="mono mt-4 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[10.5px] leading-relaxed text-faint">
-          Leave a slot empty to fall back to the gradient initials mark. The visible text block in the
-          navbar and footer is hidden automatically once a logo exists.
+      {/* ── Links to the other Customization modules ─────────────────────── */}
+      <section className="panel p-4">
+        <p className="mono mb-3 text-[10px] uppercase tracking-[0.16em] text-faint">
+          also customise
         </p>
-      </section>
-
-      {/* ── Typography ───────────────────────────────────────────────────── */}
-      <section className="panel p-4 sm:p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-[13.5px] font-semibold text-ink">Typography</h2>
-            <p className="mono mt-0.5 text-[10px] uppercase tracking-[0.14em] text-faint">
-              one google fonts request · only the chosen families
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => void saveTypography()}
-            disabled={saving !== null}
-            className="inline-flex items-center gap-2 rounded-lg grad-accent px-3.5 py-2 text-[12px] font-semibold text-accent-ink disabled:opacity-60"
-          >
-            <Icon
-              name={saving === "typography" ? "Loader" : "Save"}
-              className={`h-3.5 w-3.5 ${saving === "typography" ? "animate-spin" : ""}`}
-            />
-            {saving === "typography" ? "Saving…" : "Save fonts"}
-          </button>
-        </div>
-
-        {/* The admin layout only ships the saved families, so the preview needs
-            its own stylesheet for whatever is picked but not yet stored. */}
-        <link rel="stylesheet" href={resolveTypography(typography).href} />
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {FONT_ROLES.map((role) => {
-            const selected = findFont(role.role, typography[role.role]);
-
-            return (
-              <label
-                key={role.role}
-                className="flex flex-col gap-2 rounded-xl border border-line bg-surface-2/40 p-3"
-              >
-                <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
-                  {role.label}
-                </span>
-
-                <select
-                  value={selected.key}
-                  onChange={(event) =>
-                    setTypography((current) => ({ ...current, [role.role]: event.target.value }))
-                  }
-                  className="h-9 rounded-lg border border-line bg-page px-2 text-[12px] text-ink outline-none transition-colors focus:border-accent"
-                >
-                  {fontOptions(role.role).map((font) => (
-                    <option key={font.key} value={font.key}>
-                      {font.label}
-                    </option>
-                  ))}
-                </select>
-
-                <span
-                  className="truncate text-[19px] text-ink"
-                  style={{ fontFamily: selected.stack }}
-                >
-                  Aa Bb 123
-                </span>
-                <span className="text-[10.5px] text-faint">
-                  {role.hint} · {selected.note}
-                </span>
-              </label>
-            );
-          })}
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {MODULE_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[12px] font-medium text-muted transition-colors hover:border-accent/40 hover:text-accent"
+            >
+              <Icon name={link.icon} className="h-4 w-4 text-accent" />
+              {link.label}
+              <Icon name="ArrowUpRight" className="ml-auto h-3.5 w-3.5 text-faint" />
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -558,14 +259,14 @@ export default function SiteSettingsPage() {
           <button
             type="button"
             onClick={() => void saveContact()}
-            disabled={saving !== null}
+            disabled={saving}
             className="inline-flex items-center gap-2 rounded-lg grad-accent px-3.5 py-2 text-[12px] font-semibold text-accent-ink disabled:opacity-60"
           >
             <Icon
-              name={saving === "contact" ? "Loader" : "Save"}
-              className={`h-3.5 w-3.5 ${saving === "contact" ? "animate-spin" : ""}`}
+              name={saving ? "Loader" : "Save"}
+              className={`h-3.5 w-3.5 ${saving ? "animate-spin" : ""}`}
             />
-            {saving === "contact" ? "Saving…" : "Save contact"}
+            {saving ? "Saving…" : "Save contact"}
           </button>
         </div>
 
@@ -609,9 +310,7 @@ export default function SiteSettingsPage() {
             </span>
             <button
               type="button"
-              onClick={() =>
-                setSocialLinks((rows) => [...rows, { platform: "", url: "", icon: "" }])
-              }
+              onClick={() => setSocialLinks((rows) => [...rows, { platform: "", url: "", icon: "" }])}
               className="mono inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 text-[9.5px] uppercase tracking-[0.14em] text-faint transition-colors hover:border-line-strong hover:text-accent"
             >
               <Icon name="Plus" className="h-3 w-3" />
@@ -621,8 +320,8 @@ export default function SiteSettingsPage() {
 
           {socialLinks.length === 0 ? (
             <p className="mt-2 rounded-lg border border-dashed border-line px-3 py-2.5 text-[11.5px] text-faint">
-              No social profiles yet. Add as many as you like — they appear in the
-              hero, the contact section and the footer.
+              No social profiles yet. Add as many as you like — they appear in the hero, the contact
+              section and the footer.
             </p>
           ) : (
             <ul className="mt-2 space-y-2">
@@ -636,14 +335,16 @@ export default function SiteSettingsPage() {
                   </span>
 
                   <select
-                    value={SOCIAL_PLATFORMS.some((entry) => entry.name === link.platform) ? link.platform : ""}
+                    value={
+                      SOCIAL_PLATFORMS.some((entry) => entry.name === link.platform)
+                        ? link.platform
+                        : ""
+                    }
                     onChange={(event) => {
                       const picked = event.target.value;
                       patchSocial(
                         index,
-                        picked
-                          ? { platform: picked, icon: iconFor(picked) }
-                          : { platform: "", icon: "" },
+                        picked ? { platform: picked, icon: iconFor(picked) } : { platform: "", icon: "" },
                       );
                     }}
                     className="h-9 w-36 shrink-0 rounded-lg border border-line bg-page px-2 text-[12px] text-ink outline-none transition-colors focus:border-accent"
@@ -721,8 +422,8 @@ export default function SiteSettingsPage() {
           )}
 
           <p className="mono mt-2 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[10.5px] leading-relaxed text-faint">
-            Rows keep their order. The same list feeds the hero, contact and footer —
-            one place to manage every profile.
+            Rows keep their order. The same list feeds the hero, contact and footer — one place to
+            manage every profile.
           </p>
         </div>
 
@@ -857,7 +558,6 @@ export default function SiteSettingsPage() {
           <h2 className="text-[13px] font-semibold text-ink">SEO &amp; meta</h2>
           <p className="mt-0.5 text-[11.5px] text-muted">
             Site name, meta description and keywords live in the full settings form.
-            Contact details and social profiles are edited above, on this page.
           </p>
         </div>
         <Link
@@ -876,85 +576,6 @@ function labelOf(section: EntityRecord) {
   const label = typeof section.label === "string" ? section.label.trim() : "";
   const key = typeof section.key === "string" ? section.key : "section";
   return label || key.charAt(0).toUpperCase() + key.slice(1);
-}
-
-function LogoRow({
-  field,
-  label,
-  hint,
-  value,
-  uploading,
-  compact = false,
-  onChange,
-  onUpload,
-}: {
-  field: BrandingKey;
-  label: string;
-  hint: string;
-  value: string;
-  uploading: boolean;
-  compact?: boolean;
-  onChange: (value: string) => void;
-  onUpload: (file: File) => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  function handleFile(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (file) onUpload(file);
-    event.target.value = "";
-  }
-
-  return (
-    <div className="rounded-xl border border-line bg-surface-2/40 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="mono text-[10px] uppercase tracking-[0.16em] text-faint">{label}</span>
-        <span className="mono text-[9px] uppercase tracking-[0.14em] text-faint/70">{field}</span>
-      </div>
-
-      <div className="mt-2 flex items-center gap-2">
-        <span
-          className={`grid shrink-0 place-items-center overflow-hidden rounded-lg border border-line bg-page ${
-            compact ? "h-9 w-9" : "h-9 w-24"
-          }`}
-        >
-          {value ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={value} alt="" className="max-h-full max-w-full object-contain" />
-          ) : (
-            <Icon name="Image" className="h-3.5 w-3.5 text-faint" />
-          )}
-        </span>
-
-        <input
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="https://…"
-          className="h-9 min-w-0 flex-1 rounded-lg border border-line bg-page px-2.5 text-[11.5px] text-ink outline-none transition-colors placeholder:text-faint focus:border-accent"
-        />
-
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-surface px-2.5 text-[11px] font-medium text-muted transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
-        >
-          <Icon name={uploading ? "Loader" : "Upload"} className={`h-3.5 w-3.5 ${uploading ? "animate-spin" : ""}`} />
-          {uploading ? "…" : "Upload"}
-        </button>
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/png,image/webp,image/jpeg,image/gif,image/avif"
-          onChange={handleFile}
-          className="hidden"
-        />
-      </div>
-
-      <p className="mt-1.5 text-[10.5px] text-faint">{hint}</p>
-    </div>
-  );
 }
 
 /** One labelled text box in the map grid. */
@@ -988,14 +609,4 @@ function MapField({
       {hint ? <span className="text-[10.5px] text-faint">{hint}</span> : null}
     </label>
   );
-}
-
-/** File → data URI exactly as the media endpoint expects it. */
-function readFile(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Could not read that file."));
-    reader.readAsDataURL(file);
-  });
 }

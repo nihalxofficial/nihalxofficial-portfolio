@@ -52,8 +52,8 @@ const CARDS: Card[] = [
   },
   {
     href: adminHref("site-settings"),
-    label: "Appearance & Contact",
-    description: "Contact details, map pin and social profiles.",
+    label: "Contact & Components",
+    description: "Contact details, map pin and homepage section visibility.",
     icon: "Mail",
   },
   {
