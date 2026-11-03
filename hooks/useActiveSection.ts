@@ -2,11 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 
+// The projects block renders as `id="showcase"`, so a `#projects` nav link watches
+// that element to stay highlighted. Keep nav on one of the two and this is moot.
+const SECTION_ELEMENT_ID: Record<string, string> = {
+  "#projects": "showcase",
+};
+
 /**
  * Tracks which `#anchor` section the visitor is looking at.
  *
  * Uses IntersectionObserver with the `#stage` scroll container as root,
  * since `body { overflow: hidden }` and all scrolling happens inside `#stage`.
+ * Reports the nav href (not the raw element id) so `activeSection === item.href`
+ * always matches, whichever alias form the saved navigation uses.
  */
 export function useActiveSection(hrefs: string[]): string {
   const [active, setActive] = useState("");
@@ -14,20 +22,23 @@ export function useActiveSection(hrefs: string[]): string {
   const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    const ids = key
-      .split("|")
-      .filter((href) => href.startsWith("#"))
-      .map((href) => href.slice(1));
+    const anchors = key.split("|").filter((href) => href.startsWith("#"));
 
-    if (ids.length === 0) return;
+    // Resolve each href to the element to observe, keeping a back-map to the href.
+    const hrefByElementId = new Map<string, string>();
+    const targets: HTMLElement[] = [];
+    for (const href of anchors) {
+      const el = document.getElementById(SECTION_ELEMENT_ID[href] ?? href.slice(1));
+      if (el && !hrefByElementId.has(el.id)) {
+        hrefByElementId.set(el.id, href);
+        targets.push(el);
+      }
+    }
+
+    if (targets.length === 0) return;
 
     const timer = setTimeout(() => {
       const stage = document.getElementById("stage");
-      const targets = ids
-        .map((id) => document.getElementById(id))
-        .filter((el): el is HTMLElement => el !== null);
-
-      if (targets.length === 0) return;
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -40,7 +51,8 @@ export function useActiveSection(hrefs: string[]): string {
               bestId = entry.target.id;
             }
           }
-          if (bestId) setActive(`#${bestId}`);
+          const href = hrefByElementId.get(bestId);
+          if (href) setActive(href);
         },
         {
           root: stage ?? null,

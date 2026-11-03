@@ -36,16 +36,13 @@ const LenisContext = createContext<LenisContextValue>({
 export const useLenis = () => useContext(LenisContext);
 
 /**
- * Legacy section anchors that predate the current homepage layout, mapped to the
- * section that actually renders. The showcase block is what carries the projects,
- * so a `#projects` link (still common in saved navigation) resolves to `#showcase`
- * instead of hitting a missing target.
+ * `#projects` resolves to the `#showcase` element, since the projects block is
+ * the one that renders. Keeps saved nav links pointing at a section that exists.
  */
 const ANCHOR_ALIASES: Record<string, string> = {
   "#projects": "#showcase",
 };
 
-/** Normalises an anchor selector through the alias table. */
 function resolveAnchor(target: string): string {
   return ANCHOR_ALIASES[target] ?? target;
 }
