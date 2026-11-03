@@ -15,6 +15,7 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import { useLenis } from "@/components/providers/smooth-scroll";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 
 /** Maps section/href key → Lucide icon */
@@ -48,6 +49,7 @@ interface DockProps {
  * Exactly matches the reference Dock component visual design.
  */
 export function Dock({ navigation, settings, activeSection = "" }: DockProps) {
+  const { scrollTo } = useLenis();
   const email = settings?.contact?.email ?? "";
   const githubLink = settings?.socialLinks?.find(
     (s) => s.platform?.toLowerCase() === "github"
@@ -73,12 +75,10 @@ export function Dock({ navigation, settings, activeSection = "" }: DockProps) {
                 onClick={(e) => {
                   e.preventDefault();
                   const id = item.href.replace(/^#/, "");
-                  const el = document.getElementById(id);
-                  if (el) {
-                    el.scrollIntoView({ behavior: "smooth" });
+                  if (id === "hero" || id === "") {
+                    scrollTo(0, { duration: 1.25 });
                   } else {
-                    const stage = document.getElementById("stage");
-                    if (id === "hero" || id === "") stage?.scrollTo({ top: 0, behavior: "smooth" });
+                    scrollTo(`#${id}`, { offset: -24, duration: 1.25 });
                   }
                 }}
                 title={`${item.label} — press ${i + 1}`}

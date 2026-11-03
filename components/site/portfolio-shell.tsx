@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { AccentProvider, ACCENTS, useAccent } from "@/components/site/accent-context";
 import { AiChatProvider } from "@/components/site/ai-chat-context";
+import { SmoothScroll, useLenis } from "@/components/providers/smooth-scroll";
 import { BootScreen } from "@/components/site/boot-screen";
 import { ChatWidget } from "@/components/site/chat-widget";
 import { CommandPalette } from "@/components/site/command-palette";
@@ -24,6 +25,7 @@ interface PortfolioShellProps {
 /** Inner shell — reads accent from context */
 function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   const { accent, accentId, setAccentId } = useAccent();
+  const { scrollTo } = useLenis();
 
   const [booted, setBooted] = useState(false);
   const [bgMode, setBgMode] = useState<BackgroundMode>("dna");
@@ -112,20 +114,21 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
         const href = navigation[n - 1]?.href;
         if (href) {
           const id = href.replace(/^#/, "");
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-          else document.getElementById("stage")?.scrollTo({ top: 0, behavior: "smooth" });
+          if (id === "hero" || id === "") {
+            scrollTo(0, { duration: 1.2 });
+          } else {
+            scrollTo(`#${id}`, { offset: -24, duration: 1.2 });
+          }
         }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [navigation]);
+  }, [navigation, scrollTo]);
 
   const scrollToContact = useCallback(() => {
-    const el = document.getElementById("contact");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    scrollTo("#contact", { offset: -24, duration: 1.2 });
+  }, [scrollTo]);
 
   return (
     <div className="h-screen h-[100dvh] flex flex-col overflow-hidden text-slate-100">
@@ -157,9 +160,9 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
         {/* Scrollable stage */}
         <main
           id="stage"
-          className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-6 pb-24 md:pb-8"
+          className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-6 pb-24 md:pb-8 overscroll-contain"
         >
-          <div className="view-in max-w-[1500px] mx-auto">{children}</div>
+          <div id="stage-content" className="view-in max-w-[1500px] mx-auto">{children}</div>
         </main>
       </div>
 
@@ -207,9 +210,11 @@ export function PortfolioShell({ children, navigation, settings }: PortfolioShel
   return (
     <AccentProvider>
       <AiChatProvider>
-        <ShellInner navigation={navigation} settings={settings}>
-          {children}
-        </ShellInner>
+        <SmoothScroll>
+          <ShellInner navigation={navigation} settings={settings}>
+            {children}
+          </ShellInner>
+        </SmoothScroll>
       </AiChatProvider>
     </AccentProvider>
   );

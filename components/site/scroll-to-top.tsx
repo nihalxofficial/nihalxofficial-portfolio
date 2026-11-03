@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUp } from "lucide-react";
 import { useAiChat } from "@/components/site/ai-chat-context";
+import { useLenis } from "@/components/providers/smooth-scroll";
 
 /**
  * Floating "Back to Top" button in the bottom-right corner.
@@ -12,6 +13,7 @@ import { useAiChat } from "@/components/site/ai-chat-context";
 export function ScrollToTop() {
   const [visible, setVisible] = useState(false);
   const { isOpen } = useAiChat();
+  const { scrollTo } = useLenis();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,11 +35,7 @@ export function ScrollToTop() {
   }, []);
 
   const scrollToTop = () => {
-    const stage = document.getElementById("stage");
-    if (stage) {
-      stage.scrollTo({ top: 0, behavior: "smooth" });
-    }
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    scrollTo(0, { duration: 1.25 });
   };
 
   if (!visible || isOpen) return null;

@@ -7,6 +7,7 @@ import {
   Search,
   Send,
 } from "lucide-react";
+import { useLenis } from "@/components/providers/smooth-scroll";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { NbLogo } from "@/components/ui/nb-logo";
 import { ACCENTS } from "@/components/site/accent-context";
@@ -59,6 +60,7 @@ export function TopBar({
   bgMode = "dna",
   setBgMode,
 }: TopBarProps) {
+  const { scrollTo } = useLenis();
   const cycleBg = () => {
     if (!setBgMode) return;
     const next: BackgroundMode = bgMode === "dna" ? "rain" : bgMode === "rain" ? "none" : "dna";
@@ -78,9 +80,7 @@ export function TopBar({
       {/* Brand / logo */}
       <button
         onClick={() => {
-          const el = document.getElementById("hero");
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-          else document.getElementById("stage")?.scrollTo({ top: 0, behavior: "smooth" });
+          scrollTo(0, { duration: 1.25 });
         }}
         className="flex items-center gap-3 cursor-pointer group"
       >
