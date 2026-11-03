@@ -6,6 +6,7 @@ import {
   ArrowUp,
   ArrowUpRight,
   Activity,
+  AlertTriangle,
   Award,
   BarChart3,
   Bell,
@@ -136,6 +137,7 @@ import {
 
 const LUCIDE: Record<string, ComponentType<LucideProps>> = {
   Activity,
+  AlertTriangle,
   ArrowDown,
   ArrowLeft,
   ArrowRight,

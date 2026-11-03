@@ -106,6 +106,8 @@ interface EntityFormProps {
   showAi: boolean;
   onSubmit: (values: Record<string, unknown>) => void;
   onCancel: () => void;
+  /** Reports whether the working copy differs from `initial`, for unsaved warnings. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 function EntityForm({
@@ -117,9 +119,19 @@ function EntityForm({
   showAi,
   onSubmit,
   onCancel,
+  onDirtyChange,
 }: EntityFormProps) {
   const [values, setValues] = useState<Record<string, unknown>>(initial);
   const [missing, setMissing] = useState<string[]>([]);
+
+  const dirty = useMemo(
+    () => JSON.stringify(stripMeta(values)) !== JSON.stringify(stripMeta(initial)),
+    [values, initial],
+  );
+
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -194,7 +206,13 @@ function EntityForm({
 
 // ─── Singleton editor ────────────────────────────────────────────────────────
 
-function SingletonEditor({ type }: { type: ContentType }) {
+function SingletonEditor({
+  type,
+  onDirtyChange,
+}: {
+  type: ContentType;
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
   const [record, setRecord] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -233,6 +251,9 @@ function SingletonEditor({ type }: { type: ContentType }) {
       const saved = await updateContent(type.key, "current", values);
       setRecord(saved);
       setFlash({ tone: "success", text: `${type.label} saved.` });
+      // Re-key so the form's working copy matches the saved record again and
+      // the unsaved-changes warning clears.
+      setNonce((value) => value + 1);
     } catch (cause) {
       setErrors(toErrors(cause));
       setFlash({ tone: "error", text: toMessage(cause, "Could not save this section.") });
@@ -273,6 +294,7 @@ function SingletonEditor({ type }: { type: ContentType }) {
           errors={errors}
           submitLabel="Save changes"
           showAi
+          onDirtyChange={onDirtyChange}
           onSubmit={(values) => void save(values)}
           onCancel={() => setNonce((value) => value + 1)}
         />
@@ -287,7 +309,13 @@ type Draft =
   | { mode: "create"; values: Record<string, unknown> }
   | { mode: "edit"; id: string; values: Record<string, unknown> };
 
-function CollectionEditor({ type }: { type: ContentType }) {
+function CollectionEditor({
+  type,
+  onDirtyChange,
+}: {
+  type: ContentType;
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
   const [items, setItems] = useState<EntityRecord[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -354,6 +382,11 @@ function CollectionEditor({ type }: { type: ContentType }) {
         .filter((name) => ["isPublished", "isVisible", "isFeatured"].includes(name)),
     [type.fields],
   );
+
+  // Closing the slide-over always returns the page to a clean state.
+  useEffect(() => {
+    if (!draft) onDirtyChange?.(false);
+  }, [draft, onDirtyChange]);
 
   function openCreate() {
     setErrors({});
@@ -592,6 +625,7 @@ function CollectionEditor({ type }: { type: ContentType }) {
                 errors={errors}
                 submitLabel={draft.mode === "create" ? "Create record" : "Save changes"}
                 showAi
+                onDirtyChange={onDirtyChange}
                 onSubmit={(values) => void save(values)}
                 onCancel={() => setDraft(null)}
               />
@@ -643,6 +677,16 @@ function CollectionEditor({ type }: { type: ContentType }) {
   );
 }
 
-export function EntityManager({ type }: { type: ContentType }) {
-  return type.singleton ? <SingletonEditor type={type} /> : <CollectionEditor type={type} />;
+export function EntityManager({
+  type,
+  onDirtyChange,
+}: {
+  type: ContentType;
+  onDirtyChange?: (dirty: boolean) => void;
+}) {
+  return type.singleton ? (
+    <SingletonEditor type={type} onDirtyChange={onDirtyChange} />
+  ) : (
+    <CollectionEditor type={type} onDirtyChange={onDirtyChange} />
+  );
 }
