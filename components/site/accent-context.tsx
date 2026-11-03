@@ -74,11 +74,14 @@ export function AccentProvider({
   // The DB accent only drives the default a *new* visitor sees; anyone who has
   // picked one themselves keeps their choice, so nothing about per-visitor
   // control changes.
-  const [accentId, setAccentIdState] = useState(() => {
-    const stored = readStoredAccentId();
-    if (stored) return stored;
-    return ACCENTS.some((a) => a.id === defaults?.accentId) ? defaults!.accentId! : "cyan";
-  });
+  // The initial value must be identical on the server and the first client
+  // render, or the accent name/colour text mismatches during hydration. So we
+  // never read localStorage here — the effect below applies a visitor's stored
+  // choice after mount. Precedence still resolves to: visitor -> DB default ->
+  // built-in preset, just corrected one tick later on the client.
+  const [accentId, setAccentIdState] = useState(
+    () => (ACCENTS.some((a) => a.id === defaults?.accentId) ? defaults!.accentId! : "cyan"),
+  );
 
   // Paint the resolved colors as soon as we are on the client.
   useEffect(() => {
