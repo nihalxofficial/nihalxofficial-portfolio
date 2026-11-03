@@ -88,8 +88,8 @@ export function Hero({
   return (
     <section id="hero" className="relative pt-6 pb-12">
       <div className="relative grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] xl:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center">
-        {/* Left: copy (on mobile displays second, on desktop displays first) */}
-        <div className="order-2 lg:order-1 pt-2">
+        {/* Left: copy (always prominent first) */}
+        <div className="order-1 pt-2">
           {/* Availability pill */}
           <div className="inline-flex items-center gap-2 text-xs font-mono text-emerald-300 hud !rounded-full px-4 py-1.5 !border-emerald-400/30">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -180,9 +180,9 @@ export function Hero({
         </div>
 
         {/* Right: portrait frame with 3D Holographic Orbitals */}
-        <div className="order-1 lg:order-2 relative w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[420px] mx-auto lg:ml-auto">
+        <div className="order-2 relative w-full max-w-[320px] sm:max-w-[380px] lg:max-w-[420px] mx-auto lg:ml-auto">
           {/* 3D Holographic Orbital Rings (inspired by Haiku HoloCore) */}
-          <div className="absolute -inset-4 sm:-inset-6 pointer-events-none overflow-hidden rounded-3xl -z-10 opacity-75">
+          <div className="absolute -inset-4 sm:-inset-6 pointer-events-none rounded-3xl opacity-75">
             <div className="absolute inset-0 animate-spin-slow rounded-full border border-dashed border-acc/25">
               <span className="orbit-dot" />
             </div>

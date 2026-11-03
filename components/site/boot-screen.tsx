@@ -47,7 +47,7 @@ export function BootScreen({ done }: { done: () => void }) {
   return (
     <div
       onClick={() => setOut(true)}
-      className={`fixed inset-0 z-[200] bg-ink grid place-items-center px-6 cursor-pointer transition-opacity duration-500 ${out ? "opacity-0" : "opacity-100"}`}
+      className={`fixed inset-0 z-[200] bg-[#03050f] grid place-items-center px-6 cursor-pointer transition-opacity duration-500 ${out ? "opacity-0 pointer-events-none" : "opacity-100"}`}
     >
       <div className="w-full max-w-lg font-mono text-xs sm:text-sm">
         {/* Brand mark */}

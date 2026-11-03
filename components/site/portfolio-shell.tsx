@@ -128,7 +128,7 @@ function ShellInner({ children, navigation, settings }: PortfolioShellProps) {
   }, []);
 
   return (
-    <div className="h-dvh flex flex-col overflow-hidden text-slate-100">
+    <div className="h-screen h-[100dvh] flex flex-col overflow-hidden text-slate-100">
       {/* Boot screen (once per session) */}
       {!booted && <BootScreen done={finishBoot} />}
 
