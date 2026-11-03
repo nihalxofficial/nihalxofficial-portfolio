@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { Icon } from "@/components/ui/icon";
+import { ChartCard } from "@/components/admin/ui";
 import {
   fetchAnalyticsOverview,
   fetchAnalyticsRealtime,
@@ -12,9 +22,10 @@ import { timeAgo } from "@/lib/utils";
 
 const RANGES = [
   { days: 1, label: "24h" },
-  { days: 7, label: "7d" },
-  { days: 30, label: "30d" },
-  { days: 90, label: "90d" },
+  { days: 7, label: "1w" },
+  { days: 30, label: "1m" },
+  { days: 90, label: "3m" },
+  { days: 365, label: "1y" },
 ];
 
 const REALTIME_POLL_MS = 15_000;
@@ -183,13 +194,21 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Timeline chart */}
-        <section className="panel p-4 lg:col-span-2">
-          <h2 className="text-[13.5px] font-semibold text-ink">Traffic over time</h2>
-          <TimelineChart data={overview?.timeline ?? []} hourly={days <= 2} />
-        </section>
+        <ChartCard
+          title="Traffic over time"
+          subtitle={days <= 2 ? "Views and sessions per hour" : "Views and sessions per day"}
+          className="lg:col-span-2"
+        >
+          <TimelineChart data={overview?.timeline ?? []} />
+        </ChartCard>
+
+        {/* New vs returning */}
+        <ChartCard title="Audience" subtitle="First-time vs returning visitors">
+          <NewVsReturning data={overview?.newVsReturning} total={totals?.uniqueVisitors ?? 0} />
+        </ChartCard>
 
         {/* Realtime */}
-        <section className="panel flex flex-col p-4">
+        <section className="panel flex flex-col p-4 lg:col-span-3">
           <div className="flex items-center justify-between">
             <h2 className="text-[13.5px] font-semibold text-ink">Realtime</h2>
             <span className="mono flex items-center gap-1.5 text-[10px] uppercase tracking-[0.14em] text-success">
@@ -197,9 +216,9 @@ export default function AdminAnalyticsPage() {
               {realtime?.onlineNow ?? 0} online
             </span>
           </div>
-          <div className="mt-3 space-y-1.5 overflow-y-auto" style={{ maxHeight: 300 }}>
+          <div className="mt-3 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
             {realtime?.events.length ? (
-              realtime.events.map((event, index) => (
+              realtime.events.slice(0, 9).map((event, index) => (
                 <div
                   key={`${event.at}-${index}`}
                   className="flex items-center gap-2.5 rounded-lg border border-line bg-surface-2/40 px-2.5 py-1.5"
@@ -216,7 +235,7 @@ export default function AdminAnalyticsPage() {
                 </div>
               ))
             ) : (
-              <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-[12px] text-faint">
+              <p className="rounded-xl border border-dashed border-line px-3 py-6 text-center text-[12px] text-faint sm:col-span-3">
                 No live visitors right now.
               </p>
             )}
@@ -332,60 +351,128 @@ export default function AdminAnalyticsPage() {
   );
 }
 
-/** Lightweight SVG area/bars — no chart library, so nothing to break the build. */
-function TimelineChart({ data, hourly }: { data: AnalyticsOverview["timeline"]; hourly: boolean }) {
-  const { points, area, max } = useMemo(() => {
-    const peak = Math.max(1, ...data.map((row) => row.pageViews));
-    const width = 100;
-    const height = 100;
-    const step = data.length > 1 ? width / (data.length - 1) : width;
-    const coords = data.map((row, index) => {
-      const x = index * step;
-      const y = height - (row.pageViews / peak) * height;
-      return { x, y, row };
-    });
-    const line = coords.map((c, index) => `${index ? "L" : "M"}${c.x.toFixed(2)},${c.y.toFixed(2)}`).join(" ");
-    const filled = coords.length
-      ? `${line} L${coords[coords.length - 1].x.toFixed(2)},${height} L${coords[0].x.toFixed(2)},${height} Z`
-      : "";
-    return { points: coords, area: filled, max: peak };
-  }, [data]);
+/** Interactive recharts area for page views + sessions across the range. */
+function TimelineChart({ data }: { data: AnalyticsOverview["timeline"] }) {
+  const rows = useMemo(
+    () =>
+      data.map((row) => ({
+        label: bucketLabel(row.bucket),
+        pageViews: row.pageViews,
+        sessions: row.sessions,
+      })),
+    [data],
+  );
 
   if (!data.length) {
     return (
-      <div className="mt-3 grid h-40 place-items-center rounded-xl border border-dashed border-line text-[12px] text-faint">
+      <div className="grid h-56 place-items-center rounded-xl border border-dashed border-line text-[12px] text-faint">
         No traffic in this range yet.
       </div>
     );
   }
 
   return (
-    <div className="mt-3">
-      <div className="flex items-center gap-3 text-[10.5px] text-faint">
-        <span className="mono uppercase tracking-[0.14em]">peak {max} views</span>
-        <span>{hourly ? "per hour" : "per day"}</span>
+    <div className="mt-1 h-56 w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={rows} margin={{ top: 6, right: 8, bottom: 0, left: -18 }}>
+          <defs>
+            <linearGradient id="tl-views" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="var(--line)" strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="label"
+            tick={{ fill: "var(--faint)", fontSize: 10 }}
+            tickLine={false}
+            axisLine={{ stroke: "var(--line)" }}
+            minTickGap={24}
+          />
+          <YAxis
+            tick={{ fill: "var(--faint)", fontSize: 10 }}
+            tickLine={false}
+            axisLine={false}
+            width={40}
+            allowDecimals={false}
+          />
+          <Tooltip
+            contentStyle={{
+              background: "var(--surface)",
+              border: "1px solid var(--line)",
+              borderRadius: 10,
+              fontSize: 12,
+            }}
+            labelStyle={{ color: "var(--ink)" }}
+          />
+          <Area
+            type="monotone"
+            dataKey="pageViews"
+            name="Page views"
+            stroke="var(--accent)"
+            strokeWidth={2}
+            fill="url(#tl-views)"
+          />
+          <Area
+            type="monotone"
+            dataKey="sessions"
+            name="Sessions"
+            stroke="var(--accent-2, #7c4dff)"
+            strokeWidth={1.5}
+            fillOpacity={0}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+/** New-vs-returning split: a stacked bar with the counts beneath it. */
+function NewVsReturning({
+  data,
+  total,
+}: {
+  data?: { newVisitors: number; returningVisitors: number };
+  total: number;
+}) {
+  const newV = data?.newVisitors ?? 0;
+  const returning = data?.returningVisitors ?? 0;
+  const sum = newV + returning || total || 1;
+  const newPct = Math.round((newV / sum) * 100);
+
+  if (!newV && !returning) {
+    return (
+      <div className="grid h-56 place-items-center rounded-xl border border-dashed border-line text-[12px] text-faint">
+        No identified visitors yet.
       </div>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="mt-2 h-40 w-full">
-        <defs>
-          <linearGradient id="tl-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={area} fill="url(#tl-fill)" />
-        <polyline
-          points={points.map((p) => `${p.x},${p.y}`).join(" ")}
-          fill="none"
-          stroke="var(--accent)"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
-      <div className="mono mt-1 flex justify-between text-[9.5px] text-faint">
-        <span>{bucketLabel(data[0].bucket)}</span>
-        <span>{bucketLabel(data[data.length - 1].bucket)}</span>
+    );
+  }
+
+  return (
+    <div className="flex h-56 flex-col justify-center gap-4">
+      <div>
+        <div className="flex items-baseline justify-between text-[12px]">
+          <span className="font-medium text-ink">New</span>
+          <span className="mono text-faint">{newPct}%</span>
+        </div>
+        <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-surface-2">
+          <div className="h-full rounded-full grad-accent" style={{ width: `${newPct}%` }} />
+        </div>
+        <p className="mono mt-1 text-[11px] text-accent">{newV.toLocaleString()} visitors</p>
+      </div>
+
+      <div>
+        <div className="flex items-baseline justify-between text-[12px]">
+          <span className="font-medium text-ink">Returning</span>
+          <span className="mono text-faint">{100 - newPct}%</span>
+        </div>
+        <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-surface-2">
+          <div
+            className="h-full rounded-full bg-line-strong"
+            style={{ width: `${100 - newPct}%` }}
+          />
+        </div>
+        <p className="mono mt-1 text-[11px] text-muted">{returning.toLocaleString()} visitors</p>
       </div>
     </div>
   );
