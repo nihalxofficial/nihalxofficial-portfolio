@@ -71,109 +71,137 @@ export function AdminTopbar({
   const detail = session?.email || session?.uid || "";
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-page/85 px-3 backdrop-blur-xl sm:px-5">
-      {/* Mobile: reveal the sidebar drawer */}
-      <button
-        type="button"
-        onClick={onToggleMenu}
-        aria-label={menuOpen ? "Close menu" : "Open menu"}
-        className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line text-ink transition-colors hover:border-line-strong lg:hidden"
-      >
-        <Icon name={menuOpen ? "X" : "Menu"} className="h-4 w-4" />
-      </button>
-
-      <div className="min-w-0">
-        {eyebrow ? (
-          <p className="mono hidden truncate text-[9px] uppercase tracking-[0.2em] text-faint sm:block">
-            {eyebrow}
-          </p>
-        ) : null}
-        <h1 className="truncate text-[13.5px] font-semibold text-ink">{title}</h1>
-      </div>
-
-      <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
-        {/* Notifications → message inbox */}
-        <Link
-          href={adminHref("messages")}
-          aria-label={unread ? `${unread} unread messages` : "No unread messages"}
-          title="Messages"
-          className="relative grid h-9 w-9 place-items-center rounded-lg border border-line text-muted transition-colors hover:border-line-strong hover:text-accent"
+    <header className="sticky top-0 z-30 border-b border-line/50 bg-gradient-to-r from-surface/90 via-surface/85 to-surface/90 shadow-lg shadow-black/5 backdrop-blur-xl">
+      <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
+        {/* Mobile menu toggle with enhanced styling */}
+        <button
+          type="button"
+          onClick={onToggleMenu}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          className="group grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-line/50 bg-surface/50 text-ink transition-all hover:border-accent/30 hover:bg-accent/5 hover:text-accent lg:hidden"
         >
-          <Icon name="Bell" className="h-[18px] w-[18px]" />
-          {unread > 0 ? (
-            <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-danger px-1 text-[9px] font-bold text-white">
-              {unread > 9 ? "9+" : unread}
-            </span>
-          ) : null}
-        </Link>
+          <Icon name={menuOpen ? "X" : "Menu"} className="h-5 w-5 transition-transform group-hover:scale-110" />
+        </button>
 
-        <ThemeCustomizerMenu />
-
-        <ThemeToggle className="h-9 w-9 rounded-lg" />
-
-        {/* Open the public site in a new tab */}
-        <Link
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden h-9 items-center gap-1.5 rounded-lg border border-line px-3 text-[12px] font-medium text-muted transition-colors hover:border-line-strong hover:text-accent sm:inline-flex"
-        >
-          <Icon name="ExternalLink" className="h-3.5 w-3.5" />
-          View site
-        </Link>
-
-        {/* Account menu */}
-        <div ref={userRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setUserOpen((value) => !value)}
-            aria-haspopup="menu"
-            aria-expanded={userOpen}
-            aria-label="Account"
-            className="flex items-center gap-1.5 rounded-lg border border-line py-1 pl-1 pr-2 text-ink transition-colors hover:border-line-strong"
-          >
-            <span className="grid h-7 w-7 place-items-center rounded-md grad-accent text-[11px] font-bold text-accent-ink">
-              {initials(label)}
-            </span>
-            <Icon
-              name="ChevronDown"
-              className={`h-3.5 w-3.5 text-faint transition-transform ${userOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-
-          {userOpen ? (
-            <div
-              role="menu"
-              className="absolute right-0 top-[calc(100%+8px)] w-56 overflow-hidden rounded-xl border border-line bg-surface shadow-[0_20px_50px_-24px_var(--accent-glow)]"
-            >
-              <div className="border-b border-line px-3.5 py-3">
-                <p className="truncate text-[12.5px] font-semibold text-ink">{label}</p>
-                <p className="mono truncate text-[10px] text-faint">{detail}</p>
-              </div>
-              <Link
-                href="/"
-                target="_blank"
-                rel="noopener noreferrer"
-                role="menuitem"
-                className="flex items-center gap-2.5 px-3.5 py-2.5 text-[12.5px] text-muted transition-colors hover:bg-surface-2 hover:text-ink sm:hidden"
-              >
-                <Icon name="Globe" className="h-4 w-4" />
-                View site
-              </Link>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setUserOpen(false);
-                  void signOut();
-                }}
-                className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left text-[12.5px] text-muted transition-colors hover:bg-danger/10 hover:text-danger"
-              >
-                <Icon name="LogOut" className="h-4 w-4" />
-                Sign out
-              </button>
+        {/* Page title with breadcrumb */}
+        <div className="min-w-0 flex-1">
+          {eyebrow && (
+            <div className="mb-0.5 flex items-center gap-2">
+              <span className="mono hidden truncate text-[10px] font-bold uppercase tracking-[0.2em] text-accent/80 sm:block">
+                {eyebrow}
+              </span>
             </div>
-          ) : null}
+          )}
+          <h1 className="truncate text-[15px] font-bold text-ink">{title}</h1>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          {/* Messages with enhanced notification badge */}
+          <Link
+            href={adminHref("messages")}
+            aria-label={unread ? `${unread} unread messages` : "No unread messages"}
+            title="Messages"
+            className="group relative grid h-10 w-10 place-items-center rounded-lg border border-line/50 bg-surface/50 text-muted transition-all hover:border-accent/30 hover:bg-accent/5 hover:text-accent"
+          >
+            <Icon name="Bell" className="h-[18px] w-[18px] transition-transform group-hover:scale-110 group-hover:rotate-12" />
+            {unread > 0 && (
+              <>
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 w-5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-danger opacity-75" />
+                  <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-danger to-danger/80 text-[9px] font-bold text-white shadow-lg shadow-danger/30">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                </span>
+              </>
+            )}
+          </Link>
+
+          {/* Theme Customizer */}
+          <ThemeCustomizerMenu />
+
+          {/* Theme Toggle */}
+          <ThemeToggle className="h-10 w-10 rounded-lg border border-line/50 bg-surface/50 hover:border-accent/30 hover:bg-accent/5" />
+
+          {/* View Site button with icon */}
+          <Link
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group hidden h-10 items-center gap-2 rounded-lg border border-line/50 bg-surface/50 px-4 text-[13px] font-medium text-muted transition-all hover:border-accent/30 hover:bg-accent/5 hover:text-accent sm:inline-flex"
+          >
+            <Icon name="ExternalLink" className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            <span>View Site</span>
+          </Link>
+
+          {/* Account menu with enhanced dropdown */}
+          <div ref={userRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setUserOpen((value) => !value)}
+              aria-haspopup="menu"
+              aria-expanded={userOpen}
+              aria-label="Account"
+              className="group flex items-center gap-2 rounded-lg border border-line/50 bg-surface/50 py-1.5 pl-1.5 pr-3 text-ink transition-all hover:border-accent/30 hover:bg-accent/5"
+            >
+              <div className="relative">
+                <div className="absolute inset-0 animate-pulse rounded-lg bg-accent/20 opacity-0 blur-sm group-hover:opacity-100 transition-opacity" />
+                <span className="relative grid h-7 w-7 place-items-center rounded-lg border border-accent/20 bg-gradient-to-br from-accent/20 to-accent/5 text-[11px] font-bold text-accent">
+                  {initials(label)}
+                </span>
+              </div>
+              <Icon
+                name="ChevronDown"
+                className={`h-3.5 w-3.5 text-muted transition-all group-hover:text-accent ${userOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {userOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-[calc(100%+12px)] w-64 overflow-hidden rounded-xl border border-line/50 bg-gradient-to-br from-surface/95 to-surface/80 shadow-2xl shadow-black/20 backdrop-blur-xl"
+              >
+                {/* User info header */}
+                <div className="border-b border-line/50 bg-gradient-to-r from-accent/5 to-transparent px-4 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="grid h-10 w-10 place-items-center rounded-lg border border-accent/20 bg-gradient-to-br from-accent/20 to-accent/5 text-[13px] font-bold text-accent">
+                      {initials(label)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[13px] font-semibold text-ink">{label}</p>
+                      <p className="mono truncate text-[10px] text-muted">{detail}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Menu items */}
+                <div className="p-1.5">
+                  <Link
+                    href="/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    role="menuitem"
+                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] text-muted transition-all hover:bg-surface-2/80 hover:text-accent sm:hidden"
+                  >
+                    <Icon name="Globe" className="h-4 w-4" />
+                    <span>View Site</span>
+                  </Link>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setUserOpen(false);
+                      void signOut();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] text-muted transition-all hover:bg-danger/10 hover:text-danger"
+                  >
+                    <Icon name="LogOut" className="h-4 w-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
