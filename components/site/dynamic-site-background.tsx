@@ -35,3 +35,4 @@ export function DynamicSiteBackground() {
 
   return <SiteBackground accent={accent} mode={mode} />;
 }
+

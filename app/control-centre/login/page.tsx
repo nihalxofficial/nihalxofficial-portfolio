@@ -92,7 +92,7 @@ export default function AdminLoginPage() {
               type="submit"
               fullWidth
               isDisabled={signingIn || loading}
-              className="mt-1 h-11 rounded-lg grad-accent text-[13px] font-semibold text-accent-ink"
+              className="mt-1 h-11 rounded-xl grad-accent text-[13px] font-semibold text-accent-ink hover:glow-sm transition-all cursor-pointer"
             >
               {signingIn || loading ? (
                 <>

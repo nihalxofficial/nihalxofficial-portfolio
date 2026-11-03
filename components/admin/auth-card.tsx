@@ -3,13 +3,14 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { SocialProvider } from "@/components/admin/auth-provider";
+import { DynamicSiteBackground } from "@/components/site/dynamic-site-background";
 import { Icon } from "@/components/ui/icon";
+import { NbLogo } from "@/components/ui/nb-logo";
 
 /**
- * Shared chrome for the two private auth screens.
- *
- * Kept in one place so the login and register pages stay thin and identical
- * visually — only the fields and the wording differ.
+ * Shared chrome for the private auth screens (Login & Register).
+ * Styled with live dynamic DNA mesh / selected background mode,
+ * cyber HUD glass panel, and custom "NB" developer brand badge.
  */
 export function AuthShell({
   eyebrow,
@@ -25,42 +26,50 @@ export function AuthShell({
   footer: ReactNode;
 }) {
   return (
-    <div className="relative grid min-h-screen place-items-center px-5 py-12">
+    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#03050f] px-5 py-12 select-none">
+      {/* Live Animated DNA / Selected Background Mode */}
+      <DynamicSiteBackground />
+
+      {/* Radial vignette overlay */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 grid-backdrop radial-fade opacity-60"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-16 h-[420px] w-[680px] -translate-x-1/2 glow-soft opacity-70"
+        className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,transparent_20%,#03050f_85%)]"
       />
 
-      <div className="relative w-full max-w-sm">
-        <div className="panel p-6 sm:p-7">
-          <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl grad-accent text-accent-ink">
-              <Icon name="LayoutDashboard" className="h-5 w-5" />
-            </span>
+      {/* Cyber Grid Texture */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[2] grid-bg opacity-25"
+      />
+
+      <div className="relative z-10 w-full max-w-sm">
+        {/* Main Glass Panel */}
+        <div className="hud !border-white/15 bg-[#03050f]/85 p-6 sm:p-7 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl">
+          {/* Header with NB Logo */}
+          <div className="flex items-center gap-3.5 pb-4 border-b border-white/10">
+            <NbLogo size={46} className="shadow-[0_0_20px_rgba(0,245,255,0.4)]" />
             <div className="min-w-0">
-              <p className="text-[15px] font-semibold text-ink">{title}</p>
-              <p className="mono text-[10px] uppercase tracking-[0.16em] text-faint">
+              <p className="font-display text-[16px] font-bold text-white tracking-wide">{title}</p>
+              <p className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-acc flex items-center gap-1.5 mt-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
                 {eyebrow}
               </p>
             </div>
           </div>
 
-          <p className="mt-4 text-[12px] leading-relaxed text-muted">{subtitle}</p>
+          <p className="mt-3.5 text-[11.5px] leading-relaxed text-slate-300 font-mono">{subtitle}</p>
 
-          {children}
+          <div className="mt-4">{children}</div>
         </div>
 
-        <div className="mono mt-4 flex items-center justify-center gap-3 text-[10.5px] text-faint">
+        {/* Footer links */}
+        <div className="font-mono mt-4 flex items-center justify-center gap-3 text-[11px] text-slate-400">
           {footer}
         </div>
 
-        <p className="mono mt-2 text-center text-[10.5px] text-faint">
-          <Link href="/" className="hover:text-accent">
-            ← back to the public site
+        <p className="font-mono mt-2.5 text-center text-[10.5px] text-slate-500">
+          <Link href="/" className="hover:text-acc transition-colors">
+            ← back to portfolio
           </Link>
         </p>
       </div>
@@ -76,7 +85,7 @@ export function SocialButtons({
   onProvider: (provider: SocialProvider) => void;
 }) {
   const base =
-    "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-line bg-surface-2/60 px-3 text-[12.5px] font-medium text-ink transition-colors hover:border-line-strong hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-55";
+    "inline-flex h-10 items-center justify-center gap-2 rounded-xl hud !border-white/10 bg-white/[0.02] px-3 font-mono text-[12px] font-medium text-slate-200 transition-all hover:border-acc/40 hover:text-white hover:glow-sm disabled:cursor-not-allowed disabled:opacity-50";
 
   return (
     <div className="grid gap-2 sm:grid-cols-2">
@@ -105,9 +114,9 @@ export function SocialButtons({
 export function AuthDivider({ label }: { label: string }) {
   return (
     <div className="my-4 flex items-center gap-3">
-      <span className="h-px flex-1 bg-line" />
-      <span className="mono text-[9.5px] uppercase tracking-[0.18em] text-faint">{label}</span>
-      <span className="h-px flex-1 bg-line" />
+      <span className="h-px flex-1 bg-white/10" />
+      <span className="font-mono text-[9.5px] uppercase tracking-[0.2em] text-slate-400">{label}</span>
+      <span className="h-px flex-1 bg-white/10" />
     </div>
   );
 }
@@ -118,7 +127,7 @@ export function AuthError({ message }: { message: string }) {
   return (
     <p
       role="alert"
-      className="mt-3 flex items-start gap-2 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-[11.5px] leading-relaxed text-danger"
+      className="mt-3 flex items-start gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 font-mono text-[11px] leading-relaxed text-red-400"
     >
       <Icon name="X" className="mt-0.5 h-3.5 w-3.5 shrink-0" />
       {message}
@@ -129,13 +138,13 @@ export function AuthError({ message }: { message: string }) {
 /** Shown while Firebase web config is still empty in `.env.local`. */
 export function ConfigNotice({ message }: { message: string }) {
   return (
-    <div className="mt-5 rounded-xl border border-warning/35 bg-warning/10 p-4">
-      <p className="flex items-center gap-2 text-[12.5px] font-medium text-warning">
+    <div className="mt-5 rounded-xl border border-amber-500/35 bg-amber-500/10 p-4 font-mono">
+      <p className="flex items-center gap-2 text-[12px] font-semibold text-amber-400">
         <Icon name="Settings" className="h-4 w-4" />
         Firebase web config missing
       </p>
-      <p className="mt-2 text-[12px] leading-relaxed text-muted">{message}</p>
-      <p className="mono mt-3 rounded-lg border border-line bg-surface-2 px-3 py-2 text-[10.5px] leading-relaxed text-faint">
+      <p className="mt-2 text-[11.5px] leading-relaxed text-slate-300">{message}</p>
+      <p className="mt-3 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-[10px] leading-relaxed text-slate-400">
         portfolio/.env.local
         <br />
         NEXT_PUBLIC_FIREBASE_API_KEY=…
@@ -148,7 +157,7 @@ export function ConfigNotice({ message }: { message: string }) {
 
 export function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <span className="mono text-[10px] uppercase tracking-[0.18em] text-faint">{children}</span>
+    <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400">{children}</span>
   );
 }
 
