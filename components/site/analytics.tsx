@@ -15,16 +15,25 @@ import { useEffect, useRef } from "react";
  * API parses JSON bodies, and keepalive survives unload just as well. Geo and
  * device are derived server-side from request headers, so nothing identifying is
  * sent from here beyond an anonymous session/visitor id.
+ *
+ * `trackProjectClick` is exported so project cards can record a real `click`
+ * against a project slug — that is what makes the CTR in Project Analytics more
+ * than a guess. Identical events fired back-to-back (React StrictMode double
+ * effects, double taps) are de-duplicated so the numbers stay honest.
  */
 
 const API = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api/v1").replace(/\/$/, "");
 const HEARTBEAT_MS = 30_000;
+/** Ignore an identical event replayed within this window (ms). */
+const DEDUPE_MS = 1_000;
 
 type Payload = {
-  kind: "view" | "leave" | "beat";
+  kind: "view" | "leave" | "beat" | "click";
   sessionId: string;
   visitorId: string;
   path: string;
+  projectId?: string;
+  eventType?: "page_view" | "project_view" | "project_click";
   referrer?: string;
   durationMs?: number;
 };
@@ -49,7 +58,24 @@ function ensure(key: string, store: "session" | "local"): string {
   }
 }
 
+function currentIds() {
+  return {
+    sessionId: ensure("pf_sid", "session"),
+    visitorId: ensure("pf_vid", "local"),
+  };
+}
+
+// De-dupe identical consecutive events so a double effect or double tap does not
+// inflate the counts. Keyed by kind + path + project only.
+const lastSent = new Map<string, number>();
+
 function send(payload: Payload) {
+  const key = `${payload.kind}:${payload.path}:${payload.projectId ?? ""}:${payload.eventType ?? ""}`;
+  const now = Date.now();
+  const prev = lastSent.get(key);
+  if (prev !== undefined && now - prev < DEDUPE_MS) return;
+  lastSent.set(key, now);
+
   try {
     void fetch(`${API}/analytics`, {
       method: "POST",
@@ -62,6 +88,24 @@ function send(payload: Payload) {
   }
 }
 
+/**
+ * Records a project card click. `slug` is stored as the event's `projectId` so
+ * the server can join it to the project's views for a real click-through rate.
+ * Fire-and-forget; safe to call from any event handler.
+ */
+export function trackProjectClick(slug: string, path = "/") {
+  if (!slug) return;
+  const { sessionId, visitorId } = currentIds();
+  send({
+    kind: "click",
+    sessionId,
+    visitorId,
+    path,
+    projectId: slug,
+    eventType: "project_click",
+  });
+}
+
 export function Analytics() {
   const pathname = usePathname();
   const current = useRef<{ path: string; enter: number } | null>(null);
@@ -69,8 +113,7 @@ export function Analytics() {
   // Open a page view; close out the previous one with its duration.
   useEffect(() => {
     if (!pathname || pathname.startsWith("/control-centre")) return;
-    const sessionId = ensure("pf_sid", "session");
-    const visitorId = ensure("pf_vid", "local");
+    const { sessionId, visitorId } = currentIds();
 
     const prev = current.current;
     if (prev) {
@@ -90,8 +133,7 @@ export function Analytics() {
   // Heartbeats for live presence + a final duration when the tab hides/closes.
   useEffect(() => {
     if (pathname.startsWith("/control-centre")) return;
-    const sessionId = ensure("pf_sid", "session");
-    const visitorId = ensure("pf_vid", "local");
+    const { sessionId, visitorId } = currentIds();
 
     const beat = () => {
       const active = current.current;

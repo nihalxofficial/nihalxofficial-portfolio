@@ -422,6 +422,7 @@ export interface AnalyticsOverview {
   oses: Array<{ name: string; count: number }>;
   devices: Array<{ name: string; count: number }>;
   countries: Array<{ country: string; code: string; lat?: number; lng?: number; count: number }>;
+  newVsReturning: { newVisitors: number; returningVisitors: number };
   recent: Array<{
     path: string;
     city: string;
@@ -456,6 +457,45 @@ export interface AnalyticsRealtime {
 
 export async function fetchAnalyticsRealtime(): Promise<AnalyticsRealtime> {
   const { data } = await request<AnalyticsRealtime>("/admin/analytics/realtime", { method: "GET" });
+  return data;
+}
+
+/** Per-project engagement metrics; mirrors the server `ProjectPerformanceMetric`. */
+export interface ProjectPerformanceMetric {
+  slug: string;
+  title: string;
+  thumbnailUrl: string;
+  category: string;
+  views: number;
+  uniqueVisitors: number;
+  clicks: number;
+  totalDurationMs: number;
+  avgDurationSec: number;
+  ctr: number;
+}
+
+/** Mirrors the server `ProjectAnalyticsOverview` shape (analytics.service). */
+export interface ProjectAnalyticsOverview {
+  range: { days: number; from: string };
+  totals: {
+    totalProjectViews: number;
+    totalProjectClicks: number;
+    totalUniqueVisitors: number;
+    avgEngagementDurationSec: number;
+  };
+  mostViewedProject: ProjectPerformanceMetric | null;
+  mostEngagedProject: ProjectPerformanceMetric | null;
+  projects: ProjectPerformanceMetric[];
+  viewsComparison: Array<{ title: string; slug: string; views: number; clicks: number }>;
+  /** One row per time bucket; `bucket` plus a `<slug>: views` entry each. */
+  timeline: Array<Record<string, string | number>>;
+}
+
+export async function fetchProjectAnalytics(days = 30): Promise<ProjectAnalyticsOverview> {
+  const { data } = await request<ProjectAnalyticsOverview>(
+    `/admin/analytics/projects?days=${days}`,
+    { method: "GET" },
+  );
   return data;
 }
 

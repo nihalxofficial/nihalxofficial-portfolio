@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { SkillIcon } from "@/components/site/skills";
+import { trackProjectClick } from "@/components/site/analytics";
 import { Reveal } from "@/components/ui/reveal";
 import type { Project, SectionMeta } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -347,6 +348,7 @@ function Preview({ project }: { project: Project }) {
                 href={project.liveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackProjectClick(project.slug)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-acc/15 hover:bg-acc/25 text-acc border border-acc/40 hover:border-acc font-mono text-[11px] sm:text-xs font-semibold shadow-[0_0_12px_rgba(0,255,200,0.15)] hover:shadow-[0_0_16px_var(--acc)] transition-all cursor-pointer whitespace-nowrap"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
@@ -359,6 +361,7 @@ function Preview({ project }: { project: Project }) {
                 href={project.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackProjectClick(project.slug)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/10 hover:border-acc/40 font-mono text-[11px] sm:text-xs transition-all cursor-pointer whitespace-nowrap"
               >
                 <Github size={13} className="shrink-0 text-slate-400 group-hover:text-white" />
@@ -368,6 +371,7 @@ function Preview({ project }: { project: Project }) {
           </div>
           <Link
             href={`/projects/${project.slug}`}
+            onClick={() => trackProjectClick(project.slug)}
             className="inline-flex items-center gap-1.5 font-mono text-[11px] sm:text-xs font-semibold text-slate-400 hover:text-acc transition-colors uppercase tracking-widest whitespace-nowrap ml-auto sm:ml-0"
           >
             <span>Case Study</span>
