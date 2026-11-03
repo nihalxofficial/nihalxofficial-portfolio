@@ -46,7 +46,7 @@ export function StatusBar({ navigation, accentName, activeSection = "" }: Status
       <span className="ml-auto hidden lg:block">
         theme: <span className="text-acc">{accentName}</span>
       </span>
-      <span>Dhaka {clock}</span>
+      <span>Chattogram {clock}</span>
       <span className="flex items-center gap-1.5 text-acc">
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
         Available for hire

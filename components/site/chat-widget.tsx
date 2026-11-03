@@ -187,7 +187,7 @@ export function ChatWidget() {
         <div
           onClick={toggleChat}
           style={{ position: "fixed" }}
-          className="fixed right-18 md:right-20 bottom-20 md:bottom-10 z-[69] w-max max-w-[calc(100vw-6rem)] sm:max-w-xs flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-right-3"
+          className="fixed right-16 md:right-20 bottom-20 md:bottom-10 z-[69] w-max max-w-[calc(100vw-6rem)] sm:max-w-xs flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl hud !border-acc/40 bg-[#03050f]/95 text-slate-100 shadow-[0_8px_32px_rgba(0,0,0,0.6)] backdrop-blur-xl glow-sm cursor-pointer hover:border-acc hover:glow transition-all duration-300 group animate-in fade-in slide-in-from-right-3"
         >
           <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />

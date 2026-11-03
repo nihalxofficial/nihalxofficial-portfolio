@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Home, ArrowUpRight, Terminal } from "lucide-react";
+import { DynamicSiteBackground } from "@/components/site/dynamic-site-background";
 import { NotFoundConsole } from "@/components/site/not-found-console";
 import { getPortfolio } from "@/lib/api";
 
@@ -20,8 +21,10 @@ export default async function NotFound() {
 
   return (
     <main className="relative grid min-h-screen place-items-center overflow-hidden bg-[#03050f] px-6 py-20">
+      {/* Dynamic Animated DNA Background */}
+      <DynamicSiteBackground />
       {/* Grid background */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 grid-bg opacity-30" />
       {/* Glow orb */}
       <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/3 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-acc/8 blur-[80px]" />
 
