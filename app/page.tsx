@@ -9,7 +9,7 @@ import { Showcase } from "@/components/site/showcase";
 import { Skills } from "@/components/site/skills";
 import { Stats } from "@/components/site/stats";
 import { getPortfolio } from "@/lib/api";
-import type { NavigationItem, SectionMeta } from "@/lib/types";
+import type { SectionMeta } from "@/lib/types";
 
 // Page revalidates every 30 seconds
 export const revalidate = 30;
@@ -41,167 +41,81 @@ export default async function Page() {
   const meta = (key: string): SectionMeta | undefined =>
     data.sections.find((section) => section.key === key);
 
-  // Hidden components: blog, review (testimonials), featured projects (projects)
-  const HIDDEN_SECTION_COMPONENTS = new Set(["projects", "testimonials", "blog"]);
-  const shown = (key: string) => !HIDDEN_SECTION_COMPONENTS.has(key);
-
-  const heroVisible = Boolean(data.hero);
-
-  const blocks: Array<{ key: string; visible: boolean }> = [
-    { key: "about", visible: true },
-    { key: "stats", visible: true },
-    { key: "services", visible: true },
-    { key: "skills", visible: true },
-    { key: "projects", visible: false },
-    { key: "showcase", visible: true },
-    { key: "journey", visible: true },
-    { key: "education", visible: true },
-    { key: "testimonials", visible: false },
-    { key: "blog", visible: false },
-    { key: "contact", visible: true },
-  ];
-
-  const order = new Map<string, number>();
-  blocks
-    .filter((block) => block.visible && shown(block.key))
-    .forEach((block, position) => order.set(block.key, position + (heroVisible ? 2 : 1)));
-
-  const at = (key: string) => order.get(key) ?? 1;
-
-  // Active navigation items displayed in navbar, dock, mobile dock & footer
-  // User requested to hide: stats, featured projects, reviews, blog, services, and journey
-  const ALL_SECTION_NAV: Array<{
-    key: string;
-    href: string;
-    defaultLabel: string;
-    icon: string;
-    isPrimary?: boolean;
-  }> = [
-    { key: "hero", href: "#hero", defaultLabel: "Home", icon: "Home", isPrimary: true },
-    { key: "about", href: "#about", defaultLabel: "About", icon: "User" },
-    { key: "skills", href: "#skills", defaultLabel: "Skills", icon: "Wrench" },
-    { key: "showcase", href: "#showcase", defaultLabel: "Showcase", icon: "Rocket", isPrimary: true },
-    { key: "contact", href: "#contact", defaultLabel: "Contact", icon: "Mail", isPrimary: true },
-  ];
-
-  const HIDDEN_NAV_KEYS = new Set([
-    "stats",
-    "services",
-    "projects",
-    "testimonials",
-    "reviews",
-    "review",
-    "blog",
-    "journey",
-  ]);
-
-  const HIDDEN_NAV_HREFS = new Set([
-    "#stats",
-    "#services",
-    "#projects",
-    "#testimonials",
-    "#reviews",
-    "#blog",
-    "/blog",
-    "/projects",
-    "#journey",
-  ]);
-
-  const isHiddenNav = (href: string, label?: string) => {
-    const cleanHref = (href || "").toLowerCase().trim();
-    const cleanLabel = (label || "").toLowerCase().trim();
-    if (HIDDEN_NAV_HREFS.has(cleanHref)) return true;
-    const cleanKey = cleanHref.replace(/^#/, "").split("/")[0];
-    if (HIDDEN_NAV_KEYS.has(cleanKey)) return true;
-    if (
-      [
-        "stats",
-        "services",
-        "projects",
-        "featured projects",
-        "reviews",
-        "review",
-        "testimonials",
-        "blog",
-        "journey",
-        "experience",
-      ].includes(cleanLabel)
-    ) {
-      return true;
-    }
-    return false;
+  // Section visibility and order are owned entirely by the CMS `sections`
+  // documents. A key with no document yet defaults to visible so the seeded
+  // design never loses content to a missing row; the dashboard toggle drives it
+  // from here on. Nothing is hard-coded in this file anymore.
+  const show = (key: string): boolean => {
+    const section = meta(key);
+    return section ? section.isVisible : true;
   };
 
-  const existingNavByHref = new Map(
-    (data.navigation || []).map((item) => [item.href.toLowerCase(), item])
-  );
+  // Decorative section number, ranked across the visible sections by their CMS
+  // order. Components treat this as optional eye-candy, not layout.
+  const visibleOrder = data.sections
+    .filter((section) => section.isVisible)
+    .sort((a, b) => a.order - b.order)
+    .map((section) => section.key);
+  const at = (key: string): number => {
+    const position = visibleOrder.indexOf(key);
+    return position >= 0 ? position + 1 : 1;
+  };
 
-  const nav: NavigationItem[] = ALL_SECTION_NAV.map((canonical, idx) => {
-    const existing = existingNavByHref.get(canonical.href.toLowerCase());
-    if (existing) {
-      return {
-        ...existing,
-        isVisible: true,
-        isPrimary: existing.isPrimary ?? canonical.isPrimary,
-        order: idx + 1,
-      };
-    }
-    return {
-      _id: `nav-${canonical.key}`,
-      label: canonical.defaultLabel,
-      href: canonical.href,
-      icon: canonical.icon,
-      isPrimary: canonical.isPrimary ?? false,
-      order: idx + 1,
-      isVisible: true,
-    };
-  }).filter((item) => !isHiddenNav(item.href, item.label));
+  // Navigation is whatever the CMS publishes: the public API already returns
+  // only visible items sorted by order, so a disabled link drops out of the
+  // navbar, dock, mobile nav, footer and the command palette in one place.
+  const nav = data.navigation;
 
-  // Preserve any custom CMS navigation links that are not section anchors and not hidden
-  for (const item of data.navigation || []) {
-    if (
-      item.isVisible &&
-      !isHiddenNav(item.href, item.label) &&
-      !ALL_SECTION_NAV.some((c) => c.href.toLowerCase() === item.href.toLowerCase())
-    ) {
-      nav.push(item);
-    }
-  }
+  const hasJourney = show("journey");
+  const hasEducation = show("education");
 
   return (
     <PortfolioShell navigation={nav} settings={data.settings}>
-      {data.hero ? <Hero hero={data.hero} settings={data.settings} navigation={nav} /> : null}
+      {data.hero && show("hero") ? (
+        <Hero hero={data.hero} settings={data.settings} navigation={nav} />
+      ) : null}
 
-      {data.about ? (
+      {data.about && show("about") ? (
         <About about={data.about} section={meta("about")} index={at("about")} />
       ) : null}
 
-      <Stats statistics={data.statistics} section={meta("stats")} index={at("stats")} />
+      {show("stats") ? (
+        <Stats statistics={data.statistics} section={meta("stats")} index={at("stats")} />
+      ) : null}
 
-      <Services
-        services={data.services}
-        section={meta("services")}
-        index={at("services")}
-      />
+      {show("services") ? (
+        <Services services={data.services} section={meta("services")} index={at("services")} />
+      ) : null}
 
-      <Skills groups={data.skills} projects={data.projects} section={meta("skills")} index={at("skills")} />
+      {show("skills") ? (
+        <Skills
+          groups={data.skills}
+          projects={data.projects}
+          section={meta("skills")}
+          index={at("skills")}
+        />
+      ) : null}
 
-      <Showcase
-        projects={data.projects}
-        section={meta("showcase")}
-        index={at("showcase")}
-      />
+      {show("showcase") ? (
+        <Showcase projects={data.projects} section={meta("showcase")} index={at("showcase")} />
+      ) : null}
 
-      <ExperienceEducation
-        experience={data.experience}
-        education={data.education}
-        journeySection={meta("journey")}
-        educationSection={meta("education")}
-        journeyIndex={at("journey")}
-        educationIndex={at("education")}
-      />
+      {hasJourney || hasEducation ? (
+        <ExperienceEducation
+          experience={data.experience}
+          education={data.education}
+          journeySection={meta("journey")}
+          educationSection={meta("education")}
+          journeyIndex={at("journey")}
+          educationIndex={at("education")}
+          showJourney={hasJourney}
+          showEducation={hasEducation}
+        />
+      ) : null}
 
-      <Contact settings={data.settings} section={meta("contact")} index={at("contact")} />
+      {show("contact") ? (
+        <Contact settings={data.settings} section={meta("contact")} index={at("contact")} />
+      ) : null}
 
       <Footer
         settings={data.settings}

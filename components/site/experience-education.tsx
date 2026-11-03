@@ -12,6 +12,8 @@ export function ExperienceEducation({
   educationSection,
   journeyIndex,
   educationIndex,
+  showJourney,
+  showEducation,
 }: {
   experience: Experience[];
   education: EducationEntry[];
@@ -19,13 +21,18 @@ export function ExperienceEducation({
   educationSection?: SectionMeta;
   journeyIndex: number;
   educationIndex: number;
+  /** CMS section toggles; default to on so a missing section row never hides data. */
+  showJourney?: boolean;
+  showEducation?: boolean;
 }) {
-  const showJourney   = experience.length > 0;
-  const showEducation = education.length > 0;
+  // A disabled section drops its records from the unified timeline while the
+  // other half keeps rendering. Both off (or no data) renders nothing.
+  const journeys = showJourney === false ? [] : experience;
+  const studies = showEducation === false ? [] : education;
 
-  if (!showJourney && !showEducation) return null;
+  if (journeys.length === 0 && studies.length === 0) return null;
 
   return (
-    <JourneySection experience={experience} education={education} />
+    <JourneySection experience={journeys} education={studies} />
   );
 }
