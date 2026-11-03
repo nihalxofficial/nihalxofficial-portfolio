@@ -279,3 +279,115 @@ export interface Portfolio {
   settings: SiteSettings | null;
   sections: SectionMeta[];
 }
+
+/**
+ * Extended Analytics Types for Advanced Dashboard
+ */
+
+export interface AnalyticsMetric {
+  current: number;
+  previous: number;
+  change: number;
+  changePercent: number;
+  trend: "up" | "down" | "neutral";
+}
+
+export interface EnhancedAnalyticsOverview {
+  range: { days: number; from: string; to: string };
+  totals: {
+    pageViews: AnalyticsMetric;
+    uniqueVisitors: AnalyticsMetric;
+    sessions: AnalyticsMetric;
+    onlineNow: number;
+    avgSessionDurationMs: number;
+    avgEngagementMs: number;
+    bounceRate: number;
+    engagementRate: number;
+  };
+  timeline: Array<{
+    bucket: string;
+    pageViews: number;
+    sessions: number;
+    uniqueVisitors: number;
+  }>;
+  topPages: Array<{ path: string; views: number; avgDuration: number }>;
+  sources: Array<{ source: string; views: number; sessions: number }>;
+  browsers: Array<{ name: string; version?: string; count: number }>;
+  oses: Array<{ name: string; version?: string; count: number }>;
+  devices: Array<{ type: string; count: number }>;
+  countries: Array<{
+    country: string;
+    code: string;
+    lat?: number;
+    lng?: number;
+    count: number;
+  }>;
+  newVsReturning: { newVisitors: number; returningVisitors: number };
+  recent: Array<{
+    path: string;
+    city: string;
+    country: string;
+    browser: string;
+    device: string;
+    duration?: number;
+    at: string;
+  }>;
+}
+
+export interface ProjectAnalyticsDetail {
+  slug: string;
+  title: string;
+  thumbnailUrl: string;
+  category: string;
+  views: number;
+  uniqueVisitors: number;
+  clicks: number;
+  clickThroughRate: number;
+  totalEngagementMs: number;
+  avgEngagementSec: number;
+  bounceRate: number;
+  timeline: Array<{
+    date: string;
+    views: number;
+    clicks: number;
+    avgDuration: number;
+  }>;
+}
+
+/**
+ * Component Management Types
+ */
+
+export interface ComponentVisibility extends DocMeta {
+  componentKey: string;
+  label: string;
+  description: string;
+  isVisible: boolean;
+  order: number;
+  icon?: string;
+  hasManagementPage: boolean;
+}
+
+/**
+ * Global Settings Extensions
+ */
+
+export interface GlobalSiteSettings extends SiteSettings {
+  maintenance?: {
+    enabled: boolean;
+    message?: string;
+    allowedIPs?: string[];
+  };
+  seo?: {
+    robots?: string;
+    sitemap?: boolean;
+    googleAnalyticsId?: string;
+    googleTagManagerId?: string;
+  };
+  features?: {
+    blog?: boolean;
+    testimonials?: boolean;
+    newsletter?: boolean;
+    darkMode?: boolean;
+  };
+}
