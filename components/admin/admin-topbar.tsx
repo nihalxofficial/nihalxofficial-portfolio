@@ -19,10 +19,12 @@ import { initials } from "@/lib/utils";
  */
 export function AdminTopbar({
   title,
+  eyebrow,
   menuOpen,
   onToggleMenu,
 }: {
   title: string;
+  eyebrow?: string;
   menuOpen: boolean;
   onToggleMenu: () => void;
 }) {
@@ -79,7 +81,14 @@ export function AdminTopbar({
         <Icon name={menuOpen ? "X" : "Menu"} className="h-4 w-4" />
       </button>
 
-      <h1 className="min-w-0 truncate text-[13.5px] font-semibold text-ink">{title}</h1>
+      <div className="min-w-0">
+        {eyebrow ? (
+          <p className="mono hidden truncate text-[9px] uppercase tracking-[0.2em] text-faint sm:block">
+            {eyebrow}
+          </p>
+        ) : null}
+        <h1 className="truncate text-[13.5px] font-semibold text-ink">{title}</h1>
+      </div>
 
       <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
         {/* Notifications → message inbox */}

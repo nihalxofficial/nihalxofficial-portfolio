@@ -4,47 +4,36 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/admin/auth-provider";
-import { useAdminData } from "@/components/admin/admin-context";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { Icon } from "@/components/ui/icon";
-import { ADMIN_BASE, adminHref } from "@/lib/admin-routes";
+import { ADMIN_BASE } from "@/lib/admin-routes";
+import { findNavItem, NAV_GROUPS, type NavGroup, type NavItem } from "@/lib/admin-nav";
 import { initials } from "@/lib/utils";
 
-type NavLink = { href: string; label: string; icon: string };
-
-/** Primary dashboard actions, shown under a "Manage" heading. */
-const MANAGE_LINKS: NavLink[] = [
-  { href: ADMIN_BASE, label: "Overview", icon: "LayoutDashboard" },
-  { href: adminHref("analytics"), label: "Analytics", icon: "Gauge" },
-  { href: adminHref("messages"), label: "Messages", icon: "Inbox" },
-  { href: adminHref("media"), label: "Media", icon: "Image" },
-];
-
-/** Pinned to the very bottom of the sidebar, separate from the scroll groups. */
-const SETTINGS_LINK: NavLink = {
-  href: adminHref("site-settings"),
-  label: "Site settings",
-  icon: "Settings",
-};
-
-/** Edited from the Site settings page instead of the generic form. */
-const HIDDEN_ENTITIES = ["settings"];
+/** Groups open by default; owners can collapse the long Content list. */
+function useCollapsedGroups() {
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const toggle = (id: string) => setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
+  return { collapsed, toggle };
+}
 
 /**
  * Dashboard chrome and access gate.
  *
  * Nothing inside renders until the API has accepted the session, so a signed-in
  * Firebase account that is missing from ADMIN_UIDS never sees the dashboard.
+ * The sidebar is driven entirely by `lib/admin-nav` — grouped, collapsible, and
+ * icon-led — so the whole CMS is navigable from one logical structure.
  */
 export function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { session, loading, error, configError, signOut } = useAuth();
-  const { types } = useAdminData();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { collapsed, toggle } = useCollapsedGroups();
 
   useEffect(() => {
-    if (!loading && !session && !configError) router.replace(adminHref("login"));
+    if (!loading && !session && !configError) router.replace("/control-centre/login");
   }, [loading, session, configError, router]);
 
   useEffect(() => {
@@ -76,34 +65,57 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
-  const contentLinks: NavLink[] = types
-    .filter((type) => !HIDDEN_ENTITIES.includes(type.key))
-    .map((type) => ({
-      href: adminHref(type.key),
-      label: type.label,
-      icon: type.singleton ? "Settings" : "FolderKanban",
-    }));
+  const isActive = (item: NavItem) =>
+    item.external
+      ? false
+      : item.href === ADMIN_BASE
+        ? pathname === ADMIN_BASE
+        : pathname.startsWith(item.href);
 
-  const isActive = (href: string) =>
-    href === ADMIN_BASE ? pathname === ADMIN_BASE : pathname === href;
-
-  const current = [...MANAGE_LINKS, ...contentLinks, SETTINGS_LINK].find((item) =>
-    isActive(item.href),
-  );
-
-  const navItem = (item: NavLink) => {
-    const active = isActive(item.href);
-    return (
-      <Link
-        key={item.href}
-        href={item.href}
-        className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] transition-colors ${
-          active ? "bg-accent/12 text-accent" : "text-muted hover:bg-surface-2 hover:text-ink"
-        }`}
-      >
+  const navLink = (item: NavItem) => {
+    const active = isActive(item);
+    const className = `flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] transition-colors ${
+      active ? "bg-accent/12 text-accent" : "text-muted hover:bg-surface-2 hover:text-ink"
+    }`;
+    const inner = (
+      <>
         <Icon name={item.icon} className="h-4 w-4 shrink-0" />
         <span className="truncate">{item.label}</span>
+      </>
+    );
+    return item.external ? (
+      <Link key={item.href} href="/" target="_blank" rel="noreferrer" className={className}>
+        {inner}
       </Link>
+    ) : (
+      <Link key={item.href} href={item.href} className={className}>
+        {inner}
+      </Link>
+    );
+  };
+
+  const groupBlock = (group: NavGroup) => {
+    const isCollapsed = collapsed[group.id] ?? false;
+    // Keep the group holding the active route expanded even if it was collapsed.
+    const hasActive = group.items.some(isActive);
+    const open = !isCollapsed || hasActive;
+
+    return (
+      <div key={group.id} className="mt-4 first:mt-0">
+        <button
+          type="button"
+          onClick={() => toggle(group.id)}
+          className="mono flex w-full items-center justify-between px-2 pb-1.5 text-[9.5px] uppercase tracking-[0.2em] text-faint transition-colors hover:text-muted"
+          aria-expanded={open}
+        >
+          {group.label}
+          <Icon
+            name="ChevronDown"
+            className={`h-3 w-3 transition-transform ${open ? "" : "-rotate-90"}`}
+          />
+        </button>
+        {open ? <div className="space-y-0.5">{group.items.map(navLink)}</div> : null}
+      </div>
     );
   };
 
@@ -115,7 +127,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </span>
         <span className="min-w-0">
           <span className="block truncate text-[13px] font-semibold text-ink">
-            {session.name || "Dashboard"}
+            {session.name || "Control Centre"}
           </span>
           <span className="mono block truncate text-[10px] uppercase tracking-[0.14em] text-faint">
             {session.email || session.uid.slice(0, 10)}
@@ -124,37 +136,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </Link>
 
       <nav className="scrollbar-none flex-1 overflow-y-auto px-2 pb-4">
-        <p className="mono px-2 pb-1.5 pt-1 text-[9.5px] uppercase tracking-[0.2em] text-faint">
-          Manage
-        </p>
-        <div className="space-y-0.5">{MANAGE_LINKS.map(navItem)}</div>
-
-        {contentLinks.length ? (
-          <>
-            <p className="mono mt-4 px-2 pb-1.5 text-[9.5px] uppercase tracking-[0.2em] text-faint">
-              Content
-            </p>
-            <div className="space-y-0.5">{contentLinks.map(navItem)}</div>
-          </>
-        ) : null}
+        {NAV_GROUPS.map(groupBlock)}
       </nav>
 
-      {/* Site settings stays pinned to the bottom, above the account footer. */}
-      <div className="border-t border-line px-2 py-2">
-        <p className="mono px-2 pb-1.5 text-[9.5px] uppercase tracking-[0.2em] text-faint">
-          System
-        </p>
-        {navItem(SETTINGS_LINK)}
-      </div>
-
       <div className="border-t border-line p-2">
-        <Link
-          href="/"
-          className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[12.5px] text-muted transition-colors hover:bg-surface-2 hover:text-ink"
-        >
-          <Icon name="Globe" className="h-4 w-4" />
-          View site
-        </Link>
         <button
           type="button"
           onClick={() => void signOut()}
@@ -166,6 +151,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
+
+  const current = findNavItem(pathname);
 
   return (
     <div className="min-h-screen bg-page">
@@ -183,7 +170,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <div className="lg:pl-60">
         <AdminTopbar
-          title={current?.label ?? "Dashboard"}
+          title={current?.item.label ?? "Dashboard"}
+          eyebrow={current?.group.label}
           menuOpen={menuOpen}
           onToggleMenu={() => setMenuOpen((value) => !value)}
         />
