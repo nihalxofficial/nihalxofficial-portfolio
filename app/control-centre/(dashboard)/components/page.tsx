@@ -22,6 +22,7 @@ export default function ComponentVisibilityPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [reorderMsg, setReorderMsg] = useState(false);
 
   useEffect(() => {
     loadSections();
@@ -54,6 +55,45 @@ export default function ComponentVisibilityPage() {
     }
   }
 
+  async function moveSection(index: number, direction: "up" | "down") {
+    const sorted = [...sections].sort((a, b) => a.order - b.order);
+    const targetIndex = direction === "up" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= sorted.length) return;
+
+    const a = sorted[index];
+    const b = sorted[targetIndex];
+    const newOrderA = b.order;
+    const newOrderB = a.order;
+
+    // Optimistic update
+    setSections((prev) =>
+      prev.map((s) => {
+        if (s._id === a._id) return { ...s, order: newOrderA };
+        if (s._id === b._id) return { ...s, order: newOrderB };
+        return s;
+      })
+    );
+
+    try {
+      await Promise.all([
+        updateContent("sections", a._id, { order: newOrderA }),
+        updateContent("sections", b._id, { order: newOrderB }),
+      ]);
+      setReorderMsg(true);
+      setTimeout(() => setReorderMsg(false), 2000);
+    } catch (err) {
+      // Revert on error
+      setSections((prev) =>
+        prev.map((s) => {
+          if (s._id === a._id) return { ...s, order: a.order };
+          if (s._id === b._id) return { ...s, order: b.order };
+          return s;
+        })
+      );
+      alert(err instanceof Error ? err.message : "Failed to reorder");
+    }
+  }
+
   if (loading) {
     return (
       <div>
@@ -83,18 +123,29 @@ export default function ComponentVisibilityPage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Component Visibility</h1>
-        <p className="mt-2 text-[14px] text-muted">
-          Control which sections appear on your homepage. Disabled sections are hidden from
-          visitors.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-ink">Component Visibility</h1>
+            <p className="mt-2 text-[14px] text-muted">
+              Control which sections appear on your homepage. Disabled sections are hidden from
+              visitors.
+            </p>
+          </div>
+          {reorderMsg && (
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[12px] font-medium text-emerald-500">
+              <Icon name="CheckCircle" className="h-3.5 w-3.5" />
+              Order saved
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Components Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {sections
           .sort((a, b) => a.order - b.order)
-          .map((section) => {
+          .map((section, index) => {
+            const sorted = [...sections].sort((a, b) => a.order - b.order);
             const config = HOMEPAGE_COMPONENTS.find((c) => c.key === section.key);
             const isUpdating = updating === section._id;
 
@@ -123,14 +174,34 @@ export default function ComponentVisibilityPage() {
                     </div>
                   </div>
 
-                  {/* Toggle */}
-                  <div className="shrink-0">
+                  {/* Toggle + Order buttons */}
+                  <div className="flex shrink-0 flex-col items-end gap-2">
                     <CmsSwitch
                       checked={section.isVisible}
                       onChange={() => void toggleVisibility(section._id, section.isVisible)}
                       label={`Toggle ${section.label}`}
                       size="sm"
                     />
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => void moveSection(index, "up")}
+                        disabled={index === 0}
+                        title="Move up"
+                        className="flex h-6 w-6 items-center justify-center rounded border border-line text-muted transition-all hover:border-accent/40 hover:text-accent disabled:opacity-30"
+                      >
+                        <Icon name="ChevronUp" className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void moveSection(index, "down")}
+                        disabled={index === sorted.length - 1}
+                        title="Move down"
+                        className="flex h-6 w-6 items-center justify-center rounded border border-line text-muted transition-all hover:border-accent/40 hover:text-accent disabled:opacity-30"
+                      >
+                        <Icon name="ChevronDown" className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -161,6 +232,7 @@ export default function ComponentVisibilityPage() {
                     />
                     {section.isVisible ? "Visible" : "Hidden"}
                   </span>
+                  <span className="text-[10px] text-faint">Order #{section.order}</span>
                 </div>
               </DashboardCard>
             );

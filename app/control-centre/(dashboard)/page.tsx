@@ -80,7 +80,7 @@ export default function AdminOverviewPage() {
           onClick={load}
           className="inline-flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-[12px] font-medium text-muted transition-colors hover:border-line-strong hover:text-accent"
         >
-          <Icon name={loading ? "Loader" : "Save"} className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          <Icon name={loading ? "Loader" : "RefreshCw"} className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </button>
       </header>

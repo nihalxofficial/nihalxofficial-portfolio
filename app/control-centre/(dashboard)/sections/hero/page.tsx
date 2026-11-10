@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent } from "@/lib/admin";
@@ -36,12 +36,25 @@ function Field({ label, description, children }: { label: string; description?: 
   );
 }
 
+async function uploadPortrait(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("image", file);
+  const key = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+  if (!key) throw new Error("ImgBB API key not configured");
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: "POST", body: fd });
+  if (!res.ok) throw new Error("Upload failed");
+  const json = await res.json();
+  return json.data.url as string;
+}
+
 export default function HeroManagementPage() {
   const [hero, setHero] = useState<HeroSection | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [uploadingPortrait, setUploadingPortrait] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadHero(); }, []);
 
@@ -84,6 +97,21 @@ export default function HeroManagementPage() {
     }
     current[keys[keys.length - 1]] = value;
     setHero(updated);
+  }
+
+  async function handlePortraitUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploadingPortrait(true);
+      const url = await uploadPortrait(file);
+      updateField("portraitUrl", url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Portrait upload failed");
+    } finally {
+      setUploadingPortrait(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   if (loading) return <div><h1 className="mb-6 text-2xl font-bold text-ink">Hero Section</h1><LoadingState message="Loading hero section..." /></div>;
@@ -137,15 +165,53 @@ export default function HeroManagementPage() {
         </DashboardCard>
 
         <DashboardCard icon="Image" title="Portrait & Availability" description="Profile image and status">
-          <div className="space-y-4">
-            <Field label="Portrait URL" description="Upload via Media Library and paste URL here"><input placeholder="https://i.ibb.co/..." value={hero.portraitUrl} onChange={(e) => updateField("portraitUrl", e.target.value)} className={inputCls} /></Field>
+          <div className="space-y-5">
+            {/* Portrait Upload */}
+            <div className="space-y-3">
+              <label className={labelCls}>Portrait Image</label>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                {/* Preview */}
+                <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-xl border border-line bg-surface-2/40">
+                  {hero.portraitUrl ? (
+                    <img src={hero.portraitUrl} alt="Portrait preview" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Icon name="User" className="h-10 w-10 text-faint" />
+                    </div>
+                  )}
+                  {uploadingPortrait && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                      <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                    </div>
+                  )}
+                </div>
+                {/* Upload controls */}
+                <div className="flex flex-1 flex-col gap-3">
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => void handlePortraitUpload(e)} disabled={uploadingPortrait} />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPortrait}
+                    className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60"
+                  >
+                    <Icon name={uploadingPortrait ? "Loader" : "Upload"} className={`h-4 w-4 ${uploadingPortrait ? "animate-spin" : ""}`} />
+                    {uploadingPortrait ? "Uploading..." : "Upload Portrait"}
+                  </button>
+                  <Field label="Or paste image URL" description="Direct link to hosted image (ImgBB, Cloudinary, etc.)">
+                    <input placeholder="https://i.ibb.co/..." value={hero.portraitUrl} onChange={(e) => updateField("portraitUrl", e.target.value)} className={inputCls} />
+                  </Field>
+                </div>
+              </div>
+            </div>
+
             <Field label="Tagline (optional)"><input placeholder="Crafting digital experiences" value={hero.tagline || ""} onChange={(e) => updateField("tagline", e.target.value)} className={inputCls} /></Field>
+
             <div className="space-y-3">
               <h4 className="text-[13px] font-semibold text-ink">Availability Status</h4>
               <Field label="Label"><input placeholder="Available for hire" value={hero.availability.label} onChange={(e) => updateField("availability.label", e.target.value)} className={inputCls} /></Field>
               <div className="flex items-center gap-2">
                 <CmsSwitch checked={hero.availability.isAvailable} onChange={(val) => updateField("availability.isAvailable", val)} label="Available" size="sm" />
-                <span className="text-[13px] text-ink">Available</span>
+                <span className="text-[13px] text-ink">Currently available</span>
               </div>
             </div>
           </div>
