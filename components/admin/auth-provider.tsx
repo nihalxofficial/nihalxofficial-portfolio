@@ -140,6 +140,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!nextUser) {
         setSession(null);
         setLoading(false);
+        try {
+          localStorage.removeItem("pf_is_admin");
+        } catch {}
         return;
       }
 
@@ -149,9 +152,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .then((value) => {
           setSession(value);
           setError("");
+          try {
+            localStorage.setItem("pf_is_admin", "true");
+          } catch {}
         })
         .catch(async (cause: unknown) => {
           setSession(null);
+          try {
+            localStorage.removeItem("pf_is_admin");
+          } catch {}
           setError(await explainRejection(cause));
           await firebaseSignOut(auth).catch(() => undefined);
         })
@@ -233,6 +242,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (!configured) return;
+    try {
+      localStorage.removeItem("pf_is_admin");
+    } catch {}
     await firebaseSignOut(getFirebaseAuth()).catch(() => undefined);
     setSession(null);
     setUser(null);

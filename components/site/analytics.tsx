@@ -65,11 +65,29 @@ function currentIds() {
   };
 }
 
+/** Check if current user is an authenticated admin so their activity is never calculated in analytics. */
+function isAdmin(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    if (localStorage.getItem("pf_is_admin") === "true") return true;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith("firebase:authUser:") || key === "pf_admin_session")) {
+        return true;
+      }
+    }
+  } catch {}
+  return false;
+}
+
 // De-dupe identical consecutive events so a double effect or double tap does not
 // inflate the counts. Keyed by kind + path + project only.
 const lastSent = new Map<string, number>();
 
 function send(payload: Payload) {
+  if (isAdmin()) return; // Never record admin activity in analytics
+  if (payload.path.startsWith("/control-centre") || payload.path.startsWith("/admin")) return;
+
   const key = `${payload.kind}:${payload.path}:${payload.projectId ?? ""}:${payload.eventType ?? ""}`;
   const now = Date.now();
   const prev = lastSent.get(key);
@@ -94,7 +112,7 @@ function send(payload: Payload) {
  * Fire-and-forget; safe to call from any event handler.
  */
 export function trackProjectClick(slug: string, path = "/") {
-  if (!slug) return;
+  if (!slug || isAdmin()) return;
   const { sessionId, visitorId } = currentIds();
   send({
     kind: "click",
@@ -112,7 +130,7 @@ export function Analytics() {
 
   // Open a page view; close out the previous one with its duration.
   useEffect(() => {
-    if (!pathname || pathname.startsWith("/control-centre")) return;
+    if (!pathname || pathname.startsWith("/control-centre") || pathname.startsWith("/admin") || isAdmin()) return;
     const { sessionId, visitorId } = currentIds();
 
     const prev = current.current;
@@ -132,7 +150,7 @@ export function Analytics() {
 
   // Heartbeats for live presence + a final duration when the tab hides/closes.
   useEffect(() => {
-    if (pathname.startsWith("/control-centre")) return;
+    if (pathname.startsWith("/control-centre") || pathname.startsWith("/admin") || isAdmin()) return;
     const { sessionId, visitorId } = currentIds();
 
     const beat = () => {

@@ -277,7 +277,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         />
         {/* Scrollable area */}
         <div className="dashboard-scroll flex-1 overflow-y-auto overflow-x-hidden">
-          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
+          <div className="mx-auto w-full max-w-7xl px-4 pt-3 pb-8 sm:px-6 lg:pt-4 lg:pb-10">
             {children}
           </div>
         </div>

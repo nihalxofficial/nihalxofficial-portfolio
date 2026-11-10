@@ -204,7 +204,7 @@ export default function ProjectsManagerPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8 flex items-start justify-between gap-4">
+      <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-ink">Projects</h1>
           <p className="mt-2 text-[14px] text-muted">
