@@ -1,7 +1,4 @@
-fix(dashboard): unify dynamic theme accents and animated background with main site
+feat(dashboard): separate color and bg switch pills in topbar matching main navbar
 
-- AdminTopbar: add live accent color dots and dynamic background effect toggle (DNA/Rain/Grid) directly in navbar matching main site
-- AdminShell: connect live useAccent() and bgMode state with SiteBackground engine (double helix + particle field + glow orbs)
-- SiteBackground: support secondaryAccent with live dual-color glowing orbs and double-helix rungs
-- Theme & Background Settings: synchronize live changes immediately to CSS vars, localStorage, and dispatch cross-component events
-- AccentContext: support cross-window / cross-component live sync via portfolio_accent_change event
+- AdminTopbar: split dynamic background switch and accent color picker into separate standalone `hud !rounded-full` pills matching main site navbar
+- Use Lucide Dna and Palette icons with identical micro-padding and typography

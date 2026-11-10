@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { Dna, Palette } from "lucide-react";
 import { useAuth } from "@/components/admin/auth-provider";
 import { ThemeCustomizerMenu } from "@/components/admin/theme-customizer";
 import { Icon } from "@/components/ui/icon";
@@ -104,7 +105,53 @@ export function AdminTopbar({
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Dynamic Background Effect selector (DNA / Rain / Off) — separate standalone hud pill */}
+          {onBgModeChange && (
+            <button
+              type="button"
+              onClick={() => {
+                const next: BackgroundMode = bgMode === "dna" ? "rain" : bgMode === "rain" ? "none" : "dna";
+                onBgModeChange(next);
+              }}
+              title={`Background: ${
+                bgMode === "dna"
+                  ? "DNA Neural Mesh (Default)"
+                  : bgMode === "rain"
+                  ? "Matrix Code Rain"
+                  : "Minimal Grid"
+              }`}
+              className="flex items-center gap-1 sm:gap-1.5 hud !rounded-full px-2 sm:px-2.5 py-1.5 font-mono text-[10px] sm:text-[11px] text-slate-300 hover:text-acc hover:border-acc/40 transition cursor-pointer shrink-0"
+            >
+              <Dna size={13} className="text-acc" />
+              <span className="font-bold uppercase tracking-wider text-[9.5px] sm:text-[10px]">
+                {bgMode === "dna" ? "DNA" : bgMode === "rain" ? "Rain" : "Grid"}
+              </span>
+            </button>
+          )}
+
+          {/* Accent color picker — separate standalone hud pill */}
+          {onAccentChange && (
+            <div className="flex items-center gap-1 sm:gap-1.5 hud !rounded-full px-1.5 sm:px-2.5 py-1 sm:py-2 shrink-0" title="Accent color">
+              <Palette size={12} className="text-slate-400 mr-0.5 sm:mr-1 hidden xs:block" />
+              {ACCENTS.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => onAccentChange(a.id)}
+                  aria-label={a.name}
+                  title={a.name}
+                  className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full cursor-pointer transition ${
+                    accentId === a.id
+                      ? "scale-125 ring-2 ring-white/80"
+                      : "opacity-70 hover:opacity-100"
+                  }`}
+                  style={{ background: `linear-gradient(135deg, ${a.a}, ${a.b})` }}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Messages with enhanced notification badge */}
           <Link
             href={adminHref("messages")}
@@ -124,52 +171,6 @@ export function AdminTopbar({
               </>
             )}
           </Link>
-
-          {/* Dynamic Background Effect selector (DNA / Rain / Grid) — same as main site */}
-          {onBgModeChange && (
-            <button
-              type="button"
-              onClick={() => {
-                const next: BackgroundMode = bgMode === "dna" ? "rain" : bgMode === "rain" ? "none" : "dna";
-                onBgModeChange(next);
-              }}
-              title={`Background: ${
-                bgMode === "dna"
-                  ? "DNA Neural Mesh (Default)"
-                  : bgMode === "rain"
-                  ? "Matrix Code Rain"
-                  : "Minimal Grid"
-              }`}
-              className="flex h-10 items-center gap-1.5 rounded-lg border border-line/50 bg-surface/50 px-2.5 font-mono text-[11px] text-muted transition-all hover:border-accent/30 hover:bg-accent/5 hover:text-accent cursor-pointer shrink-0"
-            >
-              <Icon name="Activity" className="h-4 w-4 text-accent" />
-              <span className="font-bold uppercase tracking-wider text-[10px]">
-                {bgMode === "dna" ? "DNA" : bgMode === "rain" ? "Rain" : "Grid"}
-              </span>
-            </button>
-          )}
-
-          {/* Accent color picker — same 4 presets with active scale & ring, same as main site */}
-          {onAccentChange && (
-            <div className="flex h-10 items-center gap-1.5 rounded-lg border border-line/50 bg-surface/50 px-2.5 shrink-0" title="Accent color">
-              <Icon name="Palette" className="h-3.5 w-3.5 text-muted mr-0.5 hidden xs:block" />
-              {ACCENTS.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => onAccentChange(a.id)}
-                  aria-label={a.name}
-                  title={a.name}
-                  className={`h-4 w-4 rounded-full cursor-pointer transition ${
-                    accentId === a.id
-                      ? "scale-125 ring-2 ring-white/80"
-                      : "opacity-70 hover:opacity-100"
-                  }`}
-                  style={{ background: `linear-gradient(135deg, ${a.a}, ${a.b})` }}
-                />
-              ))}
-            </div>
-          )}
 
           {/* Theme Customizer Menu (advanced dropdown) */}
           <ThemeCustomizerMenu />
