@@ -195,7 +195,7 @@ export default function BrandingPage() {
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Primary Logo */}
-            <div className="rounded-lg border border-border/50 bg-paper/50 p-4">
+            <div className="rounded-lg border border-line/50 bg-surface-2/40 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[13px] font-semibold text-ink">Primary Logo</p>
@@ -205,7 +205,7 @@ export default function BrandingPage() {
               </div>
 
               {settings.branding.logo.primary ? (
-                <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-border/30 bg-gradient-to-br from-paper to-paper/50">
+                <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-line/30 bg-gradient-to-br from-surface-2 to-surface-2/40">
                   <img
                     src={settings.branding.logo.primary}
                     alt="Primary Logo"
@@ -219,7 +219,7 @@ export default function BrandingPage() {
                   </button>
                 </div>
               ) : (
-                <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-border/50 bg-muted/5">
+                <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-line/50 bg-muted/5">
                   <Icon name="ImagePlus" className="h-8 w-8 text-muted/50" />
                 </div>
               )}
@@ -238,7 +238,7 @@ export default function BrandingPage() {
             </div>
 
             {/* Dark Mode Logo */}
-            <div className="rounded-lg border border-border/50 bg-paper/50 p-4">
+            <div className="rounded-lg border border-line/50 bg-surface-2/40 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[13px] font-semibold text-ink">Dark Mode Logo</p>
@@ -248,7 +248,7 @@ export default function BrandingPage() {
               </div>
 
               {settings.branding.logo.dark ? (
-                <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-border/30 bg-[#0a0a0f]">
+                <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-line/30 bg-[#0a0a0f]">
                   <img
                     src={settings.branding.logo.dark}
                     alt="Dark Mode Logo"
@@ -262,7 +262,7 @@ export default function BrandingPage() {
                   </button>
                 </div>
               ) : (
-                <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-border/50 bg-[#0a0a0f]">
+                <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-line/50 bg-[#0a0a0f]">
                   <Icon name="ImagePlus" className="h-8 w-8 text-muted/50" />
                 </div>
               )}
@@ -281,7 +281,7 @@ export default function BrandingPage() {
             </div>
 
             {/* Light Mode Logo */}
-            <div className="rounded-lg border border-border/50 bg-paper/50 p-4">
+            <div className="rounded-lg border border-line/50 bg-surface-2/40 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[13px] font-semibold text-ink">Light Mode Logo</p>
@@ -291,7 +291,7 @@ export default function BrandingPage() {
               </div>
 
               {settings.branding.logo.light ? (
-                <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-border/30 bg-white">
+                <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-line/30 bg-white">
                   <img
                     src={settings.branding.logo.light}
                     alt="Light Mode Logo"
@@ -305,7 +305,7 @@ export default function BrandingPage() {
                   </button>
                 </div>
               ) : (
-                <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-border/50 bg-white">
+                <div className="mb-3 flex aspect-video items-center justify-center rounded-lg border-2 border-dashed border-line/50 bg-white">
                   <Icon name="ImagePlus" className="h-8 w-8 text-muted/50" />
                 </div>
               )}
@@ -324,7 +324,7 @@ export default function BrandingPage() {
             </div>
 
             {/* Icon/Mark */}
-            <div className="rounded-lg border border-border/50 bg-paper/50 p-4">
+            <div className="rounded-lg border border-line/50 bg-surface-2/40 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[13px] font-semibold text-ink">Icon/Mark</p>
@@ -334,7 +334,7 @@ export default function BrandingPage() {
               </div>
 
               {settings.branding.logo.icon ? (
-                <div className="group relative mb-3 aspect-square overflow-hidden rounded-lg border border-border/30 bg-gradient-to-br from-paper to-paper/50">
+                <div className="group relative mb-3 aspect-square overflow-hidden rounded-lg border border-line/30 bg-gradient-to-br from-surface-2 to-surface-2/40">
                   <img
                     src={settings.branding.logo.icon}
                     alt="Icon/Mark"
@@ -348,7 +348,7 @@ export default function BrandingPage() {
                   </button>
                 </div>
               ) : (
-                <div className="mb-3 flex aspect-square items-center justify-center rounded-lg border-2 border-dashed border-border/50 bg-muted/5">
+                <div className="mb-3 flex aspect-square items-center justify-center rounded-lg border-2 border-dashed border-line/50 bg-muted/5">
                   <Icon name="ImagePlus" className="h-8 w-8 text-muted/50" />
                 </div>
               )}
@@ -376,7 +376,7 @@ export default function BrandingPage() {
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {/* Favicon */}
-            <div className="rounded-lg border border-border/50 bg-paper/50 p-4">
+            <div className="rounded-lg border border-line/50 bg-surface-2/40 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[13px] font-semibold text-ink">Favicon</p>
@@ -386,7 +386,7 @@ export default function BrandingPage() {
               </div>
 
               {settings.branding.favicon ? (
-                <div className="group relative mb-3 flex h-32 items-center justify-center overflow-hidden rounded-lg border border-border/30 bg-gradient-to-br from-paper to-paper/50">
+                <div className="group relative mb-3 flex h-32 items-center justify-center overflow-hidden rounded-lg border border-line/30 bg-gradient-to-br from-surface-2 to-surface-2/40">
                   <img
                     src={settings.branding.favicon}
                     alt="Favicon"
@@ -400,7 +400,7 @@ export default function BrandingPage() {
                   </button>
                 </div>
               ) : (
-                <div className="mb-3 flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-border/50 bg-muted/5">
+                <div className="mb-3 flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-line/50 bg-muted/5">
                   <Icon name="ImagePlus" className="h-8 w-8 text-muted/50" />
                 </div>
               )}
@@ -419,7 +419,7 @@ export default function BrandingPage() {
             </div>
 
             {/* OG Image */}
-            <div className="rounded-lg border border-border/50 bg-paper/50 p-4">
+            <div className="rounded-lg border border-line/50 bg-surface-2/40 p-4">
               <div className="mb-3 flex items-center justify-between">
                 <div>
                   <p className="text-[13px] font-semibold text-ink">Social Preview</p>
@@ -429,7 +429,7 @@ export default function BrandingPage() {
               </div>
 
               {settings.branding.ogImage ? (
-                <div className="group relative mb-3 aspect-[1200/630] overflow-hidden rounded-lg border border-border/30 bg-gradient-to-br from-paper to-paper/50">
+                <div className="group relative mb-3 aspect-[1200/630] overflow-hidden rounded-lg border border-line/30 bg-gradient-to-br from-surface-2 to-surface-2/40">
                   <img
                     src={settings.branding.ogImage}
                     alt="OG Image"
@@ -443,7 +443,7 @@ export default function BrandingPage() {
                   </button>
                 </div>
               ) : (
-                <div className="mb-3 flex aspect-[1200/630] items-center justify-center rounded-lg border-2 border-dashed border-border/50 bg-muted/5">
+                <div className="mb-3 flex aspect-[1200/630] items-center justify-center rounded-lg border-2 border-dashed border-line/50 bg-muted/5">
                   <Icon name="ImagePlus" className="h-8 w-8 text-muted/50" />
                 </div>
               )}

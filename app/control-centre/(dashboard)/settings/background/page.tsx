@@ -120,7 +120,7 @@ export default function BackgroundPage() {
           title="Background Effect Status" 
           description="Toggle animated background on/off"
         >
-          <div className="flex items-center justify-between rounded-lg border border-border/50 bg-paper/50 p-4">
+          <div className="flex items-center justify-between rounded-lg border border-line/50 bg-surface-2/40 p-4">
             <div>
               <p className="text-[14px] font-semibold text-ink">
                 Enable Background Animation
@@ -154,7 +154,7 @@ export default function BackgroundPage() {
                 className={`group relative overflow-hidden rounded-lg border-2 p-5 text-left transition-all ${
                   settings.background.effect === effect.value
                     ? "border-accent bg-accent/10 shadow-lg shadow-accent/20"
-                    : "border-border/50 bg-paper/50 hover:border-accent/50"
+                    : "border-line/50 bg-surface-2/40 hover:border-accent/50"
                 }`}
               >
                 {/* Icon */}
@@ -289,7 +289,7 @@ export default function BackgroundPage() {
           title="Effect Preview" 
           description="See how your background will look"
         >
-          <div className="relative overflow-hidden rounded-lg border border-border/50 bg-[#0a0a0f] p-8">
+          <div className="relative overflow-hidden rounded-lg border border-line/50 bg-[#0a0a0f] p-8">
             {/* Preview Content */}
             <div className="relative z-10 text-center">
               <div 

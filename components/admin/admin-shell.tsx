@@ -9,6 +9,7 @@ import { Icon } from "@/components/ui/icon";
 import { ADMIN_BASE } from "@/lib/admin-routes";
 import { findNavItem, NAV_GROUPS, type NavGroup, type NavItem } from "@/lib/admin-nav";
 import { initials } from "@/lib/utils";
+import { AccentProvider } from "@/components/site/accent-context";
 
 /** Groups open by default; owners can collapse any group for a cleaner view. */
 function useCollapsedGroups() {
@@ -42,26 +43,30 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   if (configError) {
     return (
-      <Gate title="Dashboard not configured" body={configError}>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-lg border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-accent hover:text-accent"
-        >
-          <Icon name="ArrowLeft" className="h-4 w-4" />
-          Back to site
-        </Link>
-      </Gate>
+      <AccentProvider>
+        <Gate title="Dashboard not configured" body={configError}>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-lg border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-accent hover:text-accent"
+          >
+            <Icon name="ArrowLeft" className="h-4 w-4" />
+            Back to site
+          </Link>
+        </Gate>
+      </AccentProvider>
     );
   }
 
   if (loading || !session) {
     return (
-      <Gate
-        title={loading ? "Checking access…" : "Redirecting to sign-in…"}
-        body={error || "Verifying your Firebase session against the admin allowlist."}
-      >
-        <span className="h-5 w-5 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
-      </Gate>
+      <AccentProvider>
+        <Gate
+          title={loading ? "Checking access…" : "Redirecting to sign-in…"}
+          body={error || "Verifying your Firebase session against the admin allowlist."}
+        >
+          <span className="h-5 w-5 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
+        </Gate>
+      </AccentProvider>
     );
   }
 
@@ -191,38 +196,50 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const current = findNavItem(pathname);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-page via-page to-surface/20">
-      {/* Desktop sidebar with enhanced styling */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-line/50 bg-surface/80 shadow-2xl shadow-black/20 backdrop-blur-xl lg:block">
-        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent opacity-50" />
-        <div className="relative h-full">
-          {sidebar}
-        </div>
-      </aside>
+    <AccentProvider>
+      {/* Full-height scroll container that works even when body has overflow:hidden */}
+      <div className="fixed inset-0 overflow-hidden bg-page">
+        {/* Subtle grid background — same visual language as main site */}
+        <div className="pointer-events-none absolute inset-0 grid-bg opacity-30" />
 
-      {/* Mobile sidebar drawer with backdrop */}
-      {menuOpen && (
-        <>
-          <div 
-            className="fixed inset-0 top-14 z-20 bg-black/60 backdrop-blur-sm lg:hidden"
-            onClick={() => setMenuOpen(false)}
-          />
-          <div className="fixed inset-0 top-14 z-30 bg-gradient-to-br from-surface/95 to-surface/80 backdrop-blur-xl lg:hidden">
-            <div className="h-full overflow-y-auto">{sidebar}</div>
+        {/* Desktop sidebar */}
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-line/50 bg-surface/80 shadow-2xl shadow-black/20 backdrop-blur-xl lg:block">
+          <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent opacity-50" />
+          <div className="relative h-full">
+            {sidebar}
           </div>
-        </>
-      )}
+        </aside>
 
-      <div className="lg:pl-64">
-        <AdminTopbar
-          title={current?.item.label ?? "Dashboard"}
-          eyebrow={current?.group.label}
-          menuOpen={menuOpen}
-          onToggleMenu={() => setMenuOpen((value) => !value)}
-        />
-        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">{children}</div>
+        {/* Mobile sidebar drawer */}
+        {menuOpen && (
+          <>
+            <div
+              className="fixed inset-0 top-14 z-20 bg-black/60 backdrop-blur-sm lg:hidden"
+              onClick={() => setMenuOpen(false)}
+            />
+            <div className="fixed inset-0 top-14 z-30 bg-gradient-to-br from-surface/95 to-surface/80 backdrop-blur-xl lg:hidden">
+              <div className="h-full overflow-y-auto">{sidebar}</div>
+            </div>
+          </>
+        )}
+
+        {/* Main content column — this is the actual scroll container */}
+        <div className="flex h-full flex-col lg:pl-64">
+          <AdminTopbar
+            title={current?.item.label ?? "Dashboard"}
+            eyebrow={current?.group.label}
+            menuOpen={menuOpen}
+            onToggleMenu={() => setMenuOpen((value) => !value)}
+          />
+          {/* Scrollable area */}
+          <div className="dashboard-scroll flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
+              {children}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </AccentProvider>
   );
 }
 

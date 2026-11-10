@@ -160,7 +160,7 @@ export default function ThemePage() {
                 className={`group relative overflow-hidden rounded-lg border-2 p-4 transition-all ${
                   settings.theme.accentPreset === preset.id
                     ? "border-accent bg-accent/10 shadow-lg shadow-accent/20"
-                    : "border-border/50 bg-paper/50 hover:border-accent/50"
+                    : "border-line/50 bg-surface-2/40 hover:border-accent/50"
                 }`}
               >
                 {/* Color Swatches */}
@@ -189,13 +189,13 @@ export default function ThemePage() {
           </div>
 
           {/* Custom Colors Button */}
-          <div className="mt-4 border-t border-border/30 pt-4">
+          <div className="mt-4 border-t border-line/30 pt-4">
             <button
               onClick={enableCustomColors}
               className={`w-full rounded-lg border-2 p-4 text-left transition-all ${
                 customMode
                   ? "border-accent bg-accent/10"
-                  : "border-dashed border-border/50 bg-paper/30 hover:border-accent/50"
+                  : "border-dashed border-line/50 bg-surface-2/20 hover:border-accent/50"
               }`}
             >
               <div className="flex items-center gap-3">
@@ -238,7 +238,7 @@ export default function ThemePage() {
                         : settings.theme.accentPrimary
                     }
                     onChange={(e) => updateTheme("accentPrimary", e.target.value)}
-                    className="h-12 w-16 cursor-pointer rounded-lg border border-border/50"
+                    className="h-12 w-16 cursor-pointer rounded-lg border border-line/50"
                   />
                   <input
                     type="text"
@@ -267,7 +267,7 @@ export default function ThemePage() {
                         : settings.theme.accentSecondary
                     }
                     onChange={(e) => updateTheme("accentSecondary", e.target.value)}
-                    className="h-12 w-16 cursor-pointer rounded-lg border border-border/50"
+                    className="h-12 w-16 cursor-pointer rounded-lg border border-line/50"
                   />
                   <input
                     type="text"
@@ -307,7 +307,7 @@ export default function ThemePage() {
           description="See how your accent colors look"
         >
           <div 
-            className="rounded-lg border border-border/50 p-6"
+            className="rounded-lg border border-line/50 p-6"
             style={{
               background: `linear-gradient(135deg, ${settings.theme.accentPrimary}15, ${settings.theme.accentSecondary}15)`,
             }}

@@ -1,1 +1,8 @@
-feat: contact page, hero image upload, section reorder, fix routes, refresh icon
+fix: dashboard scroll, accent colors, bg, placeholder, invalid Tailwind classes
+
+- AdminShell: wrap in AccentProvider so --acc/--acc2 CSS vars update in dashboard
+- AdminShell: replace min-h-screen with fixed inset-0 scroll container (fixes body overflow:hidden breaking dashboard scroll)
+- AdminShell: add grid-bg overlay matching main site aesthetic
+- AdminShell: proper flex column with flex-1 overflow-y-auto scrollable content area
+- globals.css: add .dashboard-input, .dashboard-select, .dashboard-scroll utility classes
+- Replace all border-border/* and bg-paper/* with valid Tailwind tokens (border-line, bg-surface-2) across all dashboard pages

@@ -251,7 +251,7 @@ export default function TypographyPage() {
             </div>
 
             {/* Size Preview */}
-            <div className="rounded-lg border border-border/50 bg-paper/50 p-4">
+            <div className="rounded-lg border border-line/50 bg-surface-2/40 p-4">
               <p className="mb-3 text-[11px] font-semibold uppercase tracking-wide text-muted">
                 Scale Preview
               </p>
