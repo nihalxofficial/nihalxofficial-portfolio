@@ -1,6 +1,0 @@
-feat(dashboard): resolve placeholder theme bugs, unify UI/UX with main site, and add dedicated project editor routes
-
-- Fix input placeholder bug: eliminated HeroUI white inputs and duplicate hint labels, enforced dark background, crisp text, and #64748b placeholders globally and in .dashboard-input
-- Enhance FieldControl: separate input helper badges from clean context-aware placeholders
-- Unify Dashboard design: applied .hud !rounded-2xl cards with top glowing laser scanlines, cyber icon tiles, and full sync with live SiteBackground dynamic engine and accent colors
-- Add dedicated full-page Project Creator: available at both /control-centre/projects/add and /control-centre/sections/projects/add with rich fields, ImgBB uploader, tech stack, screenshots gallery, and publish controls
