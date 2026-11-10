@@ -1,6 +1,5 @@
 "use client";
 
-import { Button, Label, TextArea, TextField } from "@heroui/react";
 import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { AdminApiError, fillFormWithAi, humanize } from "@/lib/admin";
@@ -81,27 +80,26 @@ export function AiFill({ entity, label, current, disabled, onFill }: AiFillProps
 
       {open ? (
         <div className="space-y-3 border-t border-accent/20 px-3.5 py-3.5">
-          <TextField
-            value={notes}
-            onChange={setNotes}
-            isDisabled={busy || disabled}
-            className="flex flex-col gap-1.5"
-          >
-            <Label className="mono text-[10px] uppercase tracking-[0.18em] text-faint">
+          <div className="flex flex-col gap-1.5">
+            <label className="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 font-semibold">
               Notes for the assistant
-            </Label>
-            <TextArea
+            </label>
+            <textarea
               rows={4}
+              value={notes}
+              disabled={busy || disabled}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder={`Describe this ${label.toLowerCase()} in a few rough lines — what it is, who it is for, tech used, results…`}
+              className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink placeholder:text-slate-500 outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 disabled:opacity-60 resize-y"
             />
-          </TextField>
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button
+            <button
               type="button"
-              isDisabled={busy || disabled}
-              onPress={() => void run()}
-              className="h-9 rounded-lg grad-accent px-3.5 text-[12px] font-semibold text-accent-ink"
+              disabled={busy || disabled}
+              onClick={() => void run()}
+              className="btn-primary flex h-9 items-center gap-2 rounded-lg px-3.5 text-[12px] font-bold text-accent-ink disabled:opacity-60"
             >
               {busy ? (
                 <>
@@ -114,7 +112,7 @@ export function AiFill({ entity, label, current, disabled, onFill }: AiFillProps
                   Generate fields
                 </>
               )}
-            </Button>
+            </button>
 
             <p className="mono text-[10px] text-faint">
               existing values are kept unless the notes contradict them

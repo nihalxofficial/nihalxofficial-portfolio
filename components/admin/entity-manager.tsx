@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Label, TextField, Input } from "@heroui/react";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { AiFill } from "@/components/admin/ai-fill";
 import { FieldGrid, type FieldErrors } from "@/components/admin/field-control";
@@ -168,10 +168,10 @@ function EntityForm({
       />
 
       <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3.5">
-        <Button
+        <button
           type="submit"
-          isDisabled={busy}
-          className="h-10 rounded-lg grad-accent px-4 text-[12.5px] font-semibold text-accent-ink"
+          disabled={busy}
+          className="btn-primary flex h-10 items-center gap-2 rounded-lg px-4 text-[12.5px] font-bold text-accent-ink disabled:opacity-60"
         >
           {busy ? (
             <>
@@ -184,16 +184,16 @@ function EntityForm({
               {submitLabel}
             </>
           )}
-        </Button>
+        </button>
 
-        <Button
+        <button
           type="button"
-          isDisabled={busy}
-          onPress={onCancel}
-          className="h-10 rounded-lg border border-line bg-transparent px-4 text-[12.5px] font-medium text-muted"
+          disabled={busy}
+          onClick={onCancel}
+          className="btn-ghost flex h-10 items-center rounded-lg border border-line bg-transparent px-4 text-[12.5px] font-medium text-slate-300 hover:text-white disabled:opacity-60"
         >
           Cancel
-        </Button>
+        </button>
 
         <p className="mono ml-auto text-[10px] text-faint">
           {type.fields.filter((field) => field.required).length} required field
@@ -447,14 +447,15 @@ function CollectionEditor({
 
       <section className="panel overflow-hidden">
         <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-3">
-          <TextField
-            value={query}
-            onChange={setQuery}
-            className="w-full min-w-[190px] sm:w-72"
-          >
-            <Label className="sr-only">Search {type.label}</Label>
-            <Input placeholder={`Search ${type.label.toLowerCase()}…`} />
-          </TextField>
+          <div className="relative w-full min-w-[190px] sm:w-72">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search ${type.label.toLowerCase()}…`}
+              className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-1.5 text-[12.5px] text-ink placeholder:text-slate-500 outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20"
+            />
+          </div>
 
           <div className="ml-auto flex items-center gap-2">
             <span className="mono hidden text-[10px] uppercase tracking-[0.14em] text-faint sm:block">
@@ -470,14 +471,24 @@ function CollectionEditor({
               <Icon name="Loader" className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             </button>
 
-            <Button
-              type="button"
-              onPress={openCreate}
-              className="h-9 rounded-lg grad-accent px-3 text-[12px] font-semibold text-accent-ink"
-            >
-              <Icon name="Plus" className="h-3.5 w-3.5" />
-              New
-            </Button>
+            {type.key === "projects" ? (
+              <Link
+                href="/control-centre/projects/add"
+                className="btn-primary flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-[12px] font-bold text-accent-ink"
+              >
+                <Icon name="Plus" className="h-3.5 w-3.5" />
+                New
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={openCreate}
+                className="btn-primary flex h-9 items-center gap-1.5 rounded-lg px-3.5 text-[12px] font-bold text-accent-ink"
+              >
+                <Icon name="Plus" className="h-3.5 w-3.5" />
+                New
+              </button>
+            )}
           </div>
         </div>
 
@@ -652,23 +663,23 @@ function CollectionEditor({
               database. This cannot be undone.
             </p>
             <div className="mt-4 flex items-center gap-2">
-              <Button
+              <button
                 type="button"
-                isDisabled={busy}
-                onPress={() => void remove(pendingDelete)}
-                className="h-9 rounded-lg border border-danger/40 bg-danger/15 px-3.5 text-[12px] font-semibold text-danger"
+                disabled={busy}
+                onClick={() => void remove(pendingDelete)}
+                className="flex h-9 items-center gap-1.5 rounded-lg border border-danger/40 bg-danger/15 px-3.5 text-[12px] font-semibold text-danger hover:bg-danger/25 disabled:opacity-60"
               >
                 {busy ? <Icon name="Loader" className="h-3.5 w-3.5 animate-spin" /> : null}
                 Delete
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
-                isDisabled={busy}
-                onPress={() => setPendingDelete(null)}
-                className="h-9 rounded-lg border border-line bg-transparent px-3.5 text-[12px] font-medium text-muted"
+                disabled={busy}
+                onClick={() => setPendingDelete(null)}
+                className="btn-ghost flex h-9 items-center rounded-lg border border-line bg-transparent px-3.5 text-[12px] font-medium text-slate-300 hover:text-white"
               >
                 Keep it
-              </Button>
+              </button>
             </div>
           </div>
         </div>

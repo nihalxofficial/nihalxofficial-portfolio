@@ -9,6 +9,7 @@ import { Icon } from "@/components/ui/icon";
 import { ADMIN_BASE } from "@/lib/admin-routes";
 import { findNavItem, NAV_GROUPS, type NavGroup, type NavItem } from "@/lib/admin-nav";
 import { initials } from "@/lib/utils";
+import { NbLogo } from "@/components/ui/nb-logo";
 import { useAccent } from "@/components/site/accent-context";
 import { SiteBackground, type BackgroundMode } from "@/components/site/site-background";
 import { saveSettingsField } from "@/components/admin/settings/settings-utils";
@@ -119,27 +120,27 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   const navLink = (item: NavItem) => {
     const active = isActive(item);
-    const className = `group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-all ${
+    const className = `group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[12.5px] font-medium transition-all duration-200 ${
       active
-        ? "bg-gradient-to-r from-accent/15 to-accent/5 text-accent shadow-sm shadow-accent/10 border border-accent/20"
-        : "text-muted hover:bg-surface-2/80 hover:text-ink border border-transparent hover:border-line/30"
+        ? "bg-acc/15 text-acc border border-acc/40 shadow-[0_0_14px_rgba(0,229,255,0.12)] font-semibold"
+        : "text-slate-400 hover:bg-white/[0.04] hover:text-white border border-transparent"
     }`;
-    
+
     const inner = (
       <>
         {active && (
-          <span className="absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-r-full bg-accent shadow-sm shadow-accent/50" />
+          <span className="absolute -left-1 top-2.5 bottom-2.5 w-1 rounded-full bg-acc shadow-[0_0_8px_var(--acc)]" />
         )}
-        <span className={`relative ${active ? "text-accent" : "text-muted group-hover:text-accent transition-colors"}`}>
-          <Icon name={item.icon} className="h-[18px] w-[18px]" />
+        <span className={`relative transition-colors ${active ? "text-acc" : "text-slate-400 group-hover:text-acc"}`}>
+          <Icon name={item.icon} className="h-4 w-4" />
         </span>
         <span className="flex-1 truncate">{item.label}</span>
         {active && (
-          <span className="h-1.5 w-1.5 rounded-full bg-accent/70 animate-pulse" />
+          <span className="h-1.5 w-1.5 rounded-full bg-acc shadow-[0_0_6px_var(--acc)] animate-pulse" />
         )}
       </>
     );
-    
+
     return item.external ? (
       <Link key={item.href} href="/" target="_blank" rel="noreferrer" className={className}>
         {inner}
@@ -157,30 +158,30 @@ export function AdminShell({ children }: { children: ReactNode }) {
     const open = !isCollapsed || hasActive;
 
     return (
-      <div key={group.id} className="mb-6 last:mb-0">
+      <div key={group.id} className="mb-5 last:mb-0">
         <button
           type="button"
           onClick={() => toggle(group.id)}
-          className="group mb-2 flex w-full items-center justify-between rounded-lg px-3 py-2 transition-all hover:bg-surface-2/50"
+          className="group mb-1.5 flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-all hover:bg-white/[0.04]"
           aria-expanded={open}
         >
           <div className="flex items-center gap-2">
-            <span className="mono text-[10px] font-bold uppercase tracking-[0.2em] text-accent/90">
+            <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.2em] text-acc/80">
               {group.label}
             </span>
             {hasActive && (
-              <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[9px] font-bold text-accent ring-1 ring-accent/20">
+              <span className="rounded-full bg-acc/15 px-1.5 py-0.2 text-[8.5px] font-bold text-acc ring-1 ring-acc/30">
                 ACTIVE
               </span>
             )}
           </div>
           <Icon
             name="ChevronDown"
-            className={`h-3.5 w-3.5 text-muted transition-all group-hover:text-accent ${open ? "rotate-0" : "-rotate-90"}`}
+            className={`h-3 w-3 text-slate-500 transition-transform duration-200 group-hover:text-acc ${open ? "rotate-0" : "-rotate-90"}`}
           />
         </button>
         {open && (
-          <div className="space-y-1 pl-0.5">
+          <div className="space-y-0.5">
             {group.items.map(navLink)}
           </div>
         )}
@@ -189,45 +190,46 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   const sidebar = (
-    <div className="flex h-full flex-col bg-gradient-to-b from-surface/80 to-surface/40">
-      {/* Brand Header with futuristic design */}
-      <Link href={ADMIN_BASE} className="group relative overflow-hidden border-b border-line/50 bg-gradient-to-br from-surface/60 to-surface/20 px-4 py-4 backdrop-blur-sm transition-all hover:border-accent/30">
-        <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+    <div className="flex h-full flex-col bg-[#03050f]/85 backdrop-blur-2xl">
+      {/* Brand Header with signature cyber NB Monogram badge */}
+      <Link
+        href={ADMIN_BASE}
+        className="group relative overflow-hidden border-b border-white/5 bg-[#03050f]/60 px-4 py-3.5 backdrop-blur-xl transition-all hover:border-acc/30"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-acc/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
         <div className="relative flex items-center gap-3">
-          <div className="relative">
-            <div className="absolute inset-0 animate-pulse rounded-lg bg-accent/20 blur-md" />
-            <div className="relative grid h-10 w-10 place-items-center rounded-lg border border-accent/30 bg-gradient-to-br from-accent/20 to-accent/5 text-[13px] font-bold text-accent shadow-lg shadow-accent/10">
-              {initials(session.name || session.email || "Admin")}
-            </div>
-          </div>
+          <NbLogo size={38} className="glow-sm group-hover:glow" />
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span className="mono block truncate text-[10px] font-semibold uppercase tracking-[0.15em] text-accent">
+            <div className="flex items-center gap-1.5">
+              <span className="font-mono block truncate text-[9.5px] font-bold uppercase tracking-[0.18em] text-acc">
                 Control Centre
               </span>
-              <span className="h-1 w-1 rounded-full bg-accent/60 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_#34d399]" />
             </div>
-            <span className="mono mt-0.5 block truncate text-[10px] text-muted">
-              {session.email || session.uid.slice(0, 12)}
+            <span className="font-display block truncate text-xs font-bold text-white mt-0.5 tracking-tight">
+              {session.name || "Md. Nihal Uddin Bijoy"}
+            </span>
+            <span className="font-mono block truncate text-[9px] text-slate-500">
+              {session.email || "Full Stack Developer"}
             </span>
           </div>
         </div>
       </Link>
 
       {/* Navigation Groups */}
-      <nav className="scrollbar-thin scrollbar-track-transparent scrollbar-thumb-line/30 hover:scrollbar-thumb-line/50 flex-1 overflow-y-auto px-3 py-4">
+      <nav className="dashboard-scroll flex-1 overflow-y-auto px-3 py-4">
         {NAV_GROUPS.map(groupBlock)}
       </nav>
 
       {/* Footer with Sign Out */}
-      <div className="border-t border-line/50 bg-surface/40 p-3 backdrop-blur-sm">
+      <div className="border-t border-white/5 bg-[#03050f]/60 p-3 backdrop-blur-xl">
         <button
           type="button"
           onClick={() => void signOut()}
-          className="group flex w-full items-center gap-2.5 rounded-lg border border-transparent px-3 py-2.5 text-[12.5px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger"
+          className="btn-ghost !rounded-xl group flex w-full items-center justify-center gap-2 py-2 text-xs font-mono font-medium text-slate-400 transition-all hover:border-rose-500/40 hover:bg-rose-500/10 hover:text-rose-400"
         >
-          <Icon name="LogOut" className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-          <span>Sign out</span>
+          <Icon name="LogOut" className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+          <span>Sign Out</span>
         </button>
       </div>
     </div>

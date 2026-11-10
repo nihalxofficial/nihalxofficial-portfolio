@@ -1,6 +1,5 @@
 "use client";
 
-import { Input, Label, TextArea, TextField } from "@heroui/react";
 import { Icon } from "@/components/ui/icon";
 import { humanize, type FieldDef } from "@/lib/admin";
 
@@ -23,9 +22,9 @@ interface FieldControlProps {
   onChange: (value: unknown) => void;
 }
 
-const LABEL = "mono text-[10px] uppercase tracking-[0.18em] text-faint";
+const LABEL = "font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 font-semibold";
 const BOX =
-  "w-full rounded-lg border border-line bg-surface-2 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 disabled:opacity-60";
+  "dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 placeholder:text-slate-500 disabled:opacity-60";
 
 function asText(value: unknown): string {
   if (value === undefined || value === null) return "";
@@ -81,50 +80,75 @@ function ScalarControl({
 
   const hint =
     field.kind === "slug"
-      ? "lowercase letters, numbers and dashes"
+      ? "lowercase, numbers, dashes"
       : field.kind === "url"
-        ? "https://…"
+        ? "valid url"
         : field.max
-          ? `max ${field.max} characters`
+          ? `max ${field.max} chars`
           : undefined;
 
+  const placeholder =
+    field.kind === "slug"
+      ? "e.g. project-slug"
+      : field.kind === "url"
+        ? "https://..."
+        : field.kind === "date"
+          ? "YYYY-MM-DD"
+          : field.kind === "number"
+            ? "0"
+            : `Enter ${humanize(field.name).toLowerCase()}…`;
+
+  const rawValue = field.kind === "date" ? asDateInput(value) : asText(value);
+
   return (
-    <TextField
-      value={field.kind === "date" ? asDateInput(value) : asText(value)}
-      onChange={(next) => {
-        if (field.kind === "number") onChange(next === "" ? undefined : Number(next));
-        else if (field.kind === "date") onChange(next || undefined);
-        else onChange(next);
-      }}
-      type={
-        field.kind === "number"
-          ? "number"
-          : field.kind === "date"
-            ? "date"
-            : field.kind === "url"
-              ? "url"
-              : "text"
-      }
-      isRequired={required}
-      isDisabled={disabled}
-      className="flex flex-col gap-1.5"
-    >
-      <Label className={LABEL}>
-        {humanize(field.name)}
-        {required ? <span className="ml-1 text-accent">*</span> : null}
-      </Label>
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <label className={LABEL}>
+          {humanize(field.name)}
+          {required ? <span className="ml-1 text-accent">*</span> : null}
+        </label>
+        {hint ? (
+          <span className="font-mono text-[9px] text-slate-500 tracking-wider">
+            {hint}
+          </span>
+        ) : null}
+      </div>
 
       {multiline ? (
-        <TextArea rows={field.max && field.max < 400 ? 3 : 6} placeholder={humanize(field.name)} />
+        <textarea
+          rows={field.max && field.max < 400 ? 3 : 6}
+          value={rawValue}
+          disabled={disabled}
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 placeholder:text-slate-500 disabled:opacity-60 resize-y min-h-[90px]"
+        />
       ) : (
-        <Input placeholder={hint} />
+        <input
+          type={
+            field.kind === "number"
+              ? "number"
+              : field.kind === "date"
+                ? "date"
+                : field.kind === "url"
+                  ? "url"
+                  : "text"
+          }
+          value={rawValue}
+          disabled={disabled}
+          placeholder={placeholder}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (field.kind === "number") onChange(next === "" ? undefined : Number(next));
+            else if (field.kind === "date") onChange(next || undefined);
+            else onChange(next);
+          }}
+          className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 placeholder:text-slate-500 disabled:opacity-60"
+        />
       )}
 
-      {hint && !multiline && !error ? (
-        <p className="mono text-[10px] text-faint">{hint}</p>
-      ) : null}
       <FieldError message={error} />
-    </TextField>
+    </div>
   );
 }
 

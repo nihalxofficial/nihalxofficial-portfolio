@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
@@ -210,10 +211,10 @@ export default function ProjectsManagerPage() {
             Manage your portfolio projects and case studies
           </p>
         </div>
-        <button type="button" onClick={startCreate} className={btnPrimary}>
+        <Link href="/control-centre/sections/projects/add" className={btnPrimary}>
           <Icon name="Plus" className="h-4 w-4" />
           Add Project
-        </button>
+        </Link>
       </div>
 
       {/* Create/Edit Form */}
@@ -482,9 +483,9 @@ export default function ProjectsManagerPage() {
               title="No projects yet"
               description="Add your first project to showcase your work"
               action={
-                <button type="button" onClick={startCreate} className={btnPrimary}>
+                <Link href="/control-centre/sections/projects/add" className={btnPrimary}>
                   Add Your First Project
-                </button>
+                </Link>
               }
             />
           ) : (
