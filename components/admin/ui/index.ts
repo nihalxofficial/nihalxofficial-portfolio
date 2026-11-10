@@ -5,3 +5,4 @@ export { DataTable, type Column } from "@/components/admin/ui/data-table";
 export { Toggle } from "@/components/admin/ui/toggle";
 export { EmptyState } from "@/components/admin/ui/empty-state";
 export { ConfirmDialog } from "@/components/admin/ui/confirm-dialog";
+export { CmsSwitch } from "@/components/admin/ui/cms-switch";

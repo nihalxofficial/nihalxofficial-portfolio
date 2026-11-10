@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { Input, Textarea, Button, Switch, Select, SelectItem } from "@heroui/react";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface Experience {
   _id: string;
@@ -166,13 +166,14 @@ export default function ExperienceManagerPage() {
             Manage your professional work history and roles
           </p>
         </div>
-        <Button
-          onPress={startCreate}
-          color="primary"
-          startContent={<Icon name="Plus" className="h-4 w-4" />}
+        <button
+          type="button"
+          onClick={startCreate}
+          className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25"
         >
+          <Icon name="Plus" className="h-4 w-4" />
           Add Experience
-        </Button>
+        </button>
       </div>
 
       {/* Create/Edit Form */}
@@ -180,116 +181,154 @@ export default function ExperienceManagerPage() {
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Experience" : "Add Experience"}>
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
-              <Input
-                label="Company / Organization"
-                placeholder="Acme Corp"
-                value={formData.organization || ""}
-                onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-              />
-              <Input
-                label="Role / Position"
-                placeholder="Senior Full Stack Developer"
-                value={formData.role || ""}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className="block text-[12px] font-medium text-muted">Company / Organization</label>
+                <input
+                  type="text"
+                  placeholder="Acme Corp"
+                  value={formData.organization || ""}
+                  onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                  className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[12px] font-medium text-muted">Role / Position</label>
+                <input
+                  type="text"
+                  placeholder="Senior Full Stack Developer"
+                  value={formData.role || ""}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                />
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Input
-                label="Employment Type"
-                placeholder="Full-time, Part-time, Contract"
-                value={formData.employmentType || ""}
-                onChange={(e) => setFormData({ ...formData, employmentType: e.target.value })}
-              />
-              <Input
-                label="Location"
-                placeholder="San Francisco, CA / Remote"
-                value={formData.location || ""}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className="block text-[12px] font-medium text-muted">Employment Type</label>
+                <input
+                  type="text"
+                  placeholder="Full-time, Part-time, Contract"
+                  value={formData.employmentType || ""}
+                  onChange={(e) => setFormData({ ...formData, employmentType: e.target.value })}
+                  className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[12px] font-medium text-muted">Location</label>
+                <input
+                  type="text"
+                  placeholder="San Francisco, CA / Remote"
+                  value={formData.location || ""}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                />
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <Input
-                type="date"
-                label="Start Date"
-                value={formData.startDate || ""}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-              />
-              <Input
-                type="date"
-                label="End Date"
-                value={formData.endDate || ""}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                isDisabled={formData.isCurrent}
-              />
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Switch
-                  size="sm"
-                  isSelected={formData.isCurrent || false}
-                  onValueChange={(val) => setFormData({ ...formData, isCurrent: val, endDate: val ? "" : formData.endDate })}
+              <div className="space-y-1">
+                <label className="block text-[12px] font-medium text-muted">Start Date</label>
+                <input
+                  type="date"
+                  value={formData.startDate || ""}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
                 />
-                <span className="text-[13px] text-ink">Current Position</span>
-              </label>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-[12px] font-medium text-muted">End Date</label>
+                <input
+                  type="date"
+                  value={formData.endDate || ""}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  disabled={formData.isCurrent}
+                  className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                />
+              </div>
+              <div className="flex items-center">
+                <CmsSwitch
+                  checked={formData.isCurrent || false}
+                  onChange={(val) => setFormData({ ...formData, isCurrent: val, endDate: val ? "" : formData.endDate })}
+                  label="Current Position"
+                  size="sm"
+                />
+              </div>
             </div>
 
-            <Select
-              label="Status"
-              placeholder="Select status"
-              selectedKeys={formData.status ? [formData.status] : []}
-              onSelectionChange={(keys) => {
-                const selected = Array.from(keys)[0] as Experience["status"];
-                setFormData({ ...formData, status: selected });
-              }}
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </Select>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Status</label>
+              <select
+                value={formData.status || ""}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value as Experience["status"] })}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
 
-            <Textarea
-              label="Description"
-              placeholder="Brief overview of your role and achievements..."
-              value={formData.description || ""}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              maxRows={4}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Description</label>
+              <textarea
+                placeholder="Brief overview of your role and achievements..."
+                value={formData.description || ""}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={4}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
 
-            <Textarea
-              label="Key Responsibilities (one per line)"
-              placeholder="Led team of 5 developers&#10;Architected microservices infrastructure&#10;Reduced deployment time by 50%"
-              value={formData.responsibilities?.join("\n") || ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  responsibilities: e.target.value.split("\n").filter(Boolean),
-                })
-              }
-              maxRows={6}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Key Responsibilities (one per line)</label>
+              <textarea
+                placeholder={"Led team of 5 developers\nArchitected microservices infrastructure\nReduced deployment time by 50%"}
+                value={formData.responsibilities?.join("\n") || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    responsibilities: e.target.value.split("\n").filter(Boolean),
+                  })
+                }
+                rows={6}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
 
-            <Textarea
-              label="Technologies Used (one per line)"
-              placeholder="React&#10;Node.js&#10;PostgreSQL&#10;Docker"
-              value={formData.technologies?.join("\n") || ""}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  technologies: e.target.value.split("\n").filter(Boolean),
-                })
-              }
-              maxRows={5}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Technologies Used (one per line)</label>
+              <textarea
+                placeholder={"React\nNode.js\nPostgreSQL\nDocker"}
+                value={formData.technologies?.join("\n") || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    technologies: e.target.value.split("\n").filter(Boolean),
+                  })
+                }
+                rows={5}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
 
             <div className="flex gap-3 pt-2">
-              <Button onPress={handleSave} color="primary" isLoading={saving}>
+              <button
+                type="button"
+                onClick={() => void handleSave()}
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60"
+              >
+                {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" /> : null}
                 {saving ? "Saving..." : editing ? "Update" : "Create"}
-              </Button>
-              <Button onPress={cancelEdit} variant="bordered">
+              </button>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 px-4 py-2 text-[13px] font-medium text-muted transition-all hover:border-line-strong hover:text-ink"
+              >
                 Cancel
-              </Button>
+              </button>
             </div>
           </div>
         </DashboardCard>
@@ -302,9 +341,14 @@ export default function ExperienceManagerPage() {
           title="No experience entries yet"
           description="Add your first work experience to build your professional timeline"
           action={
-            <Button onPress={startCreate} color="primary">
+            <button
+              type="button"
+              onClick={startCreate}
+              className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25"
+            >
+              <Icon name="Plus" className="h-4 w-4" />
               Add Your First Experience
-            </Button>
+            </button>
           }
         />
       ) : (
@@ -351,33 +395,32 @@ export default function ExperienceManagerPage() {
                         )}
                       </div>
                     </div>
-                    <Switch
+                    <CmsSwitch
+                      checked={exp.isVisible}
+                      onChange={() => void toggleVisibility(exp._id, exp.isVisible)}
+                      label="Toggle visibility"
                       size="sm"
-                      isSelected={exp.isVisible}
-                      onValueChange={() => toggleVisibility(exp._id, exp.isVisible)}
-                      aria-label="Toggle visibility"
                     />
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 border-t border-line/50 pt-3">
-                    <Button
-                      size="sm"
-                      variant="light"
-                      onPress={() => startEdit(exp)}
-                      startContent={<Icon name="Edit" className="h-3.5 w-3.5" />}
+                    <button
+                      type="button"
+                      onClick={() => startEdit(exp)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-line hover:bg-surface-2/60 hover:text-accent"
                     >
+                      <Icon name="Edit" className="h-3.5 w-3.5" />
                       Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="light"
-                      color="danger"
-                      onPress={() => handleDelete(exp._id)}
-                      startContent={<Icon name="Trash2" className="h-3.5 w-3.5" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(exp._id)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger"
                     >
+                      <Icon name="Trash2" className="h-3.5 w-3.5" />
                       Delete
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </DashboardCard>

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { readContent, updateContent } from "@/lib/admin";
-import { Input, Textarea, Button } from "@heroui/react";
 
 interface GlobalSettings {
   _id: string;
@@ -52,7 +51,7 @@ export default function GlobalSettingsPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("settings", settings._id, settings);
+      await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -110,103 +109,79 @@ export default function GlobalSettingsPage() {
         {/* Site Information */}
         <DashboardCard icon="Globe" title="Site Information" description="Basic site details and branding">
           <div className="space-y-4">
-            <Input
-              label="Site Name"
-              placeholder="My Portfolio"
-              value={settings.siteName}
-              onChange={(e) => updateField("siteName", e.target.value)}
-            />
-            <Input
-              label="Site URL"
-              placeholder="https://yourportfolio.com"
-              value={settings.siteUrl}
-              onChange={(e) => updateField("siteUrl", e.target.value)}
-            />
-            <Input
-              label="Resume URL"
-              placeholder="https://example.com/resume.pdf"
-              value={settings.resumeUrl || ""}
-              onChange={(e) => updateField("resumeUrl", e.target.value)}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Site Name</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="My Portfolio" value={settings.siteName} onChange={(e) => updateField("siteName", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Site URL</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="https://yourportfolio.com" value={settings.siteUrl} onChange={(e) => updateField("siteUrl", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Resume URL</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="https://example.com/resume.pdf" value={settings.resumeUrl || ""} onChange={(e) => updateField("resumeUrl", e.target.value)} />
+            </div>
           </div>
         </DashboardCard>
 
         {/* SEO Settings */}
         <DashboardCard icon="Search" title="SEO & Metadata" description="Search engine optimization">
           <div className="space-y-4">
-            <Input
-              label="Meta Title"
-              placeholder="Full Stack Developer | Portfolio"
-              value={settings.metaTitle}
-              onChange={(e) => updateField("metaTitle", e.target.value)}
-            />
-            <Textarea
-              label="Meta Description"
-              placeholder="Professional portfolio showcasing projects, skills, and experience..."
-              value={settings.metaDescription}
-              onChange={(e) => updateField("metaDescription", e.target.value)}
-              maxRows={4}
-            />
-            <Input
-              label="Keywords (comma-separated)"
-              placeholder="developer, portfolio, react, typescript"
-              value={settings.keywords?.join(", ") || ""}
-              onChange={(e) =>
-                updateField(
-                  "keywords",
-                  e.target.value
-                    .split(",")
-                    .map((k) => k.trim())
-                    .filter(Boolean)
-                )
-              }
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Meta Title</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="Full Stack Developer | Portfolio" value={settings.metaTitle} onChange={(e) => updateField("metaTitle", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Meta Description</label>
+              <textarea rows={4} className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30 resize-none"
+                placeholder="Professional portfolio showcasing projects, skills, and experience..." value={settings.metaDescription}
+                onChange={(e) => updateField("metaDescription", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Keywords (comma-separated)</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="developer, portfolio, react, typescript" value={settings.keywords?.join(", ") || ""}
+                onChange={(e) => updateField("keywords", e.target.value.split(",").map((k) => k.trim()).filter(Boolean))} />
+            </div>
           </div>
         </DashboardCard>
 
         {/* Contact Information */}
         <DashboardCard icon="Mail" title="Contact Information" description="How visitors can reach you">
           <div className="space-y-4">
-            <Input
-              label="Email Address"
-              type="email"
-              placeholder="hello@example.com"
-              value={settings.contact?.email || ""}
-              onChange={(e) => updateField("contact.email", e.target.value)}
-            />
-            <Input
-              label="Phone Number"
-              type="tel"
-              placeholder="+1 (555) 123-4567"
-              value={settings.contact?.phone || ""}
-              onChange={(e) => updateField("contact.phone", e.target.value)}
-            />
-            <Input
-              label="Location"
-              placeholder="San Francisco, CA"
-              value={settings.contact?.location || ""}
-              onChange={(e) => updateField("contact.location", e.target.value)}
-            />
-            <Input
-              label="Availability Status"
-              placeholder="Available for hire"
-              value={settings.contact?.availability || ""}
-              onChange={(e) => updateField("contact.availability", e.target.value)}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Email Address</label>
+              <input type="email" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="hello@example.com" value={settings.contact?.email || ""} onChange={(e) => updateField("contact.email", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Phone Number</label>
+              <input type="tel" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="+1 (555) 123-4567" value={settings.contact?.phone || ""} onChange={(e) => updateField("contact.phone", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Location</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="San Francisco, CA" value={settings.contact?.location || ""} onChange={(e) => updateField("contact.location", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Availability Status</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="Available for hire" value={settings.contact?.availability || ""} onChange={(e) => updateField("contact.availability", e.target.value)} />
+            </div>
           </div>
         </DashboardCard>
 
         {/* Save Button */}
         <div className="flex items-center gap-3">
-          <Button
-            onPress={handleSave}
-            isLoading={saving}
-            color="primary"
-            size="lg"
-            startContent={!saving ? <Icon name="Save" className="h-4 w-4" /> : undefined}
-          >
-            {saving ? "Saving..." : "Save Changes"}
-          </Button>
+          <button type="button" onClick={handleSave} disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-6 py-2.5 text-[14px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60">
+            {saving ? "Saving..." : (<><Icon name="Save" className="h-4 w-4" />Save Changes</>)}
+          </button>
 
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">

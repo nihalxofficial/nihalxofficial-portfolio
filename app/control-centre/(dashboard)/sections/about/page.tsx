@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent } from "@/lib/admin";
-import { Input, Textarea, Button, Switch } from "@heroui/react";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface AboutHighlight {
   icon: string;
@@ -66,7 +66,7 @@ export default function AboutManagerPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("abouts", about._id, about);
+      await updateContent("abouts", about._id, about as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -144,120 +144,147 @@ export default function AboutManagerPage() {
             Manage your introduction, highlights, and personal information
           </p>
         </div>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <span className="text-[13px] text-muted">Visible</span>
-          <Switch
-            isSelected={about.isVisible}
-            onValueChange={(val) => updateField("isVisible", val)}
-            size="sm"
-            color="primary"
-          />
-        </label>
+        <CmsSwitch
+          checked={about.isVisible}
+          onChange={(val) => updateField("isVisible", val)}
+          label="Visible"
+          size="sm"
+        />
       </div>
 
       <div className="space-y-6">
         {/* Basic Info */}
         <DashboardCard icon="User" title="Section Info" description="Label and heading">
           <div className="space-y-4">
-            <Input
-              label="Section Label"
-              placeholder="About"
-              value={about.label}
-              onChange={(e) => updateField("label", e.target.value)}
-            />
-            <Input
-              label="Heading"
-              placeholder="Who Am I"
-              value={about.heading}
-              onChange={(e) => updateField("heading", e.target.value)}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Section Label</label>
+              <input
+                placeholder="About"
+                value={about.label}
+                onChange={(e) => updateField("label", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Heading</label>
+              <input
+                placeholder="Who Am I"
+                value={about.heading}
+                onChange={(e) => updateField("heading", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
           </div>
         </DashboardCard>
 
         {/* Introduction Paragraphs */}
         <DashboardCard icon="FileText" title="Introduction" description="Your personal story">
           <div className="space-y-4">
-            <Textarea
-              label="Paragraphs (one per line)"
-              placeholder="I'm a passionate developer...&#10;&#10;With years of experience...&#10;&#10;I love creating..."
-              description="Separate paragraphs with blank lines"
-              value={about.paragraphs?.join("\n\n") || ""}
-              onChange={(e) =>
-                updateField(
-                  "paragraphs",
-                  e.target.value.split("\n\n").filter(Boolean)
-                )
-              }
-              minRows={8}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Paragraphs (one per line)</label>
+              <textarea
+                placeholder={"I'm a passionate developer...\n\nWith years of experience...\n\nI love creating..."}
+                value={about.paragraphs?.join("\n\n") || ""}
+                onChange={(e) =>
+                  updateField(
+                    "paragraphs",
+                    e.target.value.split("\n\n").filter(Boolean)
+                  )
+                }
+                rows={8}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
           </div>
         </DashboardCard>
 
         {/* Portrait */}
         <DashboardCard icon="Image" title="Portrait Image" description="Your profile photo">
           <div className="space-y-4">
-            <Input
-              label="Portrait URL"
-              placeholder="https://i.ibb.co/..."
-              description="Upload via Media Library and paste URL here"
-              value={about.portraitUrl}
-              onChange={(e) => updateField("portraitUrl", e.target.value)}
-            />
-            <Input
-              label="Signature"
-              placeholder="Your Name"
-              description="Handwritten-style signature text"
-              value={about.signature}
-              onChange={(e) => updateField("signature", e.target.value)}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Portrait URL</label>
+              <input
+                placeholder="https://i.ibb.co/..."
+                value={about.portraitUrl}
+                onChange={(e) => updateField("portraitUrl", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Signature</label>
+              <input
+                placeholder="Your Name"
+                value={about.signature}
+                onChange={(e) => updateField("signature", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
           </div>
         </DashboardCard>
 
         {/* Code Card */}
         <DashboardCard icon="Code" title="Code Card" description="Developer info card">
           <div className="space-y-4">
-            <Input
-              label="Name"
-              placeholder="John Doe"
-              value={about.codeCard?.name || ""}
-              onChange={(e) => updateField("codeCard.name", e.target.value)}
-            />
-            <Input
-              label="Role"
-              placeholder="Full Stack Developer"
-              value={about.codeCard?.role || ""}
-              onChange={(e) => updateField("codeCard.role", e.target.value)}
-            />
-            <Input
-              label="Location"
-              placeholder="San Francisco, CA"
-              value={about.codeCard?.location || ""}
-              onChange={(e) => updateField("codeCard.location", e.target.value)}
-            />
-            <Input
-              label="Education"
-              placeholder="BS Computer Science"
-              value={about.codeCard?.education || ""}
-              onChange={(e) => updateField("codeCard.education", e.target.value)}
-            />
-            <Input
-              label="Experience"
-              placeholder="5+ years"
-              value={about.codeCard?.experience || ""}
-              onChange={(e) => updateField("codeCard.experience", e.target.value)}
-            />
-            <Textarea
-              label="Passions (one per line)"
-              placeholder="Clean Code&#10;UI/UX Design&#10;Open Source"
-              value={about.codeCard?.passion?.join("\n") || ""}
-              onChange={(e) =>
-                updateField(
-                  "codeCard.passion",
-                  e.target.value.split("\n").filter(Boolean)
-                )
-              }
-              maxRows={5}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Name</label>
+              <input
+                placeholder="John Doe"
+                value={about.codeCard?.name || ""}
+                onChange={(e) => updateField("codeCard.name", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Role</label>
+              <input
+                placeholder="Full Stack Developer"
+                value={about.codeCard?.role || ""}
+                onChange={(e) => updateField("codeCard.role", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Location</label>
+              <input
+                placeholder="San Francisco, CA"
+                value={about.codeCard?.location || ""}
+                onChange={(e) => updateField("codeCard.location", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Education</label>
+              <input
+                placeholder="BS Computer Science"
+                value={about.codeCard?.education || ""}
+                onChange={(e) => updateField("codeCard.education", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Experience</label>
+              <input
+                placeholder="5+ years"
+                value={about.codeCard?.experience || ""}
+                onChange={(e) => updateField("codeCard.experience", e.target.value)}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Passions (one per line)</label>
+              <textarea
+                placeholder={"Clean Code\nUI/UX Design\nOpen Source"}
+                value={about.codeCard?.passion?.join("\n") || ""}
+                onChange={(e) =>
+                  updateField(
+                    "codeCard.passion",
+                    e.target.value.split("\n").filter(Boolean)
+                  )
+                }
+                rows={5}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
           </div>
         </DashboardCard>
 
@@ -273,58 +300,71 @@ export default function AboutManagerPage() {
                   <h4 className="text-[13px] font-semibold text-ink">
                     Highlight {index + 1}
                   </h4>
-                  <Button
-                    size="sm"
-                    color="danger"
-                    variant="light"
-                    onPress={() => removeHighlight(index)}
-                    startContent={<Icon name="Trash2" className="h-3.5 w-3.5" />}
+                  <button
+                    type="button"
+                    onClick={() => removeHighlight(index)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger"
                   >
+                    <Icon name="Trash2" className="h-3.5 w-3.5" />
                     Remove
-                  </Button>
+                  </button>
                 </div>
-                <Input
-                  label="Icon"
-                  placeholder="Award, CheckCircle, Star"
-                  value={highlight.icon}
-                  onChange={(e) => updateHighlight(index, "icon", e.target.value)}
-                />
-                <Input
-                  label="Label"
-                  placeholder="Years Experience, Projects Completed"
-                  value={highlight.label}
-                  onChange={(e) => updateHighlight(index, "label", e.target.value)}
-                />
-                <Input
-                  label="Value"
-                  placeholder="5+, 100+, Expert"
-                  value={highlight.value}
-                  onChange={(e) => updateHighlight(index, "value", e.target.value)}
-                />
+                <div className="space-y-1">
+                  <label className="block text-[12px] font-medium text-muted">Icon</label>
+                  <input
+                    placeholder="Award, CheckCircle, Star"
+                    value={highlight.icon}
+                    onChange={(e) => updateHighlight(index, "icon", e.target.value)}
+                    className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[12px] font-medium text-muted">Label</label>
+                  <input
+                    placeholder="Years Experience, Projects Completed"
+                    value={highlight.label}
+                    onChange={(e) => updateHighlight(index, "label", e.target.value)}
+                    className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[12px] font-medium text-muted">Value</label>
+                  <input
+                    placeholder="5+, 100+, Expert"
+                    value={highlight.value}
+                    onChange={(e) => updateHighlight(index, "value", e.target.value)}
+                    className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                  />
+                </div>
               </div>
             ))}
 
-            <Button
-              onPress={addHighlight}
-              variant="bordered"
-              startContent={<Icon name="Plus" className="h-4 w-4" />}
+            <button
+              type="button"
+              onClick={addHighlight}
+              className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25"
             >
+              <Icon name="Plus" className="h-4 w-4" />
               Add Highlight
-            </Button>
+            </button>
           </div>
         </DashboardCard>
 
         {/* Save Button */}
         <div className="flex items-center gap-3">
-          <Button
-            onPress={handleSave}
-            isLoading={saving}
-            color="primary"
-            size="lg"
-            startContent={!saving ? <Icon name="Save" className="h-4 w-4" /> : undefined}
+          <button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-5 py-2.5 text-[14px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60"
           >
+            {saving ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+            ) : (
+              <Icon name="Save" className="h-4 w-4" />
+            )}
             {saving ? "Saving..." : "Save Changes"}
-          </Button>
+          </button>
 
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">

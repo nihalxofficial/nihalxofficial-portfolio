@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { readContent, updateContent } from "@/lib/admin";
-import { Select, SelectItem, Button } from "@heroui/react";
 import { FONT_OPTIONS } from "@/lib/dashboard-config";
 
 interface TypographySettings {
@@ -60,7 +59,7 @@ export default function TypographyPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("settings", settings._id, settings);
+      await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -126,25 +125,15 @@ export default function TypographyPage() {
               <label className="mb-2 block text-[13px] font-medium text-ink">
                 Body Font (Sans Serif)
               </label>
-              <Select
-                placeholder="Select body font"
-                selectedKeys={[settings.typography.fontSans]}
-                onSelectionChange={(keys) => {
-                  const value = Array.from(keys)[0] as string;
-                  updateTypography("fontSans", value);
-                }}
-                className="max-w-full"
+              <select
+                className="w-full max-w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                value={settings.typography.fontSans}
+                onChange={(e) => updateTypography("fontSans", e.target.value)}
               >
                 {FONT_OPTIONS.sans.map((font) => (
-                  <SelectItem 
-                    key={font.value} 
-                    value={font.value}
-                    textValue={font.label}
-                  >
-                    <span style={{ fontFamily: font.label }}>{font.label}</span>
-                  </SelectItem>
+                  <option key={font.value} value={font.value}>{font.label}</option>
                 ))}
-              </Select>
+              </select>
               {selectedSansFont && (
                 <p className="mt-2 text-[12px] text-muted">
                   Preview: <span style={{ fontFamily: selectedSansFont.label }} className="text-ink">
@@ -159,25 +148,15 @@ export default function TypographyPage() {
               <label className="mb-2 block text-[13px] font-medium text-ink">
                 Display Font (Headings)
               </label>
-              <Select
-                placeholder="Select heading font"
-                selectedKeys={[settings.typography.fontDisplay]}
-                onSelectionChange={(keys) => {
-                  const value = Array.from(keys)[0] as string;
-                  updateTypography("fontDisplay", value);
-                }}
-                className="max-w-full"
+              <select
+                className="w-full max-w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                value={settings.typography.fontDisplay}
+                onChange={(e) => updateTypography("fontDisplay", e.target.value)}
               >
                 {FONT_OPTIONS.sans.map((font) => (
-                  <SelectItem 
-                    key={font.value} 
-                    value={font.value}
-                    textValue={font.label}
-                  >
-                    <span style={{ fontFamily: font.label }}>{font.label}</span>
-                  </SelectItem>
+                  <option key={font.value} value={font.value}>{font.label}</option>
                 ))}
-              </Select>
+              </select>
               {selectedDisplayFont && (
                 <p className="mt-2 text-[12px] text-muted">
                   Preview: <span style={{ fontFamily: selectedDisplayFont.label, fontSize: "18px", fontWeight: 700 }} className="text-ink">
@@ -192,25 +171,15 @@ export default function TypographyPage() {
               <label className="mb-2 block text-[13px] font-medium text-ink">
                 Monospace Font (Code)
               </label>
-              <Select
-                placeholder="Select monospace font"
-                selectedKeys={[settings.typography.fontMono]}
-                onSelectionChange={(keys) => {
-                  const value = Array.from(keys)[0] as string;
-                  updateTypography("fontMono", value);
-                }}
-                className="max-w-full"
+              <select
+                className="w-full max-w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                value={settings.typography.fontMono}
+                onChange={(e) => updateTypography("fontMono", e.target.value)}
               >
                 {FONT_OPTIONS.mono.map((font) => (
-                  <SelectItem 
-                    key={font.value} 
-                    value={font.value}
-                    textValue={font.label}
-                  >
-                    <span style={{ fontFamily: font.label }}>{font.label}</span>
-                  </SelectItem>
+                  <option key={font.value} value={font.value}>{font.label}</option>
                 ))}
-              </Select>
+              </select>
               {selectedMonoFont && (
                 <p className="mt-2 text-[12px] text-muted">
                   Preview: <span style={{ fontFamily: selectedMonoFont.label }} className="text-ink">
@@ -342,15 +311,10 @@ export default function TypographyPage() {
 
         {/* Save Button */}
         <div className="flex items-center gap-3">
-          <Button
-            onPress={handleSave}
-            isLoading={saving}
-            color="primary"
-            size="lg"
-            startContent={!saving ? <Icon name="Save" className="h-4 w-4" /> : undefined}
-          >
-            {saving ? "Saving..." : "Save Typography Settings"}
-          </Button>
+          <button type="button" onClick={handleSave} disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-6 py-2.5 text-[14px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60">
+            {saving ? "Saving..." : (<><Icon name="Save" className="h-4 w-4" />Save Typography Settings</>)}
+          </button>
 
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">

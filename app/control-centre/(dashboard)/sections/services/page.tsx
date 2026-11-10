@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { Input, Textarea, Button, Switch } from "@heroui/react";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface Service {
   _id: string;
@@ -14,6 +14,13 @@ interface Service {
   order: number;
   isVisible: boolean;
 }
+
+const inputCls = "w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30";
+const labelCls = "block text-[12px] font-medium text-muted";
+const btnPrimary = "inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60";
+const btnSecondary = "inline-flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 px-4 py-2 text-[13px] font-medium text-muted transition-all hover:border-line-strong hover:text-ink";
+const btnGhost = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-line hover:bg-surface-2 hover:text-ink";
+const btnDanger = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger";
 
 export default function ServicesManagerPage() {
   const [services, setServices] = useState<Service[]>([]);
@@ -47,11 +54,9 @@ export default function ServicesManagerPage() {
         alert("Title and description are required");
         return;
       }
-
       setSaving(true);
-
       if (editing) {
-        await updateContent("services", editing, formData);
+        await updateContent("services", editing, formData as unknown as Record<string, unknown>);
       } else {
         await createContent("services", {
           ...formData,
@@ -59,7 +64,6 @@ export default function ServicesManagerPage() {
           isVisible: true,
         });
       }
-
       await loadServices();
       setEditing(null);
       setCreating(false);
@@ -73,7 +77,6 @@ export default function ServicesManagerPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this service?")) return;
-
     try {
       await deleteContent("services", id);
       await loadServices();
@@ -102,11 +105,7 @@ export default function ServicesManagerPage() {
   function startCreate() {
     setCreating(true);
     setEditing(null);
-    setFormData({
-      title: "",
-      description: "",
-      icon: "Briefcase",
-    });
+    setFormData({ title: "", description: "", icon: "Briefcase" });
   }
 
   function cancelEdit() {
@@ -143,47 +142,55 @@ export default function ServicesManagerPage() {
             Manage your service offerings and expertise areas
           </p>
         </div>
-        <Button
-          onPress={startCreate}
-          color="primary"
-          startContent={<Icon name="Plus" className="h-4 w-4" />}
-        >
+        <button type="button" onClick={startCreate} className={btnPrimary}>
+          <Icon name="Plus" className="h-4 w-4" />
           Add Service
-        </Button>
+        </button>
       </div>
 
       {/* Create/Edit Form */}
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Service" : "Add Service"}>
           <div className="space-y-4">
-            <Input
-              label="Title"
-              placeholder="Full-Stack Development, API Design, DevOps"
-              value={formData.title || ""}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            />
-            <Textarea
-              label="Description"
-              placeholder="Detailed description of this service..."
-              value={formData.description || ""}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              maxRows={6}
-            />
-            <Input
-              label="Icon (Lucide name)"
-              placeholder="Code, Database, Cloud, Shield"
-              description="Choose an icon from lucide.dev"
-              value={formData.icon || ""}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-            />
+            <div className="space-y-1">
+              <label className={labelCls}>Title</label>
+              <input
+                type="text"
+                className={inputCls}
+                placeholder="Full-Stack Development, API Design, DevOps"
+                value={formData.title || ""}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}>Description</label>
+              <textarea
+                rows={6}
+                className={inputCls + " resize-y"}
+                placeholder="Detailed description of this service..."
+                value={formData.description || ""}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className={labelCls}>Icon (Lucide name)</label>
+              <input
+                type="text"
+                className={inputCls}
+                placeholder="Code, Database, Cloud, Shield"
+                value={formData.icon || ""}
+                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+              />
+              <p className="text-[11px] text-faint">Choose an icon from lucide.dev</p>
+            </div>
 
             <div className="flex gap-3 pt-2">
-              <Button onPress={handleSave} color="primary" isLoading={saving}>
+              <button type="button" onClick={handleSave} disabled={saving} className={btnPrimary}>
                 {saving ? "Saving..." : editing ? "Update" : "Create"}
-              </Button>
-              <Button onPress={cancelEdit} variant="bordered">
+              </button>
+              <button type="button" onClick={cancelEdit} className={btnSecondary}>
                 Cancel
-              </Button>
+              </button>
             </div>
           </div>
         </DashboardCard>
@@ -196,9 +203,9 @@ export default function ServicesManagerPage() {
           title="No services yet"
           description="Add your first service to showcase what you offer"
           action={
-            <Button onPress={startCreate} color="primary">
+            <button type="button" onClick={startCreate} className={btnPrimary}>
               Add Your First Service
-            </Button>
+            </button>
           }
         />
       ) : (
@@ -221,33 +228,22 @@ export default function ServicesManagerPage() {
                         </p>
                       </div>
                     </div>
-                    <Switch
+                    <CmsSwitch
+                      checked={service.isVisible}
+                      onChange={() => toggleVisibility(service._id, service.isVisible)}
+                      label=""
                       size="sm"
-                      isSelected={service.isVisible}
-                      onValueChange={() => toggleVisibility(service._id, service.isVisible)}
-                      aria-label="Toggle visibility"
                     />
                   </div>
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 border-t border-line/50 pt-3">
-                    <Button
-                      size="sm"
-                      variant="light"
-                      onPress={() => startEdit(service)}
-                      startContent={<Icon name="Edit" className="h-3.5 w-3.5" />}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="light"
-                      color="danger"
-                      onPress={() => handleDelete(service._id)}
-                      startContent={<Icon name="Trash2" className="h-3.5 w-3.5" />}
-                    >
-                      Delete
-                    </Button>
+                    <button type="button" onClick={() => startEdit(service)} className={btnGhost}>
+                      <Icon name="Edit" className="h-3.5 w-3.5" /> Edit
+                    </button>
+                    <button type="button" onClick={() => handleDelete(service._id)} className={btnDanger}>
+                      <Icon name="Trash2" className="h-3.5 w-3.5" /> Delete
+                    </button>
                   </div>
                 </div>
               </DashboardCard>

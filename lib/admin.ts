@@ -623,7 +623,7 @@ function transformToEnhancedAnalytics(
     })),
     browsers: basic.browsers,
     oses: basic.oses,
-    devices: basic.devices,
+    devices: basic.devices.map((d: { name: string; count: number }) => ({ type: d.name, count: d.count })),
     countries: basic.countries,
     newVsReturning: basic.newVsReturning,
     recent: basic.recent.map((r) => ({

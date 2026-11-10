@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { Switch, Input, Button } from "@heroui/react";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface NavItem {
   _id: string;
@@ -142,65 +142,85 @@ export default function NavigationManagerPage() {
             Manage your website navigation links and menu items
           </p>
         </div>
-        <Button
-          onPress={startCreate}
-          className="bg-gradient-to-r from-accent/20 to-accent/10 text-accent hover:from-accent/30 hover:to-accent/20"
-          startContent={<Icon name="Plus" className="h-4 w-4" />}
+        <button
+          type="button"
+          onClick={startCreate}
+          className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25"
         >
+          <Icon name="Plus" className="h-4 w-4" />
           Add Link
-        </Button>
+        </button>
       </div>
 
       {/* Create/Edit Form */}
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Navigation Item" : "Add Navigation Item"}>
           <div className="space-y-4">
-            <Input
-              label="Label"
-              placeholder="e.g., About, Projects, Contact"
-              value={formData.label || ""}
-              onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-            />
-            <Input
-              label="URL / Href"
-              placeholder="e.g., /#about, /projects, https://example.com"
-              value={formData.href || ""}
-              onChange={(e) => setFormData({ ...formData, href: e.target.value })}
-            />
-            <Input
-              label="Icon (Lucide name)"
-              placeholder="e.g., Home, User, Briefcase"
-              value={formData.icon || ""}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-            />
-            
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Label</label>
+              <input
+                placeholder="e.g., About, Projects, Contact"
+                value={formData.label || ""}
+                onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">URL / Href</label>
+              <input
+                placeholder="e.g., /#about, /projects, https://example.com"
+                value={formData.href || ""}
+                onChange={(e) => setFormData({ ...formData, href: e.target.value })}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Icon (Lucide name)</label>
+              <input
+                placeholder="e.g., Home, User, Briefcase"
+                value={formData.icon || ""}
+                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+              />
+            </div>
+
             <div className="flex flex-wrap gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <Switch
+                <CmsSwitch
+                  checked={formData.isPrimary || false}
+                  onChange={(val) => setFormData({ ...formData, isPrimary: val })}
+                  label="Primary"
                   size="sm"
-                  isSelected={formData.isPrimary || false}
-                  onValueChange={(val) => setFormData({ ...formData, isPrimary: val })}
                 />
                 <span className="text-[13px] text-ink">Primary (show in mobile dock)</span>
               </label>
-              
+
               <label className="flex items-center gap-2 cursor-pointer">
-                <Switch
+                <CmsSwitch
+                  checked={formData.opensInNewTab || false}
+                  onChange={(val) => setFormData({ ...formData, opensInNewTab: val })}
+                  label="Opens in new tab"
                   size="sm"
-                  isSelected={formData.opensInNewTab || false}
-                  onValueChange={(val) => setFormData({ ...formData, opensInNewTab: val })}
                 />
                 <span className="text-[13px] text-ink">Open in new tab</span>
               </label>
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button onPress={handleSave} color="primary">
+              <button
+                type="button"
+                onClick={() => void handleSave()}
+                className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25"
+              >
                 {editing ? "Update" : "Create"}
-              </Button>
-              <Button onPress={cancelEdit} variant="bordered">
+              </button>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 px-4 py-2 text-[13px] font-medium text-muted transition-all hover:border-line-strong hover:text-ink"
+              >
                 Cancel
-              </Button>
+              </button>
             </div>
           </div>
         </DashboardCard>
@@ -213,9 +233,14 @@ export default function NavigationManagerPage() {
           title="No navigation items"
           description="Create your first navigation link to get started"
           action={
-            <Button onPress={startCreate} color="primary">
+            <button
+              type="button"
+              onClick={startCreate}
+              className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25"
+            >
+              <Icon name="Plus" className="h-4 w-4" />
               Add Navigation Link
-            </Button>
+            </button>
           }
         />
       ) : (
@@ -248,31 +273,26 @@ export default function NavigationManagerPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
-                    <Switch
+                    <CmsSwitch
+                      checked={item.isVisible}
+                      onChange={() => void toggleVisibility(item._id, item.isVisible)}
+                      label="Toggle visibility"
                       size="sm"
-                      isSelected={item.isVisible}
-                      onValueChange={() => toggleVisibility(item._id, item.isVisible)}
-                      aria-label="Toggle visibility"
                     />
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="light"
-                      onPress={() => startEdit(item)}
-                      aria-label="Edit"
+                    <button
+                      type="button"
+                      onClick={() => startEdit(item)}
+                      className="inline-flex items-center rounded-lg border border-transparent p-1.5 text-muted transition-all hover:border-line hover:bg-surface-2/60 hover:text-accent"
                     >
                       <Icon name="Edit" className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      isIconOnly
-                      size="sm"
-                      variant="light"
-                      color="danger"
-                      onPress={() => handleDelete(item._id)}
-                      aria-label="Delete"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(item._id)}
+                      className="inline-flex items-center rounded-lg border border-transparent p-1.5 text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger"
                     >
                       <Icon name="Trash2" className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </DashboardCard>

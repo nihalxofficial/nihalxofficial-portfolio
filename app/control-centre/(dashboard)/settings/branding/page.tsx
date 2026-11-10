@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
-import { readContent, updateContent, uploadToImgBB } from "@/lib/admin";
-import { Button, Input } from "@heroui/react";
+import { readContent, updateContent } from "@/lib/admin";
 
 interface BrandingAssets {
   _id: string;
@@ -29,6 +28,20 @@ export default function BrandingPage() {
   const [uploading, setUploading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  async function uploadImage(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append("image", file);
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    if (!apiKey) throw new Error("ImgBB API key not configured");
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Image upload failed");
+    const json = await res.json();
+    return json.data.url as string;
+  }
 
   useEffect(() => {
     loadSettings();
@@ -70,7 +83,7 @@ export default function BrandingPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("settings", settings._id, settings);
+      await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -98,7 +111,7 @@ export default function BrandingPage() {
 
     try {
       setUploading(field);
-      const url = await uploadToImgBB(file);
+      const url = await uploadImage(file);
       updateBrandingField(field, url);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to upload image");
@@ -159,18 +172,18 @@ export default function BrandingPage() {
           description="Your brand name and tagline"
         >
           <div className="space-y-4">
-            <Input
-              label="Brand Name"
-              placeholder="Your Company Name"
-              value={settings.branding.brandName || ""}
-              onChange={(e) => updateBrandingField("branding.brandName", e.target.value)}
-            />
-            <Input
-              label="Brand Tagline"
-              placeholder="Your memorable slogan"
-              value={settings.branding.tagline || ""}
-              onChange={(e) => updateBrandingField("branding.tagline", e.target.value)}
-            />
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Brand Name</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="Your Company Name" value={settings.branding.brandName || ""}
+                onChange={(e) => updateBrandingField("branding.brandName", e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[12px] font-medium text-muted">Brand Tagline</label>
+              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="Your memorable slogan" value={settings.branding.tagline || ""}
+                onChange={(e) => updateBrandingField("branding.tagline", e.target.value)} />
+            </div>
           </div>
         </DashboardCard>
 
@@ -452,15 +465,10 @@ export default function BrandingPage() {
 
         {/* Save Button */}
         <div className="flex items-center gap-3">
-          <Button
-            onPress={handleSave}
-            isLoading={saving}
-            color="primary"
-            size="lg"
-            startContent={!saving ? <Icon name="Save" className="h-4 w-4" /> : undefined}
-          >
-            {saving ? "Saving..." : "Save Branding Assets"}
-          </Button>
+          <button type="button" onClick={handleSave} disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-6 py-2.5 text-[14px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60">
+            {saving ? "Saving..." : (<><Icon name="Save" className="h-4 w-4" />Save Branding Assets</>)}
+          </button>
 
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">

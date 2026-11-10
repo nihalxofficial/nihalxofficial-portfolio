@@ -6,7 +6,7 @@ import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dash
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent } from "@/lib/admin";
 import { HOMEPAGE_COMPONENTS } from "@/lib/dashboard-config";
-import { Switch } from "@heroui/react";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface ComponentVisibilityItem {
   _id: string;
@@ -109,7 +109,7 @@ export default function ComponentVisibilityPage() {
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-gradient-to-br from-accent/15 to-accent/5 text-accent">
                       <Icon
-                        name={config?.icon || "Box"}
+                        name={typeof config?.icon === "string" ? config.icon : "Box"}
                         className="h-5 w-5"
                       />
                     </div>
@@ -125,12 +125,11 @@ export default function ComponentVisibilityPage() {
 
                   {/* Toggle */}
                   <div className="shrink-0">
-                    <Switch
-                      isSelected={section.isVisible}
-                      onValueChange={() => toggleVisibility(section._id, section.isVisible)}
+                    <CmsSwitch
+                      checked={section.isVisible}
+                      onChange={() => void toggleVisibility(section._id, section.isVisible)}
+                      label={`Toggle ${section.label}`}
                       size="sm"
-                      color="primary"
-                      aria-label={`Toggle ${section.label}`}
                     />
                   </div>
                 </div>

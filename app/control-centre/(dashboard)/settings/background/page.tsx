@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { readContent, updateContent } from "@/lib/admin";
-import { Button, Switch } from "@heroui/react";
 import { BACKGROUND_EFFECTS } from "@/lib/dashboard-config";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface BackgroundSettings {
   _id: string;
@@ -62,7 +62,7 @@ export default function BackgroundPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("settings", settings._id, settings);
+      await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -131,10 +131,11 @@ export default function BackgroundPage() {
                   : "Background effects are currently disabled"}
               </p>
             </div>
-            <Switch
-              isSelected={settings.background.enabled}
-              onValueChange={(checked) => updateBackground("enabled", checked)}
-              color="success"
+            <CmsSwitch
+              checked={settings.background.enabled}
+              onChange={(checked) => updateBackground("enabled", checked)}
+              label={settings.background.enabled ? "Background effects are currently active" : "Background effects are currently disabled"}
+              size="sm"
             />
           </div>
         </DashboardCard>
@@ -341,15 +342,10 @@ export default function BackgroundPage() {
 
         {/* Save Button */}
         <div className="flex items-center gap-3">
-          <Button
-            onPress={handleSave}
-            isLoading={saving}
-            color="primary"
-            size="lg"
-            startContent={!saving ? <Icon name="Save" className="h-4 w-4" /> : undefined}
-          >
-            {saving ? "Saving..." : "Save Background Settings"}
-          </Button>
+          <button type="button" onClick={handleSave} disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-6 py-2.5 text-[14px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60">
+            {saving ? "Saving..." : (<><Icon name="Save" className="h-4 w-4" />Save Background Settings</>)}
+          </button>
 
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">

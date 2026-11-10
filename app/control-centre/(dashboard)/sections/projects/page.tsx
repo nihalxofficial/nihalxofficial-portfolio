@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { Input, Textarea, Button, Switch, Select, SelectItem } from "@heroui/react";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface Project {
   _id: string;
@@ -41,6 +41,13 @@ const CATEGORIES = [
   "Desktop App",
   "Other",
 ];
+
+const inputCls = "w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30";
+const labelCls = "block text-[12px] font-medium text-muted";
+const btnPrimary = "inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60";
+const btnSecondary = "inline-flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 px-4 py-2 text-[13px] font-medium text-muted transition-all hover:border-line-strong hover:text-ink";
+const btnGhost = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-line hover:bg-surface-2 hover:text-ink";
+const btnDanger = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger";
 
 export default function ProjectsManagerPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -82,7 +89,6 @@ export default function ProjectsManagerPage() {
         return;
       }
 
-      // Auto-generate slug if not provided
       if (!formData.slug && formData.title) {
         formData.slug = generateSlug(formData.title);
       }
@@ -90,7 +96,7 @@ export default function ProjectsManagerPage() {
       setSaving(true);
 
       if (editing) {
-        await updateContent("projects", editing, formData);
+        await updateContent("projects", editing, formData as unknown as Record<string, unknown>);
       } else {
         await createContent("projects", {
           ...formData,
@@ -113,7 +119,6 @@ export default function ProjectsManagerPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this project?")) return;
-
     try {
       await deleteContent("projects", id);
       await loadProjects();
@@ -205,13 +210,10 @@ export default function ProjectsManagerPage() {
             Manage your portfolio projects and case studies
           </p>
         </div>
-        <Button
-          onPress={startCreate}
-          color="primary"
-          startContent={<Icon name="Plus" className="h-4 w-4" />}
-        >
+        <button type="button" onClick={startCreate} className={btnPrimary}>
+          <Icon name="Plus" className="h-4 w-4" />
           Add Project
-        </Button>
+        </button>
       </div>
 
       {/* Create/Edit Form */}
@@ -220,213 +222,253 @@ export default function ProjectsManagerPage() {
           {/* Basic Info */}
           <DashboardCard icon="FileText" title="Basic Information">
             <div className="space-y-4">
-              <Input
-                label="Project Title"
-                placeholder="My Awesome Project"
-                value={formData.title || ""}
-                onChange={(e) => {
-                  setFormData({ 
-                    ...formData, 
-                    title: e.target.value,
-                    slug: generateSlug(e.target.value)
-                  });
-                }}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Project Title</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="My Awesome Project"
+                  value={formData.title || ""}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      title: e.target.value,
+                      slug: generateSlug(e.target.value),
+                    });
+                  }}
+                />
+              </div>
 
-              <Input
-                label="URL Slug"
-                placeholder="my-awesome-project"
-                description="Auto-generated from title, but you can customize"
-                value={formData.slug || ""}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>URL Slug</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="my-awesome-project"
+                  value={formData.slug || ""}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                />
+                <p className="text-[11px] text-faint">Auto-generated from title, but you can customize</p>
+              </div>
 
-              <Textarea
-                label="Short Description"
-                placeholder="A brief one-liner about this project..."
-                description="Shown in project cards (keep it concise)"
-                value={formData.shortDescription || ""}
-                onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
-                maxRows={3}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Short Description</label>
+                <textarea
+                  rows={3}
+                  className={inputCls + " resize-none"}
+                  placeholder="A brief one-liner about this project..."
+                  value={formData.shortDescription || ""}
+                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
+                />
+                <p className="text-[11px] text-faint">Shown in project cards (keep it concise)</p>
+              </div>
 
-              <Textarea
-                label="Full Description"
-                placeholder="Detailed description of the project, its purpose, and your role..."
-                value={formData.description || ""}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                minRows={6}
-                maxRows={12}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Full Description</label>
+                <textarea
+                  rows={6}
+                  className={inputCls + " resize-y"}
+                  placeholder="Detailed description of the project, its purpose, and your role..."
+                  value={formData.description || ""}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
+              </div>
 
-              <Select
-                label="Category"
-                selectedKeys={formData.category ? [formData.category] : []}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as string;
-                  setFormData({ ...formData, category: selected });
-                }}
-              >
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </Select>
+              <div className="space-y-1">
+                <label className={labelCls}>Category</label>
+                <select
+                  className={inputCls}
+                  value={formData.category || "Web Application"}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </DashboardCard>
 
           {/* Images */}
           <DashboardCard icon="Image" title="Images & Media">
             <div className="space-y-4">
-              <Input
-                label="Thumbnail URL"
-                placeholder="https://i.ibb.co/..."
-                description="Main project thumbnail (recommended: 1200x800px)"
-                value={formData.thumbnailUrl || ""}
-                onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Thumbnail URL</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="https://i.ibb.co/..."
+                  value={formData.thumbnailUrl || ""}
+                  onChange={(e) => setFormData({ ...formData, thumbnailUrl: e.target.value })}
+                />
+                <p className="text-[11px] text-faint">Main project thumbnail (recommended: 1200x800px)</p>
+              </div>
 
-              <Textarea
-                label="Screenshot URLs (one per line)"
-                placeholder="https://i.ibb.co/screenshot1.png&#10;https://i.ibb.co/screenshot2.png"
-                description="Additional project screenshots"
-                value={formData.screenshots?.join("\n") || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    screenshots: e.target.value.split("\n").filter(Boolean),
-                  })
-                }
-                maxRows={6}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Screenshot URLs (one per line)</label>
+                <textarea
+                  rows={6}
+                  className={inputCls + " resize-y"}
+                  placeholder={"https://i.ibb.co/screenshot1.png\nhttps://i.ibb.co/screenshot2.png"}
+                  value={formData.screenshots?.join("\n") || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      screenshots: e.target.value.split("\n").filter(Boolean),
+                    })
+                  }
+                />
+                <p className="text-[11px] text-faint">Additional project screenshots</p>
+              </div>
             </div>
           </DashboardCard>
 
           {/* Tech Stack & Features */}
           <DashboardCard icon="Code" title="Technical Details">
             <div className="space-y-4">
-              <Textarea
-                label="Tech Stack (one per line)"
-                placeholder="React&#10;Next.js&#10;TypeScript&#10;Tailwind CSS&#10;PostgreSQL"
-                value={formData.techStack?.join("\n") || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    techStack: e.target.value.split("\n").filter(Boolean),
-                  })
-                }
-                maxRows={8}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Tech Stack (one per line)</label>
+                <textarea
+                  rows={8}
+                  className={inputCls + " resize-y"}
+                  placeholder={"React\nNext.js\nTypeScript\nTailwind CSS\nPostgreSQL"}
+                  value={formData.techStack?.join("\n") || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      techStack: e.target.value.split("\n").filter(Boolean),
+                    })
+                  }
+                />
+              </div>
 
-              <Textarea
-                label="Key Features (one per line)"
-                placeholder="User authentication&#10;Real-time updates&#10;Responsive design&#10;API integration"
-                value={formData.features?.join("\n") || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    features: e.target.value.split("\n").filter(Boolean),
-                  })
-                }
-                maxRows={8}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Key Features (one per line)</label>
+                <textarea
+                  rows={8}
+                  className={inputCls + " resize-y"}
+                  placeholder={"User authentication\nReal-time updates\nResponsive design\nAPI integration"}
+                  value={formData.features?.join("\n") || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      features: e.target.value.split("\n").filter(Boolean),
+                    })
+                  }
+                />
+              </div>
 
-              <Textarea
-                label="Challenges & Solutions"
-                placeholder="Describe technical challenges you faced and how you solved them..."
-                value={formData.challenges || ""}
-                onChange={(e) => setFormData({ ...formData, challenges: e.target.value })}
-                maxRows={5}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Challenges & Solutions</label>
+                <textarea
+                  rows={5}
+                  className={inputCls + " resize-y"}
+                  placeholder="Describe technical challenges you faced and how you solved them..."
+                  value={formData.challenges || ""}
+                  onChange={(e) => setFormData({ ...formData, challenges: e.target.value })}
+                />
+              </div>
 
-              <Textarea
-                label="Future Improvements"
-                placeholder="What you'd like to add or improve in the future..."
-                value={formData.improvements || ""}
-                onChange={(e) => setFormData({ ...formData, improvements: e.target.value })}
-                maxRows={5}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Future Improvements</label>
+                <textarea
+                  rows={5}
+                  className={inputCls + " resize-y"}
+                  placeholder="What you'd like to add or improve in the future..."
+                  value={formData.improvements || ""}
+                  onChange={(e) => setFormData({ ...formData, improvements: e.target.value })}
+                />
+              </div>
             </div>
           </DashboardCard>
 
           {/* Links & SEO */}
           <DashboardCard icon="Link" title="Links & SEO">
             <div className="space-y-4">
-              <Input
-                label="Live Demo URL"
-                placeholder="https://example.com"
-                value={formData.liveUrl || ""}
-                onChange={(e) => setFormData({ ...formData, liveUrl: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Live Demo URL</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="https://example.com"
+                  value={formData.liveUrl || ""}
+                  onChange={(e) => setFormData({ ...formData, liveUrl: e.target.value })}
+                />
+              </div>
 
-              <Input
-                label="Source Code URL"
-                placeholder="https://github.com/username/repo"
-                value={formData.sourceUrl || ""}
-                onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Source Code URL</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="https://github.com/username/repo"
+                  value={formData.sourceUrl || ""}
+                  onChange={(e) => setFormData({ ...formData, sourceUrl: e.target.value })}
+                />
+              </div>
 
               <div className="h-px bg-line/50" />
 
-              <Input
-                label="SEO Title (optional)"
-                placeholder="Custom title for SEO (defaults to project title)"
-                value={formData.seo?.title || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    seo: { ...formData.seo, title: e.target.value },
-                  })
-                }
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>SEO Title (optional)</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="Custom title for SEO (defaults to project title)"
+                  value={formData.seo?.title || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      seo: { ...formData.seo, title: e.target.value },
+                    })
+                  }
+                />
+              </div>
 
-              <Textarea
-                label="SEO Description (optional)"
-                placeholder="Custom description for search engines"
-                value={formData.seo?.description || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    seo: { ...formData.seo, description: e.target.value },
-                  })
-                }
-                maxRows={3}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>SEO Description (optional)</label>
+                <textarea
+                  rows={3}
+                  className={inputCls + " resize-none"}
+                  placeholder="Custom description for search engines"
+                  value={formData.seo?.description || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      seo: { ...formData.seo, description: e.target.value },
+                    })
+                  }
+                />
+              </div>
             </div>
           </DashboardCard>
 
           {/* Settings */}
           <DashboardCard icon="Settings" title="Project Settings">
             <div className="flex flex-wrap gap-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Switch
-                  size="sm"
-                  isSelected={formData.isFeatured || false}
-                  onValueChange={(val) => setFormData({ ...formData, isFeatured: val })}
-                />
-                <span className="text-[13px] text-ink">Featured Project</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Switch
-                  size="sm"
-                  isSelected={formData.isPublished || false}
-                  onValueChange={(val) => setFormData({ ...formData, isPublished: val })}
-                />
-                <span className="text-[13px] text-ink">Published</span>
-              </label>
+              <CmsSwitch
+                checked={formData.isFeatured || false}
+                onChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
+                label="Featured Project"
+                size="sm"
+              />
+              <CmsSwitch
+                checked={formData.isPublished || false}
+                onChange={(checked) => setFormData({ ...formData, isPublished: checked })}
+                label="Published"
+                size="sm"
+              />
             </div>
           </DashboardCard>
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button onPress={handleSave} color="primary" size="lg" isLoading={saving}>
+            <button type="button" onClick={handleSave} disabled={saving} className={btnPrimary + " px-6 py-2.5 text-[14px]"}>
               {saving ? "Saving..." : editing ? "Update Project" : "Create Project"}
-            </Button>
-            <Button onPress={cancelEdit} variant="bordered" size="lg">
+            </button>
+            <button type="button" onClick={cancelEdit} className={btnSecondary + " px-6 py-2.5 text-[14px]"}>
               Cancel
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -440,9 +482,9 @@ export default function ProjectsManagerPage() {
               title="No projects yet"
               description="Add your first project to showcase your work"
               action={
-                <Button onPress={startCreate} color="primary">
+                <button type="button" onClick={startCreate} className={btnPrimary}>
                   Add Your First Project
-                </Button>
+                </button>
               }
             />
           ) : (
@@ -504,46 +546,29 @@ export default function ProjectsManagerPage() {
                       </div>
 
                       {/* Toggles */}
-                      <div className="flex items-center justify-between border-t border-line/50 pt-3">
-                        <div className="flex items-center gap-3">
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <Switch
-                              size="sm"
-                              isSelected={project.isFeatured}
-                              onValueChange={() => toggleFeatured(project._id, project.isFeatured)}
-                            />
-                            <span className="text-[11px] text-muted">Featured</span>
-                          </label>
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <Switch
-                              size="sm"
-                              isSelected={project.isPublished}
-                              onValueChange={() => togglePublished(project._id, project.isPublished)}
-                            />
-                            <span className="text-[11px] text-muted">Published</span>
-                          </label>
-                        </div>
+                      <div className="flex items-center gap-4 border-t border-line/50 pt-3">
+                        <CmsSwitch
+                          checked={project.isFeatured}
+                          onChange={() => toggleFeatured(project._id, project.isFeatured)}
+                          label="Featured"
+                          size="sm"
+                        />
+                        <CmsSwitch
+                          checked={project.isPublished}
+                          onChange={() => togglePublished(project._id, project.isPublished)}
+                          label="Published"
+                          size="sm"
+                        />
                       </div>
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="light"
-                          onPress={() => startEdit(project)}
-                          startContent={<Icon name="Edit" className="h-3.5 w-3.5" />}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="light"
-                          color="danger"
-                          onPress={() => handleDelete(project._id)}
-                          startContent={<Icon name="Trash2" className="h-3.5 w-3.5" />}
-                        >
-                          Delete
-                        </Button>
+                        <button type="button" onClick={() => startEdit(project)} className={btnGhost}>
+                          <Icon name="Edit" className="h-3.5 w-3.5" /> Edit
+                        </button>
+                        <button type="button" onClick={() => handleDelete(project._id)} className={btnDanger}>
+                          <Icon name="Trash2" className="h-3.5 w-3.5" /> Delete
+                        </button>
                       </div>
                     </div>
                   </DashboardCard>

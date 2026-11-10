@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { readContent, updateContent } from "@/lib/admin";
-import { Button, Input } from "@heroui/react";
+
 import { ACCENT_PRESETS } from "@/lib/dashboard-config";
 
 interface ThemeSettings {
@@ -39,10 +39,11 @@ export default function ThemePage() {
       setLoading(true);
       setError(null);
       const data = await readContent("settings", "default");
+      const d = data as Record<string, unknown>;
       
       // Initialize theme settings if they don't exist
-      if (!data.theme) {
-        data.theme = {
+      if (!d.theme) {
+        d.theme = {
           mode: "dark",
           accentPrimary: "hsl(189 100% 50%)", // Cyan
           accentSecondary: "hsl(189 100% 70%)",
@@ -50,8 +51,8 @@ export default function ThemePage() {
         };
       }
       
-      setSettings(data as unknown as ThemeSettings);
-      setCustomMode(data.theme.accentPreset === "custom");
+      setSettings(d as unknown as ThemeSettings);
+      setCustomMode((d.theme as Record<string, unknown>).accentPreset === "custom");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load settings");
     } finally {
@@ -65,7 +66,7 @@ export default function ThemePage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("settings", settings._id, settings);
+      await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -239,11 +240,12 @@ export default function ThemePage() {
                     onChange={(e) => updateTheme("accentPrimary", e.target.value)}
                     className="h-12 w-16 cursor-pointer rounded-lg border border-border/50"
                   />
-                  <Input
+                  <input
+                    type="text"
                     value={settings.theme.accentPrimary}
                     onChange={(e) => updateTheme("accentPrimary", e.target.value)}
                     placeholder="hsl(189 100% 50%) or #00d9ff"
-                    className="flex-1"
+                    className="flex-1 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
                   />
                 </div>
                 <p className="mt-1 text-[12px] text-muted">
@@ -267,11 +269,12 @@ export default function ThemePage() {
                     onChange={(e) => updateTheme("accentSecondary", e.target.value)}
                     className="h-12 w-16 cursor-pointer rounded-lg border border-border/50"
                   />
-                  <Input
+                  <input
+                    type="text"
                     value={settings.theme.accentSecondary}
                     onChange={(e) => updateTheme("accentSecondary", e.target.value)}
                     placeholder="hsl(189 100% 70%) or #66e4ff"
-                    className="flex-1"
+                    className="flex-1 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
                   />
                 </div>
                 <p className="mt-1 text-[12px] text-muted">
@@ -420,15 +423,16 @@ export default function ThemePage() {
 
         {/* Save Button */}
         <div className="flex items-center gap-3">
-          <Button
-            onPress={handleSave}
-            isLoading={saving}
-            color="primary"
-            size="lg"
-            startContent={!saving ? <Icon name="Save" className="h-4 w-4" /> : undefined}
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-6 py-2.5 text-[14px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60"
           >
-            {saving ? "Saving..." : "Save Theme Settings"}
-          </Button>
+            {saving ? "Saving..." : (
+              <><Icon name="Save" className="h-4 w-4" />Save Theme Settings</>
+            )}
+          </button>
 
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">

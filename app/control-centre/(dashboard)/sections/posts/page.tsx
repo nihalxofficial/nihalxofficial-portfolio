@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { Input, Textarea, Button, Switch, Select, SelectItem } from "@heroui/react";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface BlogPost {
   _id: string;
@@ -35,6 +35,13 @@ const CATEGORIES = [
   "Industry Insights",
   "Other",
 ];
+
+const inputCls = "w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30";
+const labelCls = "block text-[12px] font-medium text-muted";
+const btnPrimary = "inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-4 py-2 text-[13px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60";
+const btnSecondary = "inline-flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 px-4 py-2 text-[13px] font-medium text-muted transition-all hover:border-line-strong hover:text-ink";
+const btnGhost = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-line hover:bg-surface-2 hover:text-ink";
+const btnDanger = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger";
 
 export default function PostsManagerPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -83,17 +90,14 @@ export default function PostsManagerPage() {
         return;
       }
 
-      // Auto-generate slug if not provided
       if (!formData.slug && formData.title) {
         formData.slug = generateSlug(formData.title);
       }
 
-      // Calculate reading time from content
       if (formData.content) {
         formData.readingTime = calculateReadingTime(formData.content);
       }
 
-      // Set published date when first published
       if (formData.isPublished && !formData.publishedAt) {
         formData.publishedAt = new Date().toISOString();
       }
@@ -101,7 +105,7 @@ export default function PostsManagerPage() {
       setSaving(true);
 
       if (editing) {
-        await updateContent("posts", editing, formData);
+        await updateContent("posts", editing, formData as unknown as Record<string, unknown>);
       } else {
         await createContent("posts", {
           ...formData,
@@ -122,7 +126,6 @@ export default function PostsManagerPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this post?")) return;
-
     try {
       await deleteContent("posts", id);
       await loadPosts();
@@ -133,16 +136,13 @@ export default function PostsManagerPage() {
 
   async function togglePublished(id: string, currentState: boolean) {
     try {
-      const updates: any = { isPublished: !currentState };
-      
-      // Set published date when publishing for the first time
+      const updates: Record<string, unknown> = { isPublished: !currentState };
       if (!currentState) {
-        const post = posts.find(p => p._id === id);
+        const post = posts.find((p) => p._id === id);
         if (post && !post.publishedAt) {
           updates.publishedAt = new Date().toISOString();
         }
       }
-
       await updateContent("posts", id, updates);
       setPosts((prev) =>
         prev.map((post) => (post._id === id ? { ...post, ...updates } : post))
@@ -208,13 +208,10 @@ export default function PostsManagerPage() {
             Manage your blog content and articles
           </p>
         </div>
-        <Button
-          onPress={startCreate}
-          color="primary"
-          startContent={<Icon name="Plus" className="h-4 w-4" />}
-        >
+        <button type="button" onClick={startCreate} className={btnPrimary}>
+          <Icon name="Plus" className="h-4 w-4" />
           New Post
-        </Button>
+        </button>
       </div>
 
       {/* Create/Edit Form */}
@@ -223,79 +220,95 @@ export default function PostsManagerPage() {
           {/* Basic Info */}
           <DashboardCard icon="FileText" title="Post Information">
             <div className="space-y-4">
-              <Input
-                label="Post Title"
-                placeholder="How to Build Amazing Projects with Next.js"
-                value={formData.title || ""}
-                onChange={(e) => {
-                  setFormData({
-                    ...formData,
-                    title: e.target.value,
-                    slug: generateSlug(e.target.value),
-                  });
-                }}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Post Title</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="How to Build Amazing Projects with Next.js"
+                  value={formData.title || ""}
+                  onChange={(e) => {
+                    setFormData({
+                      ...formData,
+                      title: e.target.value,
+                      slug: generateSlug(e.target.value),
+                    });
+                  }}
+                />
+              </div>
 
-              <Input
-                label="URL Slug"
-                placeholder="how-to-build-amazing-projects"
-                description="Auto-generated from title, but you can customize"
-                value={formData.slug || ""}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>URL Slug</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="how-to-build-amazing-projects"
+                  value={formData.slug || ""}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                />
+                <p className="text-[11px] text-faint">Auto-generated from title, but you can customize</p>
+              </div>
 
-              <Textarea
-                label="Excerpt"
-                placeholder="A brief summary of your post (shown in post cards)..."
-                description="Keep it concise and engaging (150-200 characters recommended)"
-                value={formData.excerpt || ""}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                maxRows={4}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Excerpt</label>
+                <textarea
+                  rows={4}
+                  className={inputCls + " resize-none"}
+                  placeholder="A brief summary of your post (shown in post cards)..."
+                  value={formData.excerpt || ""}
+                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                />
+                <p className="text-[11px] text-faint">Keep it concise and engaging (150-200 characters recommended)</p>
+              </div>
 
-              <Select
-                label="Category"
-                selectedKeys={formData.category ? [formData.category] : []}
-                onSelectionChange={(keys) => {
-                  const selected = Array.from(keys)[0] as string;
-                  setFormData({ ...formData, category: selected });
-                }}
-              >
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </Select>
+              <div className="space-y-1">
+                <label className={labelCls}>Category</label>
+                <select
+                  className={inputCls}
+                  value={formData.category || "Tutorial"}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
 
-              <Textarea
-                label="Tags (comma-separated)"
-                placeholder="react, nextjs, typescript, tutorial"
-                value={formData.tags?.join(", ") || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    tags: e.target.value
-                      .split(",")
-                      .map((t) => t.trim())
-                      .filter(Boolean),
-                  })
-                }
-                maxRows={2}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Tags (comma-separated)</label>
+                <textarea
+                  rows={2}
+                  className={inputCls + " resize-none"}
+                  placeholder="react, nextjs, typescript, tutorial"
+                  value={formData.tags?.join(", ") || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      tags: e.target.value
+                        .split(",")
+                        .map((t) => t.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                />
+              </div>
             </div>
           </DashboardCard>
 
           {/* Cover Image */}
           <DashboardCard icon="Image" title="Cover Image">
             <div className="space-y-4">
-              <Input
-                label="Cover Image URL"
-                placeholder="https://i.ibb.co/..."
-                description="Upload via Media Library and paste URL here (recommended: 1200x630px)"
-                value={formData.coverImageUrl || ""}
-                onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Cover Image URL</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="https://i.ibb.co/..."
+                  value={formData.coverImageUrl || ""}
+                  onChange={(e) => setFormData({ ...formData, coverImageUrl: e.target.value })}
+                />
+                <p className="text-[11px] text-faint">Upload via Media Library and paste URL here (recommended: 1200x630px)</p>
+              </div>
               {formData.coverImageUrl && (
                 <div className="relative aspect-video overflow-hidden rounded-lg border border-line/50 bg-surface-2">
                   <img
@@ -311,15 +324,19 @@ export default function PostsManagerPage() {
           {/* Content */}
           <DashboardCard icon="FileEdit" title="Post Content">
             <div className="space-y-4">
-              <Textarea
-                label="Content"
-                placeholder="Write your post content here...&#10;&#10;You can use plain text or markdown formatting.&#10;&#10;## Heading&#10;**Bold text**&#10;*Italic text*&#10;- List item"
-                description={`${(formData.content || "").split(/\s+/).length} words • ${calculateReadingTime(formData.content || "")}`}
-                value={formData.content || ""}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                minRows={15}
-                maxRows={30}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>Content</label>
+                <textarea
+                  rows={15}
+                  className={inputCls + " resize-y"}
+                  placeholder={"Write your post content here...\n\nYou can use plain text or markdown formatting.\n\n## Heading\n**Bold text**\n*Italic text*\n- List item"}
+                  value={formData.content || ""}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                />
+                <p className="text-[11px] text-faint">
+                  {(formData.content || "").split(/\s+/).length} words • {calculateReadingTime(formData.content || "")}
+                </p>
+              </div>
               <p className="text-[12px] text-muted">
                 💡 Tip: Use markdown syntax for formatting. Reading time is calculated automatically.
               </p>
@@ -329,46 +346,49 @@ export default function PostsManagerPage() {
           {/* SEO */}
           <DashboardCard icon="Search" title="SEO Settings">
             <div className="space-y-4">
-              <Input
-                label="SEO Title (optional)"
-                placeholder="Custom title for search engines (defaults to post title)"
-                value={formData.seo?.title || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    seo: { ...formData.seo, title: e.target.value },
-                  })
-                }
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>SEO Title (optional)</label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="Custom title for search engines (defaults to post title)"
+                  value={formData.seo?.title || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      seo: { ...formData.seo, title: e.target.value },
+                    })
+                  }
+                />
+              </div>
 
-              <Textarea
-                label="SEO Description (optional)"
-                placeholder="Custom description for search engines and social sharing"
-                value={formData.seo?.description || ""}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    seo: { ...formData.seo, description: e.target.value },
-                  })
-                }
-                maxRows={3}
-              />
+              <div className="space-y-1">
+                <label className={labelCls}>SEO Description (optional)</label>
+                <textarea
+                  rows={3}
+                  className={inputCls + " resize-none"}
+                  placeholder="Custom description for search engines and social sharing"
+                  value={formData.seo?.description || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      seo: { ...formData.seo, description: e.target.value },
+                    })
+                  }
+                />
+              </div>
             </div>
           </DashboardCard>
 
           {/* Publishing */}
           <DashboardCard icon="Send" title="Publishing">
             <div className="space-y-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <Switch
-                  size="sm"
-                  isSelected={formData.isPublished || false}
-                  onValueChange={(val) => setFormData({ ...formData, isPublished: val })}
-                />
-                <span className="text-[13px] text-ink">
-                  {formData.isPublished ? "Published" : "Draft"}
-                </span>
-              </label>
+              <CmsSwitch
+                checked={formData.isPublished || false}
+                onChange={(checked) => setFormData({ ...formData, isPublished: checked })}
+                label={formData.isPublished ? "Published" : "Draft"}
+                size="sm"
+              />
               {formData.publishedAt && (
                 <p className="text-[12px] text-muted">
                   Published: {new Date(formData.publishedAt).toLocaleString()}
@@ -379,12 +399,12 @@ export default function PostsManagerPage() {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button onPress={handleSave} color="primary" size="lg" isLoading={saving}>
+            <button type="button" onClick={handleSave} disabled={saving} className={btnPrimary + " px-6 py-2.5 text-[14px]"}>
               {saving ? "Saving..." : editing ? "Update Post" : "Create Post"}
-            </Button>
-            <Button onPress={cancelEdit} variant="bordered" size="lg">
+            </button>
+            <button type="button" onClick={cancelEdit} className={btnSecondary + " px-6 py-2.5 text-[14px]"}>
               Cancel
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -398,9 +418,9 @@ export default function PostsManagerPage() {
               title="No blog posts yet"
               description="Create your first blog post to share your knowledge"
               action={
-                <Button onPress={startCreate} color="primary">
+                <button type="button" onClick={startCreate} className={btnPrimary}>
                   Write Your First Post
-                </Button>
+                </button>
               }
             />
           ) : (
@@ -471,32 +491,19 @@ export default function PostsManagerPage() {
 
                         {/* Actions */}
                         <div className="flex items-center gap-3 border-t border-line/50 pt-3">
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <Switch
-                              size="sm"
-                              isSelected={post.isPublished}
-                              onValueChange={() => togglePublished(post._id, post.isPublished)}
-                            />
-                            <span className="text-[11px] text-muted">Published</span>
-                          </label>
+                          <CmsSwitch
+                            checked={post.isPublished}
+                            onChange={() => togglePublished(post._id, post.isPublished)}
+                            label="Published"
+                            size="sm"
+                          />
                           <div className="flex-1" />
-                          <Button
-                            size="sm"
-                            variant="light"
-                            onPress={() => startEdit(post)}
-                            startContent={<Icon name="Edit" className="h-3.5 w-3.5" />}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="light"
-                            color="danger"
-                            onPress={() => handleDelete(post._id)}
-                            startContent={<Icon name="Trash2" className="h-3.5 w-3.5" />}
-                          >
-                            Delete
-                          </Button>
+                          <button type="button" onClick={() => startEdit(post)} className={btnGhost}>
+                            <Icon name="Edit" className="h-3.5 w-3.5" /> Edit
+                          </button>
+                          <button type="button" onClick={() => handleDelete(post._id)} className={btnDanger}>
+                            <Icon name="Trash2" className="h-3.5 w-3.5" /> Delete
+                          </button>
                         </div>
                       </div>
                     </div>
