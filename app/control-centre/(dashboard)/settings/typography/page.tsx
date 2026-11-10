@@ -14,8 +14,22 @@ interface TypographySettings {
     fontMono: string;
     baseFontSize: number; // 14-18px
     headingScale: number; // 1.2-1.5
+    sans?: string;
+    display?: string;
+    mono?: string;
   };
 }
+
+const DEFAULT_TYPOGRAPHY = {
+  fontSans: "inter",
+  fontDisplay: "outfit",
+  fontMono: "jetbrains-mono",
+  baseFontSize: 16,
+  headingScale: 1.25,
+  sans: "inter",
+  display: "outfit",
+  mono: "jetbrains-mono",
+};
 
 export default function TypographyPage() {
   const [settings, setSettings] = useState<TypographySettings | null>(null);
@@ -32,20 +46,25 @@ export default function TypographyPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await readContent("settings", "default");
-      
-      // Initialize typography settings if they don't exist
-      if (!data.typography) {
-        data.typography = {
-          fontSans: "inter",
-          fontDisplay: "outfit",
-          fontMono: "jetbrains-mono",
-          baseFontSize: 16,
-          headingScale: 1.25,
-        };
-      }
-      
-      setSettings(data as unknown as TypographySettings);
+      const data = (await readContent("settings", "default")) as Record<string, any>;
+      const rawTypo = (data?.typography && typeof data.typography === "object" ? data.typography : {}) as Record<string, any>;
+
+      const typography = {
+        fontSans: rawTypo.fontSans || rawTypo.sans || DEFAULT_TYPOGRAPHY.fontSans,
+        fontDisplay: rawTypo.fontDisplay || rawTypo.display || DEFAULT_TYPOGRAPHY.fontDisplay,
+        fontMono: rawTypo.fontMono || rawTypo.mono || DEFAULT_TYPOGRAPHY.fontMono,
+        baseFontSize: typeof rawTypo.baseFontSize === "number" && !isNaN(rawTypo.baseFontSize) ? rawTypo.baseFontSize : DEFAULT_TYPOGRAPHY.baseFontSize,
+        headingScale: typeof rawTypo.headingScale === "number" && !isNaN(rawTypo.headingScale) ? rawTypo.headingScale : DEFAULT_TYPOGRAPHY.headingScale,
+        sans: rawTypo.sans || rawTypo.fontSans || DEFAULT_TYPOGRAPHY.sans,
+        display: rawTypo.display || rawTypo.fontDisplay || DEFAULT_TYPOGRAPHY.display,
+        mono: rawTypo.mono || rawTypo.fontMono || DEFAULT_TYPOGRAPHY.mono,
+      };
+
+      setSettings({
+        ...data,
+        _id: data?._id || "default",
+        typography,
+      } as unknown as TypographySettings);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load settings");
     } finally {
@@ -59,7 +78,23 @@ export default function TypographyPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
+
+      const payload = {
+        ...settings,
+        typography: {
+          ...settings.typography,
+          sans: settings.typography.fontSans,
+          display: settings.typography.fontDisplay,
+          mono: settings.typography.fontMono,
+          fontSans: settings.typography.fontSans,
+          fontDisplay: settings.typography.fontDisplay,
+          fontMono: settings.typography.fontMono,
+          baseFontSize: settings.typography.baseFontSize ?? 16,
+          headingScale: settings.typography.headingScale ?? 1.25,
+        },
+      };
+
+      await updateContent("settings", settings._id, payload as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -83,7 +118,7 @@ export default function TypographyPage() {
   if (loading) {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold text-ink">Typography Settings</h1>
+        <h1 className="mb-4 text-2xl font-bold text-ink">Typography Settings</h1>
         <LoadingState message="Loading typography configuration..." />
       </div>
     );
@@ -92,22 +127,29 @@ export default function TypographyPage() {
   if (error || !settings) {
     return (
       <div>
-        <h1 className="mb-6 text-2xl font-bold text-ink">Typography Settings</h1>
+        <h1 className="mb-4 text-2xl font-bold text-ink">Typography Settings</h1>
         <ErrorState message={error || "Settings not found"} retry={loadSettings} />
       </div>
     );
   }
 
-  const selectedSansFont = FONT_OPTIONS.sans.find(f => f.value === settings.typography.fontSans);
-  const selectedDisplayFont = FONT_OPTIONS.sans.find(f => f.value === settings.typography.fontDisplay);
-  const selectedMonoFont = FONT_OPTIONS.mono.find(f => f.value === settings.typography.fontMono);
+  const sansKey = settings.typography.fontSans || settings.typography.sans || "inter";
+  const displayKey = settings.typography.fontDisplay || settings.typography.display || "outfit";
+  const monoKey = settings.typography.fontMono || settings.typography.mono || "jetbrains-mono";
+
+  const selectedSansFont = FONT_OPTIONS.sans.find((f) => f.value === sansKey);
+  const selectedDisplayFont = FONT_OPTIONS.sans.find((f) => f.value === displayKey);
+  const selectedMonoFont = FONT_OPTIONS.mono.find((f) => f.value === monoKey);
+
+  const baseSize = settings.typography.baseFontSize ?? 16;
+  const scale = settings.typography.headingScale ?? 1.25;
 
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-5">
         <h1 className="text-2xl font-bold text-ink">Typography Settings</h1>
-        <p className="mt-2 text-[14px] text-muted">
+        <p className="mt-1 text-[13px] text-muted">
           Configure font families and text sizing for your portfolio
         </p>
       </div>
@@ -126,8 +168,8 @@ export default function TypographyPage() {
                 Body Font (Sans Serif)
               </label>
               <select
-                className="w-full max-w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                value={settings.typography.fontSans}
+                className="dashboard-input w-full max-w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                value={sansKey}
                 onChange={(e) => updateTypography("fontSans", e.target.value)}
               >
                 {FONT_OPTIONS.sans.map((font) => (
@@ -149,8 +191,8 @@ export default function TypographyPage() {
                 Display Font (Headings)
               </label>
               <select
-                className="w-full max-w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                value={settings.typography.fontDisplay}
+                className="dashboard-input w-full max-w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                value={displayKey}
                 onChange={(e) => updateTypography("fontDisplay", e.target.value)}
               >
                 {FONT_OPTIONS.sans.map((font) => (
@@ -172,8 +214,8 @@ export default function TypographyPage() {
                 Monospace Font (Code)
               </label>
               <select
-                className="w-full max-w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                value={settings.typography.fontMono}
+                className="dashboard-input w-full max-w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[13px] text-ink focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                value={monoKey}
                 onChange={(e) => updateTypography("fontMono", e.target.value)}
               >
                 {FONT_OPTIONS.mono.map((font) => (
@@ -204,8 +246,8 @@ export default function TypographyPage() {
                 <label className="text-[13px] font-medium text-ink">
                   Base Font Size
                 </label>
-                <span className="text-[13px] font-semibold text-accent">
-                  {settings.typography.baseFontSize}px
+                <span className="text-[13px] font-semibold text-accent font-mono">
+                  {baseSize}px
                 </span>
               </div>
               <input
@@ -213,9 +255,9 @@ export default function TypographyPage() {
                 min="14"
                 max="18"
                 step="1"
-                value={settings.typography.baseFontSize}
-                onChange={(e) => updateTypography("baseFontSize", parseInt(e.target.value))}
-                className="w-full accent-accent"
+                value={baseSize}
+                onChange={(e) => updateTypography("baseFontSize", parseInt(e.target.value) || 16)}
+                className="w-full accent-accent cursor-pointer"
               />
               <div className="mt-2 flex justify-between text-[11px] text-muted">
                 <span>14px (Compact)</span>
@@ -230,8 +272,8 @@ export default function TypographyPage() {
                 <label className="text-[13px] font-medium text-ink">
                   Heading Scale Multiplier
                 </label>
-                <span className="text-[13px] font-semibold text-accent">
-                  {settings.typography.headingScale.toFixed(2)}×
+                <span className="text-[13px] font-semibold text-accent font-mono">
+                  {scale.toFixed(2)}×
                 </span>
               </div>
               <input
@@ -239,9 +281,9 @@ export default function TypographyPage() {
                 min="1.15"
                 max="1.5"
                 step="0.05"
-                value={settings.typography.headingScale}
-                onChange={(e) => updateTypography("headingScale", parseFloat(e.target.value))}
-                className="w-full accent-accent"
+                value={scale}
+                onChange={(e) => updateTypography("headingScale", parseFloat(e.target.value) || 1.25)}
+                className="w-full accent-accent cursor-pointer"
               />
               <div className="mt-2 flex justify-between text-[11px] text-muted">
                 <span>1.15× (Tight)</span>
@@ -258,7 +300,7 @@ export default function TypographyPage() {
               <div className="space-y-2">
                 <p 
                   style={{ 
-                    fontSize: `${settings.typography.baseFontSize * Math.pow(settings.typography.headingScale, 3)}px`,
+                    fontSize: `${baseSize * Math.pow(scale, 3)}px`,
                     fontFamily: selectedDisplayFont?.label || "inherit",
                     fontWeight: 700,
                   }} 
@@ -268,7 +310,7 @@ export default function TypographyPage() {
                 </p>
                 <p 
                   style={{ 
-                    fontSize: `${settings.typography.baseFontSize * Math.pow(settings.typography.headingScale, 2)}px`,
+                    fontSize: `${baseSize * Math.pow(scale, 2)}px`,
                     fontFamily: selectedDisplayFont?.label || "inherit",
                     fontWeight: 700,
                   }} 
@@ -278,7 +320,7 @@ export default function TypographyPage() {
                 </p>
                 <p 
                   style={{ 
-                    fontSize: `${settings.typography.baseFontSize * settings.typography.headingScale}px`,
+                    fontSize: `${baseSize * scale}px`,
                     fontFamily: selectedDisplayFont?.label || "inherit",
                     fontWeight: 600,
                   }} 
@@ -288,7 +330,7 @@ export default function TypographyPage() {
                 </p>
                 <p 
                   style={{ 
-                    fontSize: `${settings.typography.baseFontSize}px`,
+                    fontSize: `${baseSize}px`,
                     fontFamily: selectedSansFont?.label || "inherit",
                   }} 
                   className="text-muted"
@@ -297,7 +339,7 @@ export default function TypographyPage() {
                 </p>
                 <p 
                   style={{ 
-                    fontSize: `${settings.typography.baseFontSize * 0.875}px`,
+                    fontSize: `${baseSize * 0.875}px`,
                     fontFamily: selectedMonoFont?.label || "inherit",
                   }} 
                   className="text-muted"
@@ -312,12 +354,12 @@ export default function TypographyPage() {
         {/* Save Button */}
         <div className="flex items-center gap-3">
           <button type="button" onClick={handleSave} disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg border border-accent/40 bg-accent/15 px-6 py-2.5 text-[14px] font-medium text-accent transition-all hover:bg-accent/25 disabled:opacity-60">
+            className="btn-primary inline-flex items-center gap-2 rounded-lg px-6 py-2.5 text-[14px] font-bold text-accent-ink disabled:opacity-60">
             {saving ? "Saving..." : (<><Icon name="Save" className="h-4 w-4" />Save Typography Settings</>)}
           </button>
 
           {success && (
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-400">
               <Icon name="CheckCircle" className="h-4 w-4" />
               <span>Typography saved successfully!</span>
             </div>

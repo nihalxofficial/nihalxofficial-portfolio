@@ -36,8 +36,18 @@ export default function GlobalSettingsPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await readContent("settings", "default");
-      setSettings(data as unknown as GlobalSettings);
+      const data = (await readContent("settings", "default")) as Record<string, any>;
+      setSettings({
+        ...data,
+        _id: data?._id || "default",
+        siteName: data?.siteName || "",
+        siteUrl: data?.siteUrl || "",
+        metaTitle: data?.metaTitle || "",
+        metaDescription: data?.metaDescription || "",
+        keywords: Array.isArray(data?.keywords) ? data.keywords : [],
+        resumeUrl: data?.resumeUrl || "",
+        contact: data?.contact || {},
+      } as unknown as GlobalSettings);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load settings");
     } finally {
@@ -98,9 +108,9 @@ export default function GlobalSettingsPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-5">
         <h1 className="text-2xl font-bold text-ink">Global Settings</h1>
-        <p className="mt-2 text-[14px] text-muted">
+        <p className="mt-1 text-[13px] text-muted">
           Configure your website's core information and metadata
         </p>
       </div>

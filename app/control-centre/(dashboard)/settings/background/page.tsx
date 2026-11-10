@@ -34,21 +34,24 @@ export default function BackgroundPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await readContent("settings", "default");
-      
-      // Initialize background settings if they don't exist
-      if (!data.background) {
-        data.background = {
-          effect: "dna",
-          enabled: true,
-          opacity: 0.4,
-          speed: 1.0,
-          density: 1.0,
-          particleColor: "hsl(189 100% 50%)", // Default cyan
-        };
-      }
-      
-      setSettings(data as unknown as BackgroundSettings);
+      const data = (await readContent("settings", "default")) as Record<string, any>;
+      const rawBg = (data?.background && typeof data.background === "object" ? data.background : {}) as Record<string, any>;
+      const rawTheme = (data?.theme && typeof data.theme === "object" ? data.theme : {}) as Record<string, any>;
+
+      const background = {
+        effect: (rawBg.effect || rawTheme.backgroundEffect || "dna") as "dna" | "rain" | "none",
+        enabled: rawBg.enabled !== undefined ? Boolean(rawBg.enabled) : true,
+        opacity: typeof rawBg.opacity === "number" && !isNaN(rawBg.opacity) ? rawBg.opacity : 0.4,
+        speed: typeof rawBg.speed === "number" && !isNaN(rawBg.speed) ? rawBg.speed : 1.0,
+        density: typeof rawBg.density === "number" && !isNaN(rawBg.density) ? rawBg.density : 1.0,
+        particleColor: rawBg.particleColor || "hsl(189 100% 50%)",
+      };
+
+      setSettings({
+        ...data,
+        _id: data?._id || "default",
+        background,
+      } as unknown as BackgroundSettings);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load settings");
     } finally {
@@ -124,7 +127,7 @@ export default function BackgroundPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-5">
         <h1 className="text-2xl font-bold text-ink">Background Settings</h1>
         <p className="mt-2 text-[14px] text-muted">
           Configure animated background effects for your portfolio
@@ -226,8 +229,8 @@ export default function BackgroundPage() {
                   <label className="text-[13px] font-medium text-ink">
                     Opacity
                   </label>
-                  <span className="text-[13px] font-semibold text-accent">
-                    {Math.round(settings.background.opacity * 100)}%
+                  <span className="text-[13px] font-semibold text-accent font-mono">
+                    {Math.round((settings.background.opacity ?? 0.4) * 100)}%
                   </span>
                 </div>
                 <input
@@ -235,9 +238,9 @@ export default function BackgroundPage() {
                   min="0.1"
                   max="1.0"
                   step="0.1"
-                  value={settings.background.opacity}
-                  onChange={(e) => updateBackground("opacity", parseFloat(e.target.value))}
-                  className="w-full accent-accent"
+                  value={settings.background.opacity ?? 0.4}
+                  onChange={(e) => updateBackground("opacity", parseFloat(e.target.value) || 0.4)}
+                  className="w-full accent-accent cursor-pointer"
                 />
                 <div className="mt-2 flex justify-between text-[11px] text-muted">
                   <span>10% (Subtle)</span>
@@ -252,8 +255,8 @@ export default function BackgroundPage() {
                   <label className="text-[13px] font-medium text-ink">
                     Animation Speed
                   </label>
-                  <span className="text-[13px] font-semibold text-accent">
-                    {settings.background.speed.toFixed(1)}×
+                  <span className="text-[13px] font-semibold text-accent font-mono">
+                    {(settings.background.speed ?? 1.0).toFixed(1)}×
                   </span>
                 </div>
                 <input
@@ -261,9 +264,9 @@ export default function BackgroundPage() {
                   min="0.5"
                   max="2.0"
                   step="0.1"
-                  value={settings.background.speed}
-                  onChange={(e) => updateBackground("speed", parseFloat(e.target.value))}
-                  className="w-full accent-accent"
+                  value={settings.background.speed ?? 1.0}
+                  onChange={(e) => updateBackground("speed", parseFloat(e.target.value) || 1.0)}
+                  className="w-full accent-accent cursor-pointer"
                 />
                 <div className="mt-2 flex justify-between text-[11px] text-muted">
                   <span>0.5× (Slow)</span>
@@ -278,8 +281,8 @@ export default function BackgroundPage() {
                   <label className="text-[13px] font-medium text-ink">
                     Particle Density
                   </label>
-                  <span className="text-[13px] font-semibold text-accent">
-                    {settings.background.density.toFixed(1)}×
+                  <span className="text-[13px] font-semibold text-accent font-mono">
+                    {(settings.background.density ?? 1.0).toFixed(1)}×
                   </span>
                 </div>
                 <input
@@ -287,9 +290,9 @@ export default function BackgroundPage() {
                   min="0.5"
                   max="2.0"
                   step="0.1"
-                  value={settings.background.density}
-                  onChange={(e) => updateBackground("density", parseFloat(e.target.value))}
-                  className="w-full accent-accent"
+                  value={settings.background.density ?? 1.0}
+                  onChange={(e) => updateBackground("density", parseFloat(e.target.value) || 1.0)}
+                  className="w-full accent-accent cursor-pointer"
                 />
                 <div className="mt-2 flex justify-between text-[11px] text-muted">
                   <span>0.5× (Sparse)</span>

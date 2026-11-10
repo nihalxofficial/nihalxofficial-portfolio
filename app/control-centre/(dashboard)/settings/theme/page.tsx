@@ -38,21 +38,24 @@ export default function ThemePage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await readContent("settings", "default");
-      const d = data as Record<string, unknown>;
-      
-      // Initialize theme settings if they don't exist
-      if (!d.theme) {
-        d.theme = {
-          mode: "dark",
-          accentPrimary: "hsl(189 100% 50%)", // Cyan
-          accentSecondary: "hsl(189 100% 70%)",
-          accentPreset: "cyan",
-        };
-      }
-      
-      setSettings(d as unknown as ThemeSettings);
-      setCustomMode((d.theme as Record<string, unknown>).accentPreset === "custom");
+      const data = (await readContent("settings", "default")) as Record<string, any>;
+      const rawTheme = (data?.theme && typeof data.theme === "object" ? data.theme : {}) as Record<string, any>;
+      const rawPalette = (rawTheme.palette && typeof rawTheme.palette === "object" ? rawTheme.palette : {}) as Record<string, any>;
+
+      const theme = {
+        mode: (rawTheme.mode || "dark") as "dark" | "light" | "auto",
+        accentPrimary: rawTheme.accentPrimary || rawPalette.primary || "hsl(189 100% 50%)",
+        accentSecondary: rawTheme.accentSecondary || rawPalette.secondary || "hsl(189 100% 70%)",
+        accentPreset: rawTheme.accentPreset || rawTheme.accentId || "cyan",
+        customColors: rawTheme.customColors || rawTheme.palette || {},
+      };
+
+      setSettings({
+        ...data,
+        _id: data?._id || "default",
+        theme,
+      } as unknown as ThemeSettings);
+      setCustomMode(theme.accentPreset === "custom");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load settings");
     } finally {
@@ -164,9 +167,9 @@ export default function ThemePage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-5">
         <h1 className="text-2xl font-bold text-ink">Theme & Colors</h1>
-        <p className="mt-2 text-[14px] text-muted">
+        <p className="mt-1 text-[13px] text-muted">
           Customize your portfolio's color palette and theme mode
         </p>
       </div>

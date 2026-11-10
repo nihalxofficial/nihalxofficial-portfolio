@@ -1,0 +1,5 @@
+fix(settings): resolve typography toFixed TypeError and add defensive fallbacks across settings pages
+
+- Fix TypeError: Cannot read properties of undefined (reading 'toFixed') in typography page by adding robust hydration defaults and fallback values for headingScale and baseFontSize
+- Add safe optional chaining and fallback defaults in background, branding, theme, and global settings pages to prevent undefined property crashes
+- Use .dashboard-input styles and compact header margins for consistent UI/UX

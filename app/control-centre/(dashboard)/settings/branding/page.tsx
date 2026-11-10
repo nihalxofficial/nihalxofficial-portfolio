@@ -51,25 +51,32 @@ export default function BrandingPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = await readContent("settings", "default");
-      
-      // Initialize branding settings if they don't exist
-      if (!data.branding) {
-        data.branding = {
-          logo: {
-            primary: "",
-            dark: "",
-            light: "",
-            icon: "",
-          },
-          favicon: "",
-          ogImage: "",
-          brandName: "",
-          tagline: "",
-        };
-      }
-      
-      setSettings(data as unknown as BrandingAssets);
+      const data = (await readContent("settings", "default")) as Record<string, any>;
+      const rawBranding = (data?.branding && typeof data.branding === "object" ? data.branding : {}) as Record<string, any>;
+      const rawLogo = (rawBranding.logo && typeof rawBranding.logo === "object" ? rawBranding.logo : {}) as Record<string, any>;
+
+      const branding = {
+        logo: {
+          primary: rawLogo.primary || rawBranding.logoUrl || "",
+          dark: rawLogo.dark || "",
+          light: rawLogo.light || "",
+          icon: rawLogo.icon || rawBranding.faviconUrl || "",
+        },
+        favicon: rawBranding.favicon || rawBranding.faviconUrl || "",
+        ogImage: rawBranding.ogImage || data?.ogImageUrl || "",
+        brandName: rawBranding.brandName || rawBranding.wordmark || data?.siteName || "",
+        tagline: rawBranding.tagline || "",
+        logoUrl: rawBranding.logoUrl || rawLogo.primary || "",
+        faviconUrl: rawBranding.faviconUrl || rawBranding.favicon || "",
+        mark: rawBranding.mark || "",
+        wordmark: rawBranding.wordmark || rawBranding.brandName || "",
+      };
+
+      setSettings({
+        ...data,
+        _id: data?._id || "default",
+        branding,
+      } as unknown as BrandingAssets);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load settings");
     } finally {
@@ -157,9 +164,9 @@ export default function BrandingPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-5">
         <h1 className="text-2xl font-bold text-ink">Assets & Branding</h1>
-        <p className="mt-2 text-[14px] text-muted">
+        <p className="mt-1 text-[13px] text-muted">
           Upload logos, favicons, and configure your brand identity
         </p>
       </div>
@@ -204,10 +211,10 @@ export default function BrandingPage() {
                 <Icon name="Image" className="h-5 w-5 text-accent" />
               </div>
 
-              {settings.branding.logo.primary ? (
+              {settings.branding.logo?.primary ? (
                 <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-line/30 bg-gradient-to-br from-surface-2 to-surface-2/40">
                   <img
-                    src={settings.branding.logo.primary}
+                    src={settings.branding.logo?.primary}
                     alt="Primary Logo"
                     className="h-full w-full object-contain p-4"
                   />
@@ -247,10 +254,10 @@ export default function BrandingPage() {
                 <Icon name="Moon" className="h-5 w-5 text-accent" />
               </div>
 
-              {settings.branding.logo.dark ? (
+              {settings.branding.logo?.dark ? (
                 <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-line/30 bg-[#0a0a0f]">
                   <img
-                    src={settings.branding.logo.dark}
+                    src={settings.branding.logo?.dark}
                     alt="Dark Mode Logo"
                     className="h-full w-full object-contain p-4"
                   />
@@ -290,10 +297,10 @@ export default function BrandingPage() {
                 <Icon name="Sun" className="h-5 w-5 text-accent" />
               </div>
 
-              {settings.branding.logo.light ? (
+              {settings.branding.logo?.light ? (
                 <div className="group relative mb-3 aspect-video overflow-hidden rounded-lg border border-line/30 bg-white">
                   <img
-                    src={settings.branding.logo.light}
+                    src={settings.branding.logo?.light}
                     alt="Light Mode Logo"
                     className="h-full w-full object-contain p-4"
                   />
@@ -333,10 +340,10 @@ export default function BrandingPage() {
                 <Icon name="Square" className="h-5 w-5 text-accent" />
               </div>
 
-              {settings.branding.logo.icon ? (
+              {settings.branding.logo?.icon ? (
                 <div className="group relative mb-3 aspect-square overflow-hidden rounded-lg border border-line/30 bg-gradient-to-br from-surface-2 to-surface-2/40">
                   <img
-                    src={settings.branding.logo.icon}
+                    src={settings.branding.logo?.icon}
                     alt="Icon/Mark"
                     className="h-full w-full object-contain p-4"
                   />
