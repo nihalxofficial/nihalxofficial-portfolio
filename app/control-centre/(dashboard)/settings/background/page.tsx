@@ -63,6 +63,14 @@ export default function BackgroundPage() {
       setSaving(true);
       setSuccess(false);
       await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
+      
+      const mode = settings.background.enabled ? settings.background.effect : "none";
+      try {
+        localStorage.setItem("portfolio_bg_mode", mode);
+        localStorage.setItem("bg_mode", mode);
+        window.dispatchEvent(new CustomEvent("portfolio_bg_change", { detail: mode }));
+      } catch {}
+
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -74,13 +82,23 @@ export default function BackgroundPage() {
 
   function updateBackground(field: keyof BackgroundSettings["background"], value: string | number | boolean) {
     if (!settings) return;
+    const nextBg = {
+      ...settings.background,
+      [field]: value,
+    };
     setSettings({
       ...settings,
-      background: {
-        ...settings.background,
-        [field]: value,
-      },
+      background: nextBg,
     });
+
+    if (field === "effect" || field === "enabled") {
+      const mode = (field === "enabled" ? value : nextBg.enabled) ? (field === "effect" ? value : nextBg.effect) : "none";
+      try {
+        localStorage.setItem("portfolio_bg_mode", String(mode));
+        localStorage.setItem("bg_mode", String(mode));
+        window.dispatchEvent(new CustomEvent("portfolio_bg_change", { detail: String(mode) }));
+      } catch {}
+    }
   }
 
   if (loading) {

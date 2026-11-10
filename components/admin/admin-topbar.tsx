@@ -3,31 +3,39 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/admin/auth-provider";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ThemeCustomizerMenu } from "@/components/admin/theme-customizer";
 import { Icon } from "@/components/ui/icon";
 import { adminHref } from "@/lib/admin-routes";
 import { fetchOverview } from "@/lib/admin";
 import { initials } from "@/lib/utils";
+import { ACCENTS } from "@/components/site/accent-context";
+import type { BackgroundMode } from "@/components/site/site-background";
 
 /**
  * Dashboard top bar.
  *
  * Sits above every dashboard page (offset by the sidebar on desktop). It carries
- * the page title, a live unread-message bell, the theme switcher, a link back to
- * the public site and an account menu — the everyday controls that were not
- * worth hunting for in the sidebar.
+ * the page title, live accent selector, dynamic background effect selector,
+ * unread-message bell, theme customizer, view site link, and account menu.
  */
 export function AdminTopbar({
   title,
   eyebrow,
   menuOpen,
   onToggleMenu,
+  accentId = "cyan",
+  onAccentChange,
+  bgMode = "dna",
+  onBgModeChange,
 }: {
   title: string;
   eyebrow?: string;
   menuOpen: boolean;
   onToggleMenu: () => void;
+  accentId?: string;
+  onAccentChange?: (id: string) => void;
+  bgMode?: BackgroundMode;
+  onBgModeChange?: (mode: BackgroundMode) => void;
 }) {
   const { session, signOut } = useAuth();
   const [unread, setUnread] = useState(0);
@@ -117,11 +125,54 @@ export function AdminTopbar({
             )}
           </Link>
 
-          {/* Theme Customizer */}
-          <ThemeCustomizerMenu />
+          {/* Dynamic Background Effect selector (DNA / Rain / Grid) — same as main site */}
+          {onBgModeChange && (
+            <button
+              type="button"
+              onClick={() => {
+                const next: BackgroundMode = bgMode === "dna" ? "rain" : bgMode === "rain" ? "none" : "dna";
+                onBgModeChange(next);
+              }}
+              title={`Background: ${
+                bgMode === "dna"
+                  ? "DNA Neural Mesh (Default)"
+                  : bgMode === "rain"
+                  ? "Matrix Code Rain"
+                  : "Minimal Grid"
+              }`}
+              className="flex h-10 items-center gap-1.5 rounded-lg border border-line/50 bg-surface/50 px-2.5 font-mono text-[11px] text-muted transition-all hover:border-accent/30 hover:bg-accent/5 hover:text-accent cursor-pointer shrink-0"
+            >
+              <Icon name="Activity" className="h-4 w-4 text-accent" />
+              <span className="font-bold uppercase tracking-wider text-[10px]">
+                {bgMode === "dna" ? "DNA" : bgMode === "rain" ? "Rain" : "Grid"}
+              </span>
+            </button>
+          )}
 
-          {/* Theme Toggle */}
-          <ThemeToggle className="h-10 w-10 rounded-lg border border-line/50 bg-surface/50 hover:border-accent/30 hover:bg-accent/5" />
+          {/* Accent color picker — same 4 presets with active scale & ring, same as main site */}
+          {onAccentChange && (
+            <div className="flex h-10 items-center gap-1.5 rounded-lg border border-line/50 bg-surface/50 px-2.5 shrink-0" title="Accent color">
+              <Icon name="Palette" className="h-3.5 w-3.5 text-muted mr-0.5 hidden xs:block" />
+              {ACCENTS.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => onAccentChange(a.id)}
+                  aria-label={a.name}
+                  title={a.name}
+                  className={`h-4 w-4 rounded-full cursor-pointer transition ${
+                    accentId === a.id
+                      ? "scale-125 ring-2 ring-white/80"
+                      : "opacity-70 hover:opacity-100"
+                  }`}
+                  style={{ background: `linear-gradient(135deg, ${a.a}, ${a.b})` }}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Theme Customizer Menu (advanced dropdown) */}
+          <ThemeCustomizerMenu />
 
           {/* View Site button with icon */}
           <Link

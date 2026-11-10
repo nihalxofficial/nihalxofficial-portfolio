@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/admin/auth-provider";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { Icon } from "@/components/ui/icon";
 import { ADMIN_BASE } from "@/lib/admin-routes";
 import { findNavItem, NAV_GROUPS, type NavGroup, type NavItem } from "@/lib/admin-nav";
 import { initials } from "@/lib/utils";
-import { AccentProvider } from "@/components/site/accent-context";
+import { useAccent } from "@/components/site/accent-context";
+import { SiteBackground, type BackgroundMode } from "@/components/site/site-background";
+import { saveSettingsField } from "@/components/admin/settings/settings-utils";
 
 /** Groups open by default; owners can collapse any group for a cleaner view. */
 function useCollapsedGroups() {
@@ -32,6 +34,48 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const { session, loading, error, configError, signOut } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const { collapsed, toggle } = useCollapsedGroups();
+  const { accent, accentId, setAccentId } = useAccent();
+
+  const [bgMode, setBgMode] = useState<BackgroundMode>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = (
+          localStorage.getItem("portfolio_bg_mode") || localStorage.getItem("bg_mode")
+        ) as BackgroundMode | null;
+        if (saved && (saved === "dna" || saved === "rain" || saved === "none")) return saved;
+      } catch {}
+    }
+    return "dna";
+  });
+
+  useEffect(() => {
+    const onBgChange = (e: Event) => {
+      const mode = (e as CustomEvent).detail as BackgroundMode;
+      if (mode === "dna" || mode === "rain" || mode === "none") {
+        setBgMode(mode);
+      }
+    };
+    window.addEventListener("portfolio_bg_change", onBgChange);
+    return () => window.removeEventListener("portfolio_bg_change", onBgChange);
+  }, []);
+
+  const changeBgMode = useCallback((mode: BackgroundMode) => {
+    setBgMode(mode);
+    try {
+      localStorage.setItem("portfolio_bg_mode", mode);
+      localStorage.setItem("bg_mode", mode);
+      window.dispatchEvent(new CustomEvent("portfolio_bg_change", { detail: mode }));
+    } catch {}
+    void saveSettingsField("theme", { backgroundEffect: mode }).catch(() => {});
+  }, []);
+
+  const changeAccent = useCallback(
+    (id: string) => {
+      setAccentId(id);
+      void saveSettingsField("theme", { accentId: id }).catch(() => {});
+    },
+    [setAccentId],
+  );
 
   useEffect(() => {
     if (!loading && !session && !configError) router.replace("/control-centre/login");
@@ -43,30 +87,26 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   if (configError) {
     return (
-      <AccentProvider>
-        <Gate title="Dashboard not configured" body={configError}>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-lg border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-accent hover:text-accent"
-          >
-            <Icon name="ArrowLeft" className="h-4 w-4" />
-            Back to site
-          </Link>
-        </Gate>
-      </AccentProvider>
+      <Gate title="Dashboard not configured" body={configError}>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-lg border border-line-strong px-4 py-2.5 text-sm font-semibold text-ink transition-colors hover:border-accent hover:text-accent"
+        >
+          <Icon name="ArrowLeft" className="h-4 w-4" />
+          Back to site
+        </Link>
+      </Gate>
     );
   }
 
   if (loading || !session) {
     return (
-      <AccentProvider>
-        <Gate
-          title={loading ? "Checking access…" : "Redirecting to sign-in…"}
-          body={error || "Verifying your Firebase session against the admin allowlist."}
-        >
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
-        </Gate>
-      </AccentProvider>
+      <Gate
+        title={loading ? "Checking access…" : "Redirecting to sign-in…"}
+        body={error || "Verifying your Firebase session against the admin allowlist."}
+      >
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
+      </Gate>
     );
   }
 
@@ -196,50 +236,51 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const current = findNavItem(pathname);
 
   return (
-    <AccentProvider>
-      {/* Full-height scroll container that works even when body has overflow:hidden */}
-      <div className="fixed inset-0 overflow-hidden bg-page">
-        {/* Subtle grid background — same visual language as main site */}
-        <div className="pointer-events-none absolute inset-0 grid-bg opacity-30" />
+    <div className="fixed inset-0 overflow-hidden bg-page">
+      {/* Animated background — exact same engine as the main site */}
+      <SiteBackground accent={accent.a} secondaryAccent={accent.b} mode={bgMode} />
 
-        {/* Desktop sidebar */}
-        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-line/50 bg-surface/80 shadow-2xl shadow-black/20 backdrop-blur-xl lg:block">
-          <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent opacity-50" />
-          <div className="relative h-full">
-            {sidebar}
-          </div>
-        </aside>
+      {/* Desktop sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-line/50 bg-surface/80 shadow-2xl shadow-black/20 backdrop-blur-xl lg:block">
+        <div className="absolute inset-0 bg-gradient-to-b from-accent/5 via-transparent to-transparent opacity-50" />
+        <div className="relative h-full">
+          {sidebar}
+        </div>
+      </aside>
 
-        {/* Mobile sidebar drawer */}
-        {menuOpen && (
-          <>
-            <div
-              className="fixed inset-0 top-14 z-20 bg-black/60 backdrop-blur-sm lg:hidden"
-              onClick={() => setMenuOpen(false)}
-            />
-            <div className="fixed inset-0 top-14 z-30 bg-gradient-to-br from-surface/95 to-surface/80 backdrop-blur-xl lg:hidden">
-              <div className="h-full overflow-y-auto">{sidebar}</div>
-            </div>
-          </>
-        )}
-
-        {/* Main content column — this is the actual scroll container */}
-        <div className="flex h-full flex-col lg:pl-64">
-          <AdminTopbar
-            title={current?.item.label ?? "Dashboard"}
-            eyebrow={current?.group.label}
-            menuOpen={menuOpen}
-            onToggleMenu={() => setMenuOpen((value) => !value)}
+      {/* Mobile sidebar drawer */}
+      {menuOpen && (
+        <>
+          <div
+            className="fixed inset-0 top-14 z-20 bg-black/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setMenuOpen(false)}
           />
-          {/* Scrollable area */}
-          <div className="dashboard-scroll flex-1 overflow-y-auto overflow-x-hidden">
-            <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
-              {children}
-            </div>
+          <div className="fixed inset-0 top-14 z-30 bg-gradient-to-br from-surface/95 to-surface/80 backdrop-blur-xl lg:hidden">
+            <div className="h-full overflow-y-auto">{sidebar}</div>
+          </div>
+        </>
+      )}
+
+      {/* Main content column — this is the actual scroll container */}
+      <div className="flex h-full flex-col lg:pl-64">
+        <AdminTopbar
+          title={current?.item.label ?? "Dashboard"}
+          eyebrow={current?.group.label}
+          menuOpen={menuOpen}
+          onToggleMenu={() => setMenuOpen((value) => !value)}
+          accentId={accentId}
+          onAccentChange={changeAccent}
+          bgMode={bgMode}
+          onBgModeChange={changeBgMode}
+        />
+        {/* Scrollable area */}
+        <div className="dashboard-scroll flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
+            {children}
           </div>
         </div>
       </div>
-    </AccentProvider>
+    </div>
   );
 }
 

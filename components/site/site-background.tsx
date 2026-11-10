@@ -13,6 +13,7 @@ function hexToRgba(hex: string, alpha: number): string {
 
 interface SiteBackgroundProps {
   accent: string;
+  secondaryAccent?: string;
   mode: BackgroundMode;
 }
 
@@ -31,10 +32,12 @@ type Particle = {
  * - "rain": Dark Matrix falling code rain.
  * - "none": Minimalist dark space with cyber grid and ambient glow orbs.
  */
-export function SiteBackground({ accent, mode }: SiteBackgroundProps) {
+export function SiteBackground({ accent, secondaryAccent, mode }: SiteBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const accRef = useRef(accent);
   accRef.current = accent;
+  const acc2Ref = useRef(secondaryAccent || "#7c4dff");
+  acc2Ref.current = secondaryAccent || "#7c4dff";
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -169,7 +172,7 @@ export function SiteBackground({ accent, mode }: SiteBackgroundProps) {
           ctx.arc(x, y1, 2.2 + cosVal * 0.8, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.fillStyle = hexToRgba("#d946ef", depthAlpha * 1.3);
+          ctx.fillStyle = hexToRgba(acc2Ref.current || "#7c4dff", depthAlpha * 1.3);
           ctx.beginPath();
           ctx.arc(x, y2, 2.2 - cosVal * 0.8, 0, Math.PI * 2);
           ctx.fill();
@@ -234,9 +237,15 @@ export function SiteBackground({ accent, mode }: SiteBackgroundProps) {
       {/* Cyber Grid Mask Overlay */}
       <div className="absolute inset-0 grid-bg opacity-70" />
 
-      {/* Ambient 3D Neon Radial Glow Orbs */}
-      <div className="absolute -top-40 -left-40 w-[620px] h-[620px] rounded-full blur-[130px] opacity-25 bg-acc pointer-events-none" />
-      <div className="absolute -bottom-52 -right-40 w-[700px] h-[700px] rounded-full blur-[150px] opacity-20 bg-acc2 pointer-events-none" />
+      {/* Ambient 3D Neon Radial Glow Orbs — driven by active primary & secondary accent */}
+      <div
+        className="absolute -top-40 -left-40 w-[620px] h-[620px] rounded-full blur-[130px] opacity-25 pointer-events-none transition-colors duration-700"
+        style={{ backgroundColor: accent || "var(--acc, #00e5ff)" }}
+      />
+      <div
+        className="absolute -bottom-52 -right-40 w-[700px] h-[700px] rounded-full blur-[150px] opacity-20 pointer-events-none transition-colors duration-700"
+        style={{ backgroundColor: secondaryAccent || "var(--acc2, #7c4dff)" }}
+      />
     </div>
   );
 }

@@ -83,20 +83,30 @@ export function AccentProvider({
     () => (ACCENTS.some((a) => a.id === defaults?.accentId) ? defaults!.accentId! : "cyan"),
   );
 
-  // Paint the resolved colors as soon as we are on the client.
+  // Paint the resolved colors as soon as we are on the client and listen for cross-component changes.
   useEffect(() => {
     const stored = readStoredAccentId();
     if (stored) {
       const preset = presetFor(stored);
       applyColors(preset.a, preset.b);
       if (stored !== accentId) setAccentIdState(stored);
-      return;
+    } else {
+      const preset = presetFor(defaults?.accentId);
+      const primary = defaults?.palette?.primary?.trim();
+      const secondary = defaults?.palette?.secondary?.trim();
+      applyColors(primary || preset.a, secondary || preset.b);
     }
 
-    const preset = presetFor(defaults?.accentId);
-    const primary = defaults?.palette?.primary?.trim();
-    const secondary = defaults?.palette?.secondary?.trim();
-    applyColors(primary || preset.a, secondary || preset.b);
+    const onAccentChange = (e: Event) => {
+      const id = (e as CustomEvent).detail;
+      const match = ACCENTS.find((a) => a.id === id);
+      if (match) {
+        setAccentIdState(id);
+        applyColors(match.a, match.b);
+      }
+    };
+    window.addEventListener("portfolio_accent_change", onAccentChange);
+    return () => window.removeEventListener("portfolio_accent_change", onAccentChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaults?.accentId, defaults?.palette?.primary, defaults?.palette?.secondary]);
 
@@ -112,6 +122,7 @@ export function AccentProvider({
     try {
       localStorage.setItem("portfolio_accent", id);
       localStorage.setItem("accent", id);
+      window.dispatchEvent(new CustomEvent("portfolio_accent_change", { detail: id }));
     } catch {}
   }, []);
 

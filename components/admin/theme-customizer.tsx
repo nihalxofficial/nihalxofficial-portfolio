@@ -97,17 +97,27 @@ export function ThemeCustomizerMenu() {
     if (!theme) return;
     const next: ThemeState = { ...theme, accentId: theme.accentId === id ? "" : id };
     void persist(next);
-    // Live preview on the dashboard (does not touch a visitor's own storage).
-    const preset = ACCENTS.find((a) => a.id === (next.accentId || "cyan"));
+    const targetId = next.accentId || "cyan";
+    const preset = ACCENTS.find((a) => a.id === targetId);
     if (preset) {
       document.documentElement.style.setProperty("--acc", next.palette.primary || preset.a);
       document.documentElement.style.setProperty("--acc2", next.palette.secondary || preset.b);
+      try {
+        localStorage.setItem("portfolio_accent", targetId);
+        localStorage.setItem("accent", targetId);
+        window.dispatchEvent(new CustomEvent("portfolio_accent_change", { detail: targetId }));
+      } catch {}
     }
   }
 
   function chooseBackground(mode: BackgroundMode) {
     if (!theme) return;
     void persist({ ...theme, backgroundEffect: mode });
+    try {
+      localStorage.setItem("portfolio_bg_mode", mode);
+      localStorage.setItem("bg_mode", mode);
+      window.dispatchEvent(new CustomEvent("portfolio_bg_change", { detail: mode }));
+    } catch {}
   }
 
   return (

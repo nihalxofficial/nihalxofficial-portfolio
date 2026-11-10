@@ -67,6 +67,17 @@ export default function ThemePage() {
       setSaving(true);
       setSuccess(false);
       await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
+      
+      const primary = settings.theme.accentPrimary;
+      const secondary = settings.theme.accentSecondary;
+      if (primary) document.documentElement.style.setProperty("--acc", primary);
+      if (secondary) document.documentElement.style.setProperty("--acc2", secondary);
+      try {
+        localStorage.setItem("portfolio_accent", settings.theme.accentPreset);
+        localStorage.setItem("accent", settings.theme.accentPreset);
+        window.dispatchEvent(new CustomEvent("portfolio_accent_change", { detail: settings.theme.accentPreset }));
+      } catch {}
+
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -92,6 +103,15 @@ export default function ThemePage() {
       },
     });
     setCustomMode(false);
+
+    // Apply live preview immediately across the entire dashboard
+    document.documentElement.style.setProperty("--acc", preset.primary);
+    document.documentElement.style.setProperty("--acc2", preset.secondary);
+    try {
+      localStorage.setItem("portfolio_accent", presetId);
+      localStorage.setItem("accent", presetId);
+      window.dispatchEvent(new CustomEvent("portfolio_accent_change", { detail: presetId }));
+    } catch {}
   }
 
   function enableCustomColors() {
@@ -115,6 +135,12 @@ export default function ThemePage() {
         [field]: value,
       },
     });
+
+    if (field === "accentPrimary") {
+      document.documentElement.style.setProperty("--acc", value);
+    } else if (field === "accentSecondary") {
+      document.documentElement.style.setProperty("--acc2", value);
+    }
   }
 
   if (loading) {
