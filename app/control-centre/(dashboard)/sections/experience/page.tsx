@@ -47,7 +47,7 @@ export default function ExperienceManagerPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await listContent("experiences");
+      const result = await listContent("experience");
       setExperiences(result.items as unknown as Experience[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load experiences");
@@ -66,9 +66,9 @@ export default function ExperienceManagerPage() {
       setSaving(true);
 
       if (editing) {
-        await updateContent("experiences", editing, formData);
+        await updateContent("experience", editing, formData);
       } else {
-        await createContent("experiences", {
+        await createContent("experience", {
           ...formData,
           order: experiences.length,
           isVisible: true,
@@ -90,7 +90,7 @@ export default function ExperienceManagerPage() {
     if (!confirm("Are you sure you want to delete this experience?")) return;
 
     try {
-      await deleteContent("experiences", id);
+      await deleteContent("experience", id);
       await loadExperiences();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to delete experience");
@@ -99,7 +99,7 @@ export default function ExperienceManagerPage() {
 
   async function toggleVisibility(id: string, currentState: boolean) {
     try {
-      await updateContent("experiences", id, { isVisible: !currentState });
+      await updateContent("experience", id, { isVisible: !currentState });
       setExperiences((prev) =>
         prev.map((exp) => (exp._id === id ? { ...exp, isVisible: !currentState } : exp))
       );

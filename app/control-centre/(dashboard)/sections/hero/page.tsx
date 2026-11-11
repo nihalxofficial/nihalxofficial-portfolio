@@ -5,6 +5,7 @@ import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dash
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent } from "@/lib/admin";
 import { CmsSwitch } from "@/components/admin/ui";
+import { uploadImageFile } from "@/components/admin/settings/settings-utils";
 
 interface HeroSection {
   _id: string;
@@ -36,15 +37,36 @@ function Field({ label, description, children }: { label: string; description?: 
   );
 }
 
-async function uploadPortrait(file: File): Promise<string> {
-  const fd = new FormData();
-  fd.append("image", file);
-  const key = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-  if (!key) throw new Error("ImgBB API key not configured");
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, { method: "POST", body: fd });
-  if (!res.ok) throw new Error("Upload failed");
-  const json = await res.json();
-  return json.data.url as string;
+/** Fills every nested object so the form never reads through undefined. */
+function normaliseHero(raw: Partial<HeroSection>): HeroSection {
+  return {
+    _id: String(raw._id ?? ""),
+    greeting: raw.greeting ?? "",
+    name: raw.name ?? "",
+    highlightedName: raw.highlightedName ?? "",
+    role: raw.role ?? "",
+    description: raw.description ?? "",
+    availability: {
+      label: raw.availability?.label ?? "",
+      isAvailable: raw.availability?.isAvailable ?? false,
+    },
+    primaryCta: {
+      label: raw.primaryCta?.label ?? "",
+      href: raw.primaryCta?.href ?? "",
+    },
+    secondaryCta: {
+      label: raw.secondaryCta?.label ?? "",
+      href: raw.secondaryCta?.href ?? "",
+    },
+    portraitUrl: raw.portraitUrl ?? "",
+    tagline: raw.tagline ?? "",
+    rotator: {
+      prefix: raw.rotator?.prefix ?? "",
+      lines: Array.isArray(raw.rotator?.lines) ? raw.rotator.lines : [],
+    },
+    isVisible: raw.isVisible ?? true,
+    order: raw.order ?? 0,
+  };
 }
 
 export default function HeroManagementPage() {
@@ -61,9 +83,9 @@ export default function HeroManagementPage() {
   async function loadHero() {
     try {
       setLoading(true); setError(null);
-      const result = await listContent("heroes");
+      const result = await listContent("hero", { limit: 1 });
       if (result.items.length > 0) {
-        setHero(result.items[0] as unknown as HeroSection);
+        setHero(normaliseHero(result.items[0] as unknown as Partial<HeroSection>));
       } else {
         setError("Hero section not found");
       }
@@ -76,7 +98,7 @@ export default function HeroManagementPage() {
     if (!hero) return;
     try {
       setSaving(true); setSuccess(false);
-      await updateContent("heroes", hero._id, hero as unknown as Record<string, unknown>);
+      await updateContent("hero", hero._id || "current", hero as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -104,7 +126,7 @@ export default function HeroManagementPage() {
     if (!file) return;
     try {
       setUploadingPortrait(true);
-      const url = await uploadPortrait(file);
+      const url = await uploadImageFile(file, "hero", "portrait");
       updateField("portraitUrl", url);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Portrait upload failed");

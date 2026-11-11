@@ -16,7 +16,6 @@ import { StatCard, DashboardCard, LoadingState } from "@/components/admin/dashbo
 import {
   fetchAnalyticsOverview,
   fetchAnalyticsRealtime,
-  fetchEnhancedAnalytics,
   type AnalyticsOverview,
   type AnalyticsRealtime,
 } from "@/lib/admin";

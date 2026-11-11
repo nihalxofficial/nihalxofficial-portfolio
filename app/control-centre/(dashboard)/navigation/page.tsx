@@ -33,7 +33,7 @@ export default function NavigationManagerPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await listContent("navigations");
+      const result = await listContent("navigation");
       setItems(result.items as unknown as NavItem[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load navigation");
@@ -50,9 +50,9 @@ export default function NavigationManagerPage() {
       }
 
       if (editing) {
-        await updateContent("navigations", editing, formData);
+        await updateContent("navigation", editing, formData);
       } else {
-        await createContent("navigations", {
+        await createContent("navigation", {
           ...formData,
           order: items.length,
           isVisible: true,
@@ -72,7 +72,7 @@ export default function NavigationManagerPage() {
     if (!confirm("Are you sure you want to delete this navigation item?")) return;
 
     try {
-      await deleteContent("navigations", id);
+      await deleteContent("navigation", id);
       await loadNavigation();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to delete navigation item");
@@ -81,7 +81,7 @@ export default function NavigationManagerPage() {
 
   async function toggleVisibility(id: string, currentState: boolean) {
     try {
-      await updateContent("navigations", id, { isVisible: !currentState });
+      await updateContent("navigation", id, { isVisible: !currentState });
       setItems((prev) =>
         prev.map((item) => (item._id === id ? { ...item, isVisible: !currentState } : item))
       );

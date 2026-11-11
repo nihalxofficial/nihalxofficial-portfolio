@@ -40,7 +40,7 @@ export default function EducationManagerPage() {
   async function loadEducation() {
     try {
       setLoading(true); setError(null);
-      const result = await listContent("educations");
+      const result = await listContent("education");
       setEducation(result.items as unknown as Education[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load education");
@@ -52,9 +52,9 @@ export default function EducationManagerPage() {
       if (!formData.degree || !formData.institution) { alert("Degree and institution are required"); return; }
       setSaving(true);
       if (editing) {
-        await updateContent("educations", editing, formData as Record<string, unknown>);
+        await updateContent("education", editing, formData as Record<string, unknown>);
       } else {
-        await createContent("educations", { ...formData, order: education.length, isVisible: true } as Record<string, unknown>);
+        await createContent("education", { ...formData, order: education.length, isVisible: true } as Record<string, unknown>);
       }
       await loadEducation();
       setEditing(null); setCreating(false); setFormData({});
@@ -65,13 +65,13 @@ export default function EducationManagerPage() {
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure?")) return;
-    try { await deleteContent("educations", id); await loadEducation(); }
+    try { await deleteContent("education", id); await loadEducation(); }
     catch (err) { alert(err instanceof Error ? err.message : "Failed to delete"); }
   }
 
   async function toggleVisibility(id: string, currentState: boolean) {
     try {
-      await updateContent("educations", id, { isVisible: !currentState });
+      await updateContent("education", id, { isVisible: !currentState });
       setEducation((prev) => prev.map((e) => (e._id === id ? { ...e, isVisible: !currentState } : e)));
     } catch (err) { alert(err instanceof Error ? err.message : "Failed to update"); }
   }

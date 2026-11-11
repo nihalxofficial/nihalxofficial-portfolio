@@ -32,6 +32,36 @@ interface AboutSection {
   order: number;
 }
 
+/** Fills missing collections/nested objects so the form never crashes. */
+function normaliseAbout(raw: Partial<AboutSection>): AboutSection {
+  const codeCard: Partial<AboutSection["codeCard"]> = raw.codeCard ?? {};
+  const highlights = Array.isArray(raw.highlights) ? raw.highlights : [];
+
+  return {
+    _id: String(raw._id ?? ""),
+    label: raw.label ?? "",
+    heading: raw.heading ?? "",
+    paragraphs: Array.isArray(raw.paragraphs) ? raw.paragraphs : [],
+    portraitUrl: raw.portraitUrl ?? "",
+    codeCard: {
+      name: codeCard.name ?? "",
+      role: codeCard.role ?? "",
+      location: codeCard.location ?? "",
+      education: codeCard.education ?? "",
+      experience: codeCard.experience ?? "",
+      passion: Array.isArray(codeCard.passion) ? codeCard.passion : [],
+    },
+    highlights: highlights.map((highlight) => ({
+      icon: highlight?.icon ?? "",
+      label: highlight?.label ?? "",
+      value: highlight?.value ?? "",
+    })),
+    signature: raw.signature ?? "",
+    isVisible: raw.isVisible ?? true,
+    order: raw.order ?? 0,
+  };
+}
+
 export default function AboutManagerPage() {
   const [about, setAbout] = useState<AboutSection | null>(null);
   const [loading, setLoading] = useState(true);
@@ -47,9 +77,9 @@ export default function AboutManagerPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await listContent("abouts");
+      const result = await listContent("about", { limit: 1 });
       if (result.items.length > 0) {
-        setAbout(result.items[0] as unknown as AboutSection);
+        setAbout(normaliseAbout(result.items[0] as unknown as Partial<AboutSection>));
       } else {
         setError("About section not found");
       }
@@ -66,7 +96,7 @@ export default function AboutManagerPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("abouts", about._id, about as unknown as Record<string, unknown>);
+      await updateContent("about", about._id || "current", about as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -81,6 +111,7 @@ export default function AboutManagerPage() {
 
     const keys = path.split(".");
     const updated = { ...about };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let current: any = updated;
 
     for (let i = 0; i < keys.length - 1; i++) {

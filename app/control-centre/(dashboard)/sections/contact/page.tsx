@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
-import { readContent, updateContent, listContent } from "@/lib/admin";
+import { updateContent, listContent } from "@/lib/admin";
+import { loadSettings } from "@/components/admin/settings/settings-utils";
 import { CmsSwitch } from "@/components/admin/ui";
 
 interface SocialLink {
@@ -20,7 +21,7 @@ interface ContactData {
     location?: string;
     availability?: string;
   };
-  socials?: SocialLink[];
+  socialLinks?: SocialLink[];
 }
 
 interface SectionMeta {
@@ -74,10 +75,15 @@ export default function ContactManagementPage() {
     try {
       setLoading(true); setError(null);
       const [settingsData, sectionsResult] = await Promise.all([
-        readContent("settings", "default"),
-        listContent("sections"),
+        loadSettings(),
+        listContent("sections", { limit: 100 }),
       ]);
-      setData(settingsData as unknown as ContactData);
+      const settings = settingsData as unknown as ContactData & { socialLinks?: SocialLink[] };
+      setData({
+        _id: String(settings._id ?? "current"),
+        contact: settings.contact ?? {},
+        socialLinks: Array.isArray(settings.socialLinks) ? settings.socialLinks : [],
+      });
       const contactSection = (sectionsResult.items as unknown as SectionMeta[]).find((s) => s.key === "contact");
       if (contactSection) setSectionMeta(contactSection);
     } catch (err) {
@@ -89,7 +95,7 @@ export default function ContactManagementPage() {
     if (!data) return;
     try {
       setSaving(true); setSuccess(false);
-      await updateContent("settings", data._id, data as unknown as Record<string, unknown>);
+      await updateContent("settings", data._id || "current", data as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
@@ -111,24 +117,24 @@ export default function ContactManagementPage() {
   function addSocialLink() {
     if (!data || !newSocial.url) return;
     const platform = SOCIAL_PLATFORMS.find((p) => p.value === newSocial.platform);
-    setData({ ...data, socials: [...(data.socials ?? []), { ...newSocial, icon: platform?.icon ?? "Link" }] });
+    setData({ ...data, socialLinks: [...(data.socialLinks ?? []), { ...newSocial, icon: platform?.icon ?? "Link" }] });
     setNewSocial({ platform: "github", url: "" });
     setAddingLink(false);
   }
 
   function updateSocial(index: number, field: keyof SocialLink, value: string) {
     if (!data) return;
-    const updated = [...(data.socials ?? [])];
+    const updated = [...(data.socialLinks ?? [])];
     updated[index] = { ...updated[index], [field]: value };
     if (field === "platform") updated[index].icon = SOCIAL_PLATFORMS.find((p) => p.value === value)?.icon ?? "Link";
-    setData({ ...data, socials: updated });
+    setData({ ...data, socialLinks: updated });
   }
 
   function removeSocial(index: number) {
     if (!data) return;
-    const updated = [...(data.socials ?? [])];
+    const updated = [...(data.socialLinks ?? [])];
     updated.splice(index, 1);
-    setData({ ...data, socials: updated });
+    setData({ ...data, socialLinks: updated });
   }
 
   if (loading) return <div><h1 className="mb-6 text-2xl font-bold text-ink">Contact Section</h1><LoadingState message="Loading contact settings..." /></div>;
@@ -172,11 +178,11 @@ export default function ContactManagementPage() {
         {/* Social Links */}
         <DashboardCard icon="Share2" title="Social Links" description="Profile links shown in contact section and footer">
           <div className="space-y-3">
-            {(data.socials ?? []).length === 0 && !addingLink && (
+            {(data.socialLinks ?? []).length === 0 && !addingLink && (
               <p className="rounded-lg border border-dashed border-line py-6 text-center text-[13px] text-faint">No social links added yet</p>
             )}
 
-            {(data.socials ?? []).map((link, i) => {
+            {(data.socialLinks ?? []).map((link, i) => {
               const p = SOCIAL_PLATFORMS.find((x) => x.value === link.platform);
               return (
                 <div key={i} className="flex items-center gap-3 rounded-lg border border-line bg-surface-2/30 px-3 py-2.5">
@@ -262,9 +268,9 @@ export default function ContactManagementPage() {
               </div>
             ))}
           </div>
-          {(data.socials ?? []).length > 0 && (
+          {(data.socialLinks ?? []).length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2 border-t border-line/50 pt-4">
-              {(data.socials ?? []).map((link, i) => {
+              {(data.socialLinks ?? []).map((link, i) => {
                 const p = SOCIAL_PLATFORMS.find((x) => x.value === link.platform);
                 return (
                   <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/5 px-3 py-1 text-[12px] font-medium text-accent">

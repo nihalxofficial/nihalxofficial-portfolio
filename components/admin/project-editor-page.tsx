@@ -7,6 +7,7 @@ import { DashboardCard } from "@/components/admin/dashboard-card";
 import { CmsSwitch } from "@/components/admin/ui";
 import { Icon } from "@/components/ui/icon";
 import { createContent } from "@/lib/admin";
+import { uploadImageFile } from "@/components/admin/settings/settings-utils";
 
 const CATEGORIES = [
   "Full-Stack System",
@@ -25,20 +26,6 @@ const inputCls =
   "dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3.5 py-2.5 text-[13px] text-ink placeholder:text-slate-500 outline-none transition-all focus:border-accent/60 focus:ring-1 focus:ring-accent/20";
 const labelCls = "font-mono text-[11px] font-semibold uppercase tracking-wider text-slate-400 block mb-1.5";
 const helperCls = "font-mono text-[10px] text-slate-500 mt-1 block";
-
-async function uploadToImgBB(file: File): Promise<string> {
-  const fd = new FormData();
-  fd.append("image", file);
-  const key = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-  if (!key) throw new Error("ImgBB API key is not configured");
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, {
-    method: "POST",
-    body: fd,
-  });
-  if (!res.ok) throw new Error("Failed to upload image to ImgBB");
-  const data = await res.json();
-  return data.data.url as string;
-}
 
 export function ProjectAddPage() {
   const router = useRouter();
@@ -127,7 +114,7 @@ export function ProjectAddPage() {
     try {
       setUploadingThumb(true);
       setError(null);
-      const url = await uploadToImgBB(file);
+      const url = await uploadImageFile(file, "projects", "thumbnail");
       setThumbnailUrl(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Thumbnail upload failed");
@@ -143,7 +130,7 @@ export function ProjectAddPage() {
     try {
       setUploadingScreenshot(true);
       setError(null);
-      const url = await uploadToImgBB(file);
+      const url = await uploadImageFile(file, "projects", "screenshot");
       setScreenshots((prev) => [...prev, url]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Screenshot upload failed");
@@ -202,7 +189,7 @@ export function ProjectAddPage() {
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/5 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-2 font-mono text-xs">
-            <span className="text-acc tracking-widest uppercase">// protocol · project deployment engine</span>
+            <span className="text-acc tracking-widest uppercase">{"// protocol · project deployment engine"}</span>
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full font-mono text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               READY
@@ -526,7 +513,7 @@ export function ProjectAddPage() {
                   className="btn-ghost !rounded-lg flex-1 py-2 text-xs font-mono font-medium flex items-center justify-center gap-1.5"
                 >
                   <Icon name="Upload" className="h-3.5 w-3.5" />
-                  <span>{uploadingThumb ? "Uploading…" : "Upload to ImgBB"}</span>
+                  <span>{uploadingThumb ? "Uploading…" : "Upload Image"}</span>
                 </button>
               </div>
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
-import { readContent, updateContent } from "@/lib/admin";
+import { AdminApiError, readContent, updateContent } from "@/lib/admin";
 
 interface GlobalSettings {
   _id: string;
@@ -36,10 +36,13 @@ export default function GlobalSettingsPage() {
     try {
       setLoading(true);
       setError(null);
-      const data = (await readContent("settings", "default")) as Record<string, any>;
+      const data = (await readContent("settings", "current").catch((cause: unknown) => {
+        if (cause instanceof AdminApiError && cause.status === 404) return {} as Record<string, unknown>;
+        throw cause;
+      })) as Record<string, unknown>;
       setSettings({
         ...data,
-        _id: data?._id || "default",
+        _id: data?._id || "current",
         siteName: data?.siteName || "",
         siteUrl: data?.siteUrl || "",
         metaTitle: data?.metaTitle || "",
