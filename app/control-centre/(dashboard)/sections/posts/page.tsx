@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, ListBoxItem, Select, Switch, TextArea } from "@heroui/react";
 
 interface BlogPost {
   _id: string;
@@ -222,8 +222,7 @@ export default function PostsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>Post Title</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="How to Build Amazing Projects with Next.js"
                   value={formData.title || ""}
@@ -239,8 +238,7 @@ export default function PostsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>URL Slug</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="how-to-build-amazing-projects"
                   value={formData.slug || ""}
@@ -251,7 +249,7 @@ export default function PostsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Excerpt</label>
-                <textarea
+                <TextArea
                   rows={4}
                   className={inputCls + " resize-none"}
                   placeholder="A brief summary of your post (shown in post cards)..."
@@ -263,20 +261,20 @@ export default function PostsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Category</label>
-                <select
-                  className={inputCls}
+                <Select
                   value={formData.category || "Tutorial"}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(next: unknown) => setFormData({ ...formData, category: String(next) })}
+                  className={inputCls}
                 >
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <ListBoxItem key={cat} value={cat}>{cat}</ListBoxItem>
                   ))}
-                </select>
+                </Select>
               </div>
 
               <div className="space-y-1">
                 <label className={labelCls}>Tags (comma-separated)</label>
-                <textarea
+                <TextArea
                   rows={2}
                   className={inputCls + " resize-none"}
                   placeholder="react, nextjs, typescript, tutorial"
@@ -300,8 +298,7 @@ export default function PostsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>Cover Image URL</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="https://i.ibb.co/..."
                   value={formData.coverImageUrl || ""}
@@ -326,7 +323,7 @@ export default function PostsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>Content</label>
-                <textarea
+                <TextArea
                   rows={15}
                   className={inputCls + " resize-y"}
                   placeholder={"Write your post content here...\n\nYou can use plain text or markdown formatting.\n\n## Heading\n**Bold text**\n*Italic text*\n- List item"}
@@ -348,8 +345,7 @@ export default function PostsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>SEO Title (optional)</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="Custom title for search engines (defaults to post title)"
                   value={formData.seo?.title || ""}
@@ -364,7 +360,7 @@ export default function PostsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>SEO Description (optional)</label>
-                <textarea
+                <TextArea
                   rows={3}
                   className={inputCls + " resize-none"}
                   placeholder="Custom description for search engines and social sharing"
@@ -383,12 +379,16 @@ export default function PostsManagerPage() {
           {/* Publishing */}
           <DashboardCard icon="Send" title="Publishing">
             <div className="space-y-4">
-              <CmsSwitch
-                checked={formData.isPublished || false}
-                onChange={(checked) => setFormData({ ...formData, isPublished: checked })}
-                label={formData.isPublished ? "Published" : "Draft"}
-                size="sm"
+              <Switch
+                isSelected={formData.isPublished || false}
+                onChange={(isSelected) => setFormData({ ...formData, isPublished: isSelected })}
               />
+              {formData.isPublished && (
+                <span className="text-[12px] font-medium text-ink">Published</span>
+              )}
+              {!formData.isPublished && (
+                <span className="text-[12px] font-medium text-ink">Draft</span>
+              )}
               {formData.publishedAt && (
                 <p className="text-[12px] text-muted">
                   Published: {new Date(formData.publishedAt).toLocaleString()}
@@ -491,12 +491,13 @@ export default function PostsManagerPage() {
 
                         {/* Actions */}
                         <div className="flex items-center gap-3 border-t border-line/50 pt-3">
-                          <CmsSwitch
-                            checked={post.isPublished}
-                            onChange={() => togglePublished(post._id, post.isPublished)}
-                            label="Published"
-                            size="sm"
-                          />
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              isSelected={post.isPublished}
+                              onChange={() => togglePublished(post._id, post.isPublished)}
+                            />
+                            <span className="text-[12px] font-medium text-ink">Published</span>
+                          </div>
                           <div className="flex-1" />
                           <button type="button" onClick={() => startEdit(post)} className={btnGhost}>
                             <Icon name="Edit" className="h-3.5 w-3.5" /> Edit
