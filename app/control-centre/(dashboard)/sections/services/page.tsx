@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Switch, TextArea } from "@heroui/react";
 
 interface Service {
   _id: string;
@@ -154,8 +154,7 @@ export default function ServicesManagerPage() {
           <div className="space-y-4">
             <div className="space-y-1">
               <label className={labelCls}>Title</label>
-              <input
-                type="text"
+              <Input
                 className={inputCls}
                 placeholder="Full-Stack Development, API Design, DevOps"
                 value={formData.title || ""}
@@ -164,7 +163,7 @@ export default function ServicesManagerPage() {
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Description</label>
-              <textarea
+              <TextArea
                 rows={6}
                 className={inputCls + " resize-y"}
                 placeholder="Detailed description of this service..."
@@ -174,8 +173,7 @@ export default function ServicesManagerPage() {
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Icon (Lucide name)</label>
-              <input
-                type="text"
+              <Input
                 className={inputCls}
                 placeholder="Code, Database, Cloud, Shield"
                 value={formData.icon || ""}
@@ -228,12 +226,13 @@ export default function ServicesManagerPage() {
                         </p>
                       </div>
                     </div>
-                    <CmsSwitch
-                      checked={service.isVisible}
-                      onChange={() => toggleVisibility(service._id, service.isVisible)}
-                      label=""
-                      size="sm"
-                    />
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        isSelected={service.isVisible}
+                        onChange={() => toggleVisibility(service._id, service.isVisible)}
+                      />
+                      <span className="text-[12px] font-medium text-ink">Visible</span>
+                    </div>
                   </div>
 
                   {/* Actions */}
