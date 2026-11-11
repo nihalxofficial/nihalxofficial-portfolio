@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Switch, TextArea } from "@heroui/react";
 
 interface Statistic {
   _id: string;
@@ -116,23 +116,23 @@ export default function StatisticsManagerPage() {
           <div className="space-y-4">
             <div className="space-y-1">
               <label className={labelCls}>Value</label>
-              <input type="text" className={inputCls} placeholder="5+, 100%, 50K+" value={formData.value || ""}
+              <Input type="text" className={inputCls} placeholder="5+, 100%, 50K+" value={formData.value || ""}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })} />
               <p className="text-[11px] text-faint">The number or metric to display (e.g., &apos;5+&apos;, &apos;100%&apos;, &apos;50K+&apos;)</p>
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Label</label>
-              <input type="text" className={inputCls} placeholder="Years Experience, Projects Completed" value={formData.label || ""}
+              <Input type="text" className={inputCls} placeholder="Years Experience, Projects Completed" value={formData.label || ""}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })} />
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Description</label>
-              <textarea rows={3} className={inputCls + " resize-none"} placeholder="Brief description of this metric"
+              <TextArea rows={3} className={inputCls + " resize-none"} placeholder="Brief description of this metric"
                 value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Icon (Lucide name)</label>
-              <input type="text" className={inputCls} placeholder="BarChart, Users, TrendingUp, Award" value={formData.icon || ""}
+              <Input type="text" className={inputCls} placeholder="BarChart, Users, TrendingUp, Award" value={formData.icon || ""}
                 onChange={(e) => setFormData({ ...formData, icon: e.target.value })} />
               <p className="text-[11px] text-faint">Choose an icon from lucide.dev</p>
             </div>
@@ -158,7 +158,13 @@ export default function StatisticsManagerPage() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-accent/20 bg-gradient-to-br from-accent/15 to-accent/5 text-accent">
                     <Icon name={stat.icon || "BarChart"} className="h-6 w-6" />
                   </div>
-                  <CmsSwitch checked={stat.isVisible} onChange={() => toggleVisibility(stat._id, stat.isVisible)} label="" size="sm" />
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      isSelected={stat.isVisible}
+                      onChange={() => toggleVisibility(stat._id, stat.isVisible)}
+                    />
+                    <span className="text-[12px] font-medium text-ink">Visible</span>
+                  </div>
                 </div>
                 <div>
                   <p className="text-3xl font-bold text-ink">{stat.value}</p>
