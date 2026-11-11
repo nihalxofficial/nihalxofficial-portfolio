@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Switch, TextArea } from "@heroui/react";
 
 interface Education {
   _id: string;
@@ -110,16 +110,33 @@ export default function EducationManagerPage() {
             ].map(({ label, key, placeholder }) => (
               <div key={key} className="space-y-1">
                 <label className={labelCls}>{label}</label>
-                <input placeholder={placeholder} value={(formData as Record<string, string>)[key] ?? ""} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} className={inputCls} />
+                <Input
+                  placeholder={placeholder}
+                  value={(formData as Record<string, string>)[key] ?? ""}
+                  onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                  className={inputCls}
+                />
               </div>
             ))}
             <div className="space-y-1">
               <label className={labelCls}>Description</label>
-              <textarea placeholder="Brief overview of your studies..." value={formData.description || ""} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={4} className={inputCls} />
+              <TextArea
+                placeholder="Brief overview of your studies..."
+                value={formData.description || ""}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={4}
+                className={inputCls}
+              />
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Highlights (one per line)</label>
-              <textarea placeholder={"GPA: 3.9/4.0\nDean's List\nGraduated with Honors"} value={formData.highlights?.join("\n") || ""} onChange={(e) => setFormData({ ...formData, highlights: e.target.value.split("\n").filter(Boolean) })} rows={6} className={inputCls} />
+              <TextArea
+                placeholder={"GPA: 3.9/4.0\nDean's List\nGraduated with Honors"}
+                value={formData.highlights?.join("\n") || ""}
+                onChange={(e) => setFormData({ ...formData, highlights: e.target.value.split("\n").filter(Boolean) })}
+                rows={6}
+                className={inputCls}
+              />
             </div>
             <div className="flex gap-3 pt-2">
               <button type="button" onClick={() => void handleSave()} disabled={saving} className={btnPrimary}>
@@ -151,7 +168,13 @@ export default function EducationManagerPage() {
                       <p className="mt-1 text-[12px] text-muted">{edu.period}</p>
                     </div>
                   </div>
-                  <CmsSwitch checked={edu.isVisible} onChange={() => void toggleVisibility(edu._id, edu.isVisible)} label="Toggle visibility" size="sm" />
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      isSelected={edu.isVisible}
+                      onChange={() => toggleVisibility(edu._id, edu.isVisible)}
+                    />
+                    <span className="text-[12px] font-medium text-ink">Visible</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 border-t border-line/50 pt-3">
                   <button type="button" onClick={() => startEdit(edu)} className={btnIcon}><Icon name="Edit" className="h-3.5 w-3.5" />Edit</button>
