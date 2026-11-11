@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Switch, TextArea } from "@heroui/react";
 import { uploadImageFile } from "@/components/admin/settings/settings-utils";
 
 interface HeroSection {
@@ -148,25 +148,25 @@ export default function HeroManagementPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[13px] text-muted">Visible</span>
-          <CmsSwitch checked={hero.isVisible} onChange={(val) => updateField("isVisible", val)} label="Visible" size="sm" />
+          <Switch isSelected={hero.isVisible} onChange={(val) => updateField("isVisible", val)} />
         </div>
       </div>
 
       <div className="space-y-6">
         <DashboardCard icon="User" title="Basic Information" description="Greeting, name, and role">
           <div className="space-y-4">
-            <Field label="Greeting"><input placeholder="Hello, I'm" value={hero.greeting} onChange={(e) => updateField("greeting", e.target.value)} className={inputCls} /></Field>
-            <Field label="Name"><input placeholder="John Doe" value={hero.name} onChange={(e) => updateField("name", e.target.value)} className={inputCls} /></Field>
-            <Field label="Highlighted Name" description="Name with accent styling"><input placeholder="John Doe" value={hero.highlightedName} onChange={(e) => updateField("highlightedName", e.target.value)} className={inputCls} /></Field>
-            <Field label="Role"><input placeholder="Full Stack Developer" value={hero.role} onChange={(e) => updateField("role", e.target.value)} className={inputCls} /></Field>
-            <Field label="Description"><textarea placeholder="Your brief introduction..." value={hero.description} onChange={(e) => updateField("description", e.target.value)} rows={4} className={inputCls} /></Field>
+            <Field label="Greeting"><Input placeholder="Hello, I'm" value={hero.greeting} onChange={(e) => updateField("greeting", e.target.value)} className={inputCls} /></Field>
+            <Field label="Name"><Input placeholder="John Doe" value={hero.name} onChange={(e) => updateField("name", e.target.value)} className={inputCls} /></Field>
+            <Field label="Highlighted Name" description="Name with accent styling"><Input placeholder="John Doe" value={hero.highlightedName} onChange={(e) => updateField("highlightedName", e.target.value)} className={inputCls} /></Field>
+            <Field label="Role"><Input placeholder="Full Stack Developer" value={hero.role} onChange={(e) => updateField("role", e.target.value)} className={inputCls} /></Field>
+            <Field label="Description"><TextArea placeholder="Your brief introduction..." value={hero.description} onChange={(e) => updateField("description", e.target.value)} rows={4} className={inputCls} /></Field>
           </div>
         </DashboardCard>
 
         <DashboardCard icon="Type" title="Typewriter Animation" description="Rotating text lines">
           <div className="space-y-4">
-            <Field label="Prefix (optional)"><input placeholder="I'm a" value={hero.rotator?.prefix || ""} onChange={(e) => updateField("rotator.prefix", e.target.value)} className={inputCls} /></Field>
-            <Field label="Rotating Lines (one per line)"><textarea placeholder={"Developer\nDesigner\nCreator"} value={hero.rotator?.lines?.join("\n") || ""} onChange={(e) => updateField("rotator.lines", e.target.value.split("\n").filter(Boolean))} rows={6} className={inputCls} /></Field>
+            <Field label="Prefix (optional)"><Input placeholder="I'm a" value={hero.rotator?.prefix || ""} onChange={(e) => updateField("rotator.prefix", e.target.value)} className={inputCls} /></Field>
+            <Field label="Rotating Lines (one per line)"><TextArea placeholder={"Developer\nDesigner\nCreator"} value={hero.rotator?.lines?.join("\n") || ""} onChange={(e) => updateField("rotator.lines", e.target.value.split("\n").filter(Boolean))} rows={6} className={inputCls} /></Field>
           </div>
         </DashboardCard>
 
@@ -174,14 +174,14 @@ export default function HeroManagementPage() {
           <div className="space-y-6">
             <div className="space-y-3">
               <h4 className="text-[13px] font-semibold text-ink">Primary CTA</h4>
-              <Field label="Label"><input placeholder="Get in touch" value={hero.primaryCta.label} onChange={(e) => updateField("primaryCta.label", e.target.value)} className={inputCls} /></Field>
-              <Field label="URL"><input placeholder="/#contact" value={hero.primaryCta.href} onChange={(e) => updateField("primaryCta.href", e.target.value)} className={inputCls} /></Field>
+              <Field label="Label"><Input placeholder="Get in touch" value={hero.primaryCta.label} onChange={(e) => updateField("primaryCta.label", e.target.value)} className={inputCls} /></Field>
+              <Field label="URL"><Input placeholder="/#contact" value={hero.primaryCta.href} onChange={(e) => updateField("primaryCta.href", e.target.value)} className={inputCls} /></Field>
             </div>
             <div className="h-px bg-line" />
             <div className="space-y-3">
               <h4 className="text-[13px] font-semibold text-ink">Secondary CTA</h4>
-              <Field label="Label"><input placeholder="View projects" value={hero.secondaryCta.label} onChange={(e) => updateField("secondaryCta.label", e.target.value)} className={inputCls} /></Field>
-              <Field label="URL"><input placeholder="/#projects" value={hero.secondaryCta.href} onChange={(e) => updateField("secondaryCta.href", e.target.value)} className={inputCls} /></Field>
+              <Field label="Label"><Input placeholder="View projects" value={hero.secondaryCta.label} onChange={(e) => updateField("secondaryCta.label", e.target.value)} className={inputCls} /></Field>
+              <Field label="URL"><Input placeholder="/#projects" value={hero.secondaryCta.href} onChange={(e) => updateField("secondaryCta.href", e.target.value)} className={inputCls} /></Field>
             </div>
           </div>
         </DashboardCard>
@@ -220,19 +220,19 @@ export default function HeroManagementPage() {
                     {uploadingPortrait ? "Uploading..." : "Upload Portrait"}
                   </button>
                   <Field label="Or paste image URL" description="Direct link to hosted image (ImgBB, Cloudinary, etc.)">
-                    <input placeholder="https://i.ibb.co/..." value={hero.portraitUrl} onChange={(e) => updateField("portraitUrl", e.target.value)} className={inputCls} />
+                    <Input placeholder="https://i.ibb.co/..." value={hero.portraitUrl} onChange={(e) => updateField("portraitUrl", e.target.value)} className={inputCls} />
                   </Field>
                 </div>
               </div>
             </div>
 
-            <Field label="Tagline (optional)"><input placeholder="Crafting digital experiences" value={hero.tagline || ""} onChange={(e) => updateField("tagline", e.target.value)} className={inputCls} /></Field>
+            <Field label="Tagline (optional)"><Input placeholder="Crafting digital experiences" value={hero.tagline || ""} onChange={(e) => updateField("tagline", e.target.value)} className={inputCls} /></Field>
 
             <div className="space-y-3">
               <h4 className="text-[13px] font-semibold text-ink">Availability Status</h4>
-              <Field label="Label"><input placeholder="Available for hire" value={hero.availability.label} onChange={(e) => updateField("availability.label", e.target.value)} className={inputCls} /></Field>
+              <Field label="Label"><Input placeholder="Available for hire" value={hero.availability.label} onChange={(e) => updateField("availability.label", e.target.value)} className={inputCls} /></Field>
               <div className="flex items-center gap-2">
-                <CmsSwitch checked={hero.availability.isAvailable} onChange={(val) => updateField("availability.isAvailable", val)} label="Available" size="sm" />
+                <Switch isSelected={hero.availability.isAvailable} onChange={(val) => updateField("availability.isAvailable", val)} />
                 <span className="text-[13px] text-ink">Currently available</span>
               </div>
             </div>
