@@ -5,7 +5,7 @@ import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dash
 import { Icon } from "@/components/ui/icon";
 import { updateContent, listContent } from "@/lib/admin";
 import { loadSettings } from "@/components/admin/settings/settings-utils";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Switch } from "@heroui/react";
 
 interface SocialLink {
   platform: string;
@@ -151,7 +151,7 @@ export default function ContactManagementPage() {
         {sectionMeta && (
           <div className="flex items-center gap-2 rounded-lg border border-line bg-surface-2/40 px-3 py-2">
             <span className="text-[12px] text-muted">Visible</span>
-            <CmsSwitch checked={sectionMeta.isVisible} onChange={() => void toggleVisibility()} label="Contact visibility" size="sm" />
+            <Switch isSelected={sectionMeta.isVisible} onChange={() => void toggleVisibility()} />
           </div>
         )}
       </div>
@@ -161,16 +161,40 @@ export default function ContactManagementPage() {
         <DashboardCard icon="Mail" title="Contact Details" description="Your contact information shown to visitors">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Email Address">
-              <input type="email" className={inputCls} placeholder="hello@example.com" value={data.contact?.email ?? ""} onChange={(e) => updateContact("email", e.target.value)} />
+              <Input
+                type="email"
+                className={inputCls}
+                placeholder="hello@example.com"
+                value={data.contact?.email ?? ""}
+                onChange={(e) => updateContact("email", e.target.value)}
+              />
             </Field>
             <Field label="Phone Number">
-              <input type="tel" className={inputCls} placeholder="+1 (555) 123-4567" value={data.contact?.phone ?? ""} onChange={(e) => updateContact("phone", e.target.value)} />
+              <Input
+                type="tel"
+                className={inputCls}
+                placeholder="+1 (555) 123-4567"
+                value={data.contact?.phone ?? ""}
+                onChange={(e) => updateContact("phone", e.target.value)}
+              />
             </Field>
             <Field label="Location">
-              <input type="text" className={inputCls} placeholder="Dhaka, Bangladesh" value={data.contact?.location ?? ""} onChange={(e) => updateContact("location", e.target.value)} />
+              <Input
+                type="text"
+                className={inputCls}
+                placeholder="Dhaka, Bangladesh"
+                value={data.contact?.location ?? ""}
+                onChange={(e) => updateContact("location", e.target.value)}
+              />
             </Field>
             <Field label="Availability Status">
-              <input type="text" className={inputCls} placeholder="Available for hire" value={data.contact?.availability ?? ""} onChange={(e) => updateContact("availability", e.target.value)} />
+              <Input
+                type="text"
+                className={inputCls}
+                placeholder="Available for hire"
+                value={data.contact?.availability ?? ""}
+                onChange={(e) => updateContact("availability", e.target.value)}
+              />
             </Field>
           </div>
         </DashboardCard>
