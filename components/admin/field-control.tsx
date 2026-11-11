@@ -1,6 +1,8 @@
 "use client";
 
 import { Icon } from "@/components/ui/icon";
+import { Input, ListBoxItem, Select, Switch, TextArea, TextField } from "@heroui/react";
+import { Label } from "@heroui/react";
 import { humanize, type FieldDef } from "@/lib/admin";
 
 /**
@@ -103,10 +105,10 @@ function ScalarControl({
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
-        <label className={LABEL}>
+        <Label className={LABEL}>
           {humanize(field.name)}
           {required ? <span className="ml-1 text-accent">*</span> : null}
-        </label>
+        </Label>
         {hint ? (
           <span className="font-mono text-[9px] text-slate-500 tracking-wider">
             {hint}
@@ -115,36 +117,38 @@ function ScalarControl({
       </div>
 
       {multiline ? (
-        <textarea
-          rows={field.max && field.max < 400 ? 3 : 6}
-          value={rawValue}
-          disabled={disabled}
-          placeholder={placeholder}
-          onChange={(e) => onChange(e.target.value)}
-          className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 placeholder:text-slate-500 disabled:opacity-60 resize-y min-h-[90px]"
-        />
+        <TextField isDisabled={disabled}>
+          <TextArea
+            rows={field.max && field.max < 400 ? 3 : 6}
+            value={rawValue}
+            placeholder={placeholder}
+            onChange={(e) => onChange(e.target.value)}
+            className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 placeholder:text-slate-500 disabled:opacity-60 resize-y min-h-[90px]"
+          />
+        </TextField>
       ) : (
-        <input
-          type={
-            field.kind === "number"
-              ? "number"
-              : field.kind === "date"
-                ? "date"
-                : field.kind === "url"
-                  ? "url"
-                  : "text"
-          }
-          value={rawValue}
-          disabled={disabled}
-          placeholder={placeholder}
-          onChange={(e) => {
-            const next = e.target.value;
-            if (field.kind === "number") onChange(next === "" ? undefined : Number(next));
-            else if (field.kind === "date") onChange(next || undefined);
-            else onChange(next);
-          }}
-          className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 placeholder:text-slate-500 disabled:opacity-60"
-        />
+        <TextField isDisabled={disabled}>
+          <Input
+            type={
+              field.kind === "number"
+                ? "number"
+                : field.kind === "date"
+                  ? "date"
+                  : field.kind === "url"
+                    ? "url"
+                    : "text"
+            }
+            value={rawValue}
+            placeholder={placeholder}
+            onChange={(e) => {
+              const next = e.target.value;
+              if (field.kind === "number") onChange(next === "" ? undefined : Number(next));
+              else if (field.kind === "date") onChange(next || undefined);
+              else onChange(next);
+            }}
+            className="dashboard-input w-full rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[12.5px] text-ink outline-none transition-colors focus:border-accent/60 focus:ring-1 focus:ring-accent/20 placeholder:text-slate-500 disabled:opacity-60"
+          />
+        </TextField>
       )}
 
       <FieldError message={error} />
@@ -155,16 +159,15 @@ function ScalarControl({
 function BooleanControl({ field, value, path, errors, disabled, onChange }: FieldControlProps) {
   return (
     <div className="space-y-1.5">
-      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-line bg-surface-2 px-3 py-2.5">
+      <Label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-line bg-surface-2 px-3 py-2.5">
         <span className="text-[12.5px] font-medium text-ink">{humanize(field.name)}</span>
-        <input
-          type="checkbox"
-          checked={Boolean(value)}
-          disabled={disabled}
-          onChange={(event) => onChange(event.target.checked)}
-          className="h-4 w-4 shrink-0 accent-[var(--accent)]"
+        <Switch
+          isSelected={Boolean(value)}
+          isDisabled={disabled}
+          onChange={(event) => onChange(event)}
+          className="h-4 w-7 shrink-0"
         />
-      </label>
+      </Label>
       <FieldError message={errors[path]} />
     </div>
   );
@@ -173,25 +176,23 @@ function BooleanControl({ field, value, path, errors, disabled, onChange }: Fiel
 function EnumControl({ field, value, path, errors, disabled, onChange }: FieldControlProps) {
   return (
     <div className="space-y-1.5">
-      <label className="block">
+      <Label className="block">
         <span className={LABEL}>
           {humanize(field.name)}
           {field.required ? <span className="ml-1 text-accent">*</span> : null}
         </span>
-        <select
+        <Select
           value={asText(value)}
-          disabled={disabled}
-          onChange={(event) => onChange(event.target.value || undefined)}
-          className={`${BOX} mt-1.5 appearance-none`}
+          onChange={(next: unknown) => onChange(next || undefined)}
+          isDisabled={disabled}
+          className={`${BOX} mt-1.5`}
         >
-          <option value="">— none —</option>
+          <ListBoxItem value="">— none —</ListBoxItem>
           {(field.options ?? []).map((option) => (
-            <option key={option} value={option}>
-              {humanize(option)}
-            </option>
+            <ListBoxItem key={option} value={option}>{humanize(option)}</ListBoxItem>
           ))}
-        </select>
-      </label>
+        </Select>
+      </Label>
       <FieldError message={errors[path]} />
     </div>
   );
@@ -236,13 +237,14 @@ function ListControl({ field, value, path, errors, disabled, onChange }: FieldCo
 
         {items.map((item, index) => (
           <div key={index} className="flex items-center gap-1.5">
-            <input
-              value={item}
-              disabled={disabled}
-              placeholder={`${humanize(field.name)} ${index + 1}`}
-              onChange={(event) => update(index, event.target.value)}
-              className={BOX}
-            />
+            <TextField isDisabled={disabled}>
+              <Input
+                value={item}
+                placeholder={`${humanize(field.name)} ${index + 1}`}
+                onChange={(event) => update(index, event.target.value)}
+                className={BOX}
+              />
+            </TextField>
             <button
               type="button"
               disabled={disabled}
