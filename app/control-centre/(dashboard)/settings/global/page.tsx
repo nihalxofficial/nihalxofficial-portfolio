@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { AdminApiError, readContent, updateContent } from "@/lib/admin";
+import { Input, TextArea } from "@heroui/react";
 
 interface GlobalSettings {
   _id: string;
@@ -124,18 +125,30 @@ export default function GlobalSettingsPage() {
           <div className="space-y-4">
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Site Name</label>
-              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="My Portfolio" value={settings.siteName} onChange={(e) => updateField("siteName", e.target.value)} />
+              <Input
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="My Portfolio"
+                value={settings.siteName}
+                onChange={(e) => updateField("siteName", e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Site URL</label>
-              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="https://yourportfolio.com" value={settings.siteUrl} onChange={(e) => updateField("siteUrl", e.target.value)} />
+              <Input
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="https://yourportfolio.com"
+                value={settings.siteUrl}
+                onChange={(e) => updateField("siteUrl", e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Resume URL</label>
-              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="https://example.com/resume.pdf" value={settings.resumeUrl || ""} onChange={(e) => updateField("resumeUrl", e.target.value)} />
+              <Input
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="https://example.com/resume.pdf"
+                value={settings.resumeUrl || ""}
+                onChange={(e) => updateField("resumeUrl", e.target.value)}
+              />
             </div>
           </div>
         </DashboardCard>
@@ -145,20 +158,31 @@ export default function GlobalSettingsPage() {
           <div className="space-y-4">
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Meta Title</label>
-              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="Full Stack Developer | Portfolio" value={settings.metaTitle} onChange={(e) => updateField("metaTitle", e.target.value)} />
+              <Input
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="Full Stack Developer | Portfolio"
+                value={settings.metaTitle}
+                onChange={(e) => updateField("metaTitle", e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Meta Description</label>
-              <textarea rows={4} className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30 resize-none"
-                placeholder="Professional portfolio showcasing projects, skills, and experience..." value={settings.metaDescription}
-                onChange={(e) => updateField("metaDescription", e.target.value)} />
+              <TextArea
+                rows={4}
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30 resize-none"
+                placeholder="Professional portfolio showcasing projects, skills, and experience..."
+                value={settings.metaDescription}
+                onChange={(e) => updateField("metaDescription", e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Keywords (comma-separated)</label>
-              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="developer, portfolio, react, typescript" value={settings.keywords?.join(", ") || ""}
-                onChange={(e) => updateField("keywords", e.target.value.split(",").map((k) => k.trim()).filter(Boolean))} />
+              <Input
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="developer, portfolio, react, typescript"
+                value={settings.keywords?.join(", ") || ""}
+                onChange={(e) => updateField("keywords", e.target.value.split(",").map((k) => k.trim()).filter(Boolean))}
+              />
             </div>
           </div>
         </DashboardCard>
@@ -168,23 +192,41 @@ export default function GlobalSettingsPage() {
           <div className="space-y-4">
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Email Address</label>
-              <input type="email" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="hello@example.com" value={settings.contact?.email || ""} onChange={(e) => updateField("contact.email", e.target.value)} />
+              <Input
+                type="email"
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="hello@example.com"
+                value={settings.contact?.email || ""}
+                onChange={(e) => updateField("contact.email", e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Phone Number</label>
-              <input type="tel" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="+1 (555) 123-4567" value={settings.contact?.phone || ""} onChange={(e) => updateField("contact.phone", e.target.value)} />
+              <Input
+                type="tel"
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="+1 (555) 123-4567"
+                value={settings.contact?.phone || ""}
+                onChange={(e) => updateField("contact.phone", e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Location</label>
-              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="San Francisco, CA" value={settings.contact?.location || ""} onChange={(e) => updateField("contact.location", e.target.value)} />
+              <Input
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="San Francisco, CA"
+                value={settings.contact?.location || ""}
+                onChange={(e) => updateField("contact.location", e.target.value)}
+              />
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Availability Status</label>
-              <input type="text" className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
-                placeholder="Available for hire" value={settings.contact?.availability || ""} onChange={(e) => updateField("contact.availability", e.target.value)} />
+              <Input
+                className="w-full rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[13px] text-ink placeholder:text-faint focus:border-accent/50 focus:outline-none focus:ring-1 focus:ring-accent/30"
+                placeholder="Available for hire"
+                value={settings.contact?.availability || ""}
+                onChange={(e) => updateField("contact.availability", e.target.value)}
+              />
             </div>
           </div>
         </DashboardCard>
