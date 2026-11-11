@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Switch } from "@heroui/react";
 
 interface Certification {
   _id: string;
@@ -109,14 +109,25 @@ export default function CertificationsManagerPage() {
             ].map(({ label, key, placeholder, type }) => (
               <div key={key} className="space-y-1">
                 <label className={labelCls}>{label}</label>
-                <input type={type ?? "text"} placeholder={placeholder} value={(formData as Record<string, string>)[key] ?? ""} onChange={(e) => setFormData({ ...formData, [key]: e.target.value })} className={inputCls} />
+                <Input
+                  type={type ?? "text"}
+                  placeholder={placeholder}
+                  value={(formData as Record<string, string>)[key] ?? ""}
+                  onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                  className={inputCls}
+                />
               </div>
             ))}
             <div className="space-y-2">
               <label className="text-[13px] font-medium text-ink">Accent Color</label>
               <div className="flex items-center gap-3">
                 <input type="color" value={formData.accentColor || "#00BFFF"} onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })} className="h-10 w-20 cursor-pointer rounded-lg border border-line" />
-                <input placeholder="hsl(189 100% 50%) or #00BFFF" value={formData.accentColor || ""} onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })} className={`${inputCls} flex-1`} />
+                <Input
+                  placeholder="hsl(189 100% 50%) or #00BFFF"
+                  value={formData.accentColor || ""}
+                  onChange={(e) => setFormData({ ...formData, accentColor: e.target.value })}
+                  className={`${inputCls} flex-1`}
+/>
               </div>
             </div>
             <div className="flex gap-3 pt-2">
@@ -141,7 +152,13 @@ export default function CertificationsManagerPage() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg border" style={{ backgroundColor: `${cert.accentColor}15`, borderColor: `${cert.accentColor}30`, color: cert.accentColor }}>
                     <Icon name={cert.icon || "Award"} className="h-6 w-6" />
                   </div>
-                  <CmsSwitch checked={cert.isVisible} onChange={() => void toggleVisibility(cert._id, cert.isVisible)} label="Toggle visibility" size="sm" />
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      isSelected={cert.isVisible}
+                      onChange={() => toggleVisibility(cert._id, cert.isVisible)}
+                    />
+                    <span className="text-[12px] font-medium text-ink">Toggle visibility</span>
+                  </div>
                 </div>
                 <div>
                   <h3 className="font-semibold text-[14px] text-ink line-clamp-2">{cert.title}</h3>
