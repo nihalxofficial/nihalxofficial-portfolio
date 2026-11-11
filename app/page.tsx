@@ -72,49 +72,65 @@ export default async function Page() {
   return (
     <PortfolioShell navigation={nav} settings={data.settings}>
       {data.hero && show("hero") ? (
-        <Hero hero={data.hero} settings={data.settings} navigation={nav} />
+        <section className="mb-16">
+          <Hero hero={data.hero} settings={data.settings} navigation={nav} />
+        </section>
       ) : null}
 
       {data.about && show("about") ? (
-        <About about={data.about} section={meta("about")} index={at("about")} />
+        <section className="mb-16">
+          <About about={data.about} section={meta("about")} index={at("about")} />
+        </section>
       ) : null}
 
       {show("stats") ? (
-        <Stats statistics={data.statistics} section={meta("stats")} index={at("stats")} />
+        <section className="mb-16">
+          <Stats statistics={data.statistics} section={meta("stats")} index={at("stats")} />
+        </section>
       ) : null}
 
       {show("services") ? (
-        <Services services={data.services} section={meta("services")} index={at("services")} />
+        <section className="mb-16">
+          <Services services={data.services} section={meta("services")} index={at("services")} />
+        </section>
       ) : null}
 
       {show("skills") ? (
-        <Skills
-          groups={data.skills}
-          projects={data.projects}
-          section={meta("skills")}
-          index={at("skills")}
-        />
+        <section className="mb-16">
+          <Skills
+            groups={data.skills}
+            projects={data.projects}
+            section={meta("skills")}
+            index={at("skills")}
+          />
+        </section>
       ) : null}
 
       {show("showcase") ? (
-        <Showcase projects={data.projects} section={meta("showcase")} index={at("showcase")} />
+        <section className="mb-16">
+          <Showcase projects={data.projects} section={meta("showcase")} index={at("showcase")} />
+        </section>
       ) : null}
 
       {hasJourney || hasEducation ? (
-        <ExperienceEducation
-          experience={data.experience}
-          education={data.education}
-          journeySection={meta("journey")}
-          educationSection={meta("education")}
-          journeyIndex={at("journey")}
-          educationIndex={at("education")}
-          showJourney={hasJourney}
-          showEducation={hasEducation}
-        />
+        <section className="mb-16">
+          <ExperienceEducation
+            experience={data.experience}
+            education={data.education}
+            journeySection={meta("journey")}
+            educationSection={meta("education")}
+            journeyIndex={at("journey")}
+            educationIndex={at("education")}
+            showJourney={hasJourney}
+            showEducation={hasEducation}
+          />
+        </section>
       ) : null}
 
       {show("contact") ? (
-        <Contact settings={data.settings} section={meta("contact")} index={at("contact")} />
+        <section className="mb-16">
+          <Contact settings={data.settings} section={meta("contact")} index={at("contact")} />
+        </section>
       ) : null}
 
       <Footer
