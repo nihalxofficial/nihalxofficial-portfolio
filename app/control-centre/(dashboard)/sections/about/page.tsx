@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
-import { listContent, updateContent } from "@/lib/admin";
+import { listContent, updateContent, deleteContent } from "@/lib/admin";
 import { CmsSwitch } from "@/components/admin/ui";
 
 interface AboutHighlight {
@@ -101,6 +101,21 @@ export default function AboutManagerPage() {
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to save about section");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!about || about._id === "current") return;
+    if (!confirm("Delete this about section?")) return;
+    try {
+      setSaving(true);
+      await deleteContent("about", id);
+      setSuccess(true);
+      setTimeout(() => { setSuccess(false); loadAbout(); }, 3000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete about section");
     } finally {
       setSaving(false);
     }
@@ -403,6 +418,18 @@ export default function AboutManagerPage() {
               <span>About section saved!</span>
             </div>
           )}
+
+          {about && about._id !== "current" && (
+            <button type="button" onClick={() => void handleDelete(about._id)} disabled={saving} className="inline-flex items-center gap-2 rounded-lg border border-danger/40 bg-danger/15 px-5 py-2.5 text-[14px] font-medium text-danger transition-all hover:bg-danger/25 disabled:opacity-60">
+              {saving ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-danger/30 border-t-danger" />
+              ) : (
+                <Icon name="Trash2" className="h-4 w-4" />
+              )}
+              {saving ? "Deleting..." : "Delete"}
+            </button>
+          )}
+
         </div>
       </div>
     </div>
