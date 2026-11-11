@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Select, Switch } from "@heroui/react";
 
 interface NavItem {
   _id: string;
@@ -158,7 +158,7 @@ export default function NavigationManagerPage() {
           <div className="space-y-4">
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Label</label>
-              <input
+              <Input
                 placeholder="e.g., About, Projects, Contact"
                 value={formData.label || ""}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
@@ -167,7 +167,7 @@ export default function NavigationManagerPage() {
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">URL / Href</label>
-              <input
+              <Input
                 placeholder="e.g., /#about, /projects, https://example.com"
                 value={formData.href || ""}
                 onChange={(e) => setFormData({ ...formData, href: e.target.value })}
@@ -176,7 +176,7 @@ export default function NavigationManagerPage() {
             </div>
             <div className="space-y-1">
               <label className="block text-[12px] font-medium text-muted">Icon (Lucide name)</label>
-              <input
+              <Input
                 placeholder="e.g., Home, User, Briefcase"
                 value={formData.icon || ""}
                 onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
@@ -186,23 +186,23 @@ export default function NavigationManagerPage() {
 
             <div className="flex flex-wrap gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <CmsSwitch
-                  checked={formData.isPrimary || false}
-                  onChange={(val) => setFormData({ ...formData, isPrimary: val })}
-                  label="Primary"
-                  size="sm"
-                />
-                <span className="text-[13px] text-ink">Primary (show in mobile dock)</span>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    isSelected={formData.isPrimary || false}
+                    onChange={(val) => setFormData({ ...formData, isPrimary: val })}
+                  />
+                  <span className="text-[13px] text-ink">Primary (show in mobile dock)</span>
+                </div>
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer">
-                <CmsSwitch
-                  checked={formData.opensInNewTab || false}
-                  onChange={(val) => setFormData({ ...formData, opensInNewTab: val })}
-                  label="Opens in new tab"
-                  size="sm"
-                />
-                <span className="text-[13px] text-ink">Open in new tab</span>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    isSelected={formData.opensInNewTab || false}
+                    onChange={(val) => setFormData({ ...formData, opensInNewTab: val })}
+                  />
+                  <span className="text-[13px] text-ink">Open in new tab</span>
+                </div>
               </label>
             </div>
 
@@ -273,12 +273,13 @@ export default function NavigationManagerPage() {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0">
-                    <CmsSwitch
-                      checked={item.isVisible}
-                      onChange={() => void toggleVisibility(item._id, item.isVisible)}
-                      label="Toggle visibility"
-                      size="sm"
-                    />
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        isSelected={item.isVisible}
+                        onChange={() => toggleVisibility(item._id, item.isVisible)}
+                      />
+                      <span className="text-[12px] font-medium text-ink">Visible</span>
+                    </div>
                     <button
                       type="button"
                       onClick={() => startEdit(item)}
