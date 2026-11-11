@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, Switch, TextArea } from "@heroui/react";
 
 interface Testimonial {
   _id: string;
@@ -110,17 +110,17 @@ export default function TestimonialsManagerPage() {
           <div className="space-y-4">
             <div className="space-y-1">
               <label className={labelCls}>Name</label>
-              <input type="text" className={inputCls} placeholder="John Smith" value={formData.name || ""}
+              <Input type="text" className={inputCls} placeholder="John Smith" value={formData.name || ""}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Role / Company</label>
-              <input type="text" className={inputCls} placeholder="CEO at Acme Corp, Project Manager" value={formData.role || ""}
+              <Input type="text" className={inputCls} placeholder="CEO at Acme Corp, Project Manager" value={formData.role || ""}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })} />
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Testimonial Message</label>
-              <textarea rows={5} className={inputCls + " resize-y"} placeholder="Working with [Your Name] was an absolute pleasure..."
+              <TextArea rows={5} className={inputCls + " resize-y"} placeholder="Working with [Your Name] was an absolute pleasure..."
                 value={formData.message || ""} onChange={(e) => setFormData({ ...formData, message: e.target.value })} />
               <p className="text-[11px] text-faint">{(formData.message || "").length} characters</p>
             </div>
@@ -131,7 +131,7 @@ export default function TestimonialsManagerPage() {
             </div>
             <div className="space-y-1">
               <label className={labelCls}>Avatar URL (optional)</label>
-              <input type="text" className={inputCls} placeholder="https://i.ibb.co/..." value={formData.avatarUrl || ""}
+              <Input type="text" className={inputCls} placeholder="https://i.ibb.co/..." value={formData.avatarUrl || ""}
                 onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })} />
               <p className="text-[11px] text-faint">Upload via Media Library and paste URL here</p>
             </div>
@@ -168,7 +168,13 @@ export default function TestimonialsManagerPage() {
                       <div className="mt-2">{renderStars(test.rating)}</div>
                     </div>
                   </div>
-                  <CmsSwitch checked={test.isVisible} onChange={() => toggleVisibility(test._id, test.isVisible)} label="" size="sm" />
+                  <div className="flex items-center gap-2">
+                      <Switch
+                        isSelected={test.isVisible}
+                        onChange={() => toggleVisibility(test._id, test.isVisible)}
+                      />
+                      <span className="text-[12px] font-medium text-ink">Visible</span>
+                    </div>
                 </div>
                 <p className="text-[13px] text-muted line-clamp-3 italic">&quot;{test.message}&quot;</p>
                 <div className="flex items-center gap-2 border-t border-line/50 pt-3">
