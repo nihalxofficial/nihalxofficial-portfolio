@@ -5,7 +5,7 @@ import Link from "next/link";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { Input, ListBoxItem, Select, Switch, TextArea } from "@heroui/react";
 
 interface Project {
   _id: string;
@@ -225,8 +225,7 @@ export default function ProjectsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>Project Title</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="My Awesome Project"
                   value={formData.title || ""}
@@ -242,8 +241,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>URL Slug</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="my-awesome-project"
                   value={formData.slug || ""}
@@ -254,7 +252,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Short Description</label>
-                <textarea
+                <TextArea
                   rows={3}
                   className={inputCls + " resize-none"}
                   placeholder="A brief one-liner about this project..."
@@ -266,7 +264,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Full Description</label>
-                <textarea
+                <TextArea
                   rows={6}
                   className={inputCls + " resize-y"}
                   placeholder="Detailed description of the project, its purpose, and your role..."
@@ -277,15 +275,15 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Category</label>
-                <select
-                  className={inputCls}
+                <Select
                   value={formData.category || "Web Application"}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(next: unknown) => setFormData({ ...formData, category: String(next) })}
+                  className={inputCls}
                 >
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <ListBoxItem key={cat} value={cat}>{cat}</ListBoxItem>
                   ))}
-                </select>
+                </Select>
               </div>
             </div>
           </DashboardCard>
@@ -295,8 +293,7 @@ export default function ProjectsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>Thumbnail URL</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="https://i.ibb.co/..."
                   value={formData.thumbnailUrl || ""}
@@ -307,7 +304,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Screenshot URLs (one per line)</label>
-                <textarea
+                <TextArea
                   rows={6}
                   className={inputCls + " resize-y"}
                   placeholder={"https://i.ibb.co/screenshot1.png\nhttps://i.ibb.co/screenshot2.png"}
@@ -329,7 +326,7 @@ export default function ProjectsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>Tech Stack (one per line)</label>
-                <textarea
+                <TextArea
                   rows={8}
                   className={inputCls + " resize-y"}
                   placeholder={"React\nNext.js\nTypeScript\nTailwind CSS\nPostgreSQL"}
@@ -345,7 +342,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Key Features (one per line)</label>
-                <textarea
+                <TextArea
                   rows={8}
                   className={inputCls + " resize-y"}
                   placeholder={"User authentication\nReal-time updates\nResponsive design\nAPI integration"}
@@ -361,7 +358,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Challenges & Solutions</label>
-                <textarea
+                <TextArea
                   rows={5}
                   className={inputCls + " resize-y"}
                   placeholder="Describe technical challenges you faced and how you solved them..."
@@ -372,7 +369,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Future Improvements</label>
-                <textarea
+                <TextArea
                   rows={5}
                   className={inputCls + " resize-y"}
                   placeholder="What you'd like to add or improve in the future..."
@@ -388,8 +385,7 @@ export default function ProjectsManagerPage() {
             <div className="space-y-4">
               <div className="space-y-1">
                 <label className={labelCls}>Live Demo URL</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="https://example.com"
                   value={formData.liveUrl || ""}
@@ -399,8 +395,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>Source Code URL</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="https://github.com/username/repo"
                   value={formData.sourceUrl || ""}
@@ -412,8 +407,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>SEO Title (optional)</label>
-                <input
-                  type="text"
+                <Input
                   className={inputCls}
                   placeholder="Custom title for SEO (defaults to project title)"
                   value={formData.seo?.title || ""}
@@ -428,7 +422,7 @@ export default function ProjectsManagerPage() {
 
               <div className="space-y-1">
                 <label className={labelCls}>SEO Description (optional)</label>
-                <textarea
+                <TextArea
                   rows={3}
                   className={inputCls + " resize-none"}
                   placeholder="Custom description for search engines"
@@ -447,18 +441,20 @@ export default function ProjectsManagerPage() {
           {/* Settings */}
           <DashboardCard icon="Settings" title="Project Settings">
             <div className="flex flex-wrap gap-6">
-              <CmsSwitch
-                checked={formData.isFeatured || false}
-                onChange={(checked) => setFormData({ ...formData, isFeatured: checked })}
-                label="Featured Project"
-                size="sm"
-              />
-              <CmsSwitch
-                checked={formData.isPublished || false}
-                onChange={(checked) => setFormData({ ...formData, isPublished: checked })}
-                label="Published"
-                size="sm"
-              />
+              <div className="flex items-center gap-2">
+                <Switch
+                  isSelected={formData.isFeatured || false}
+                  onChange={(isSelected) => setFormData({ ...formData, isFeatured: isSelected })}
+                />
+                <span className="text-[13px] font-medium text-ink">Featured Project</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch
+                  isSelected={formData.isPublished || false}
+                  onChange={(isSelected) => setFormData({ ...formData, isPublished: isSelected })}
+                />
+                <span className="text-[13px] font-medium text-ink">Published</span>
+              </div>
             </div>
           </DashboardCard>
 
@@ -548,18 +544,20 @@ export default function ProjectsManagerPage() {
 
                       {/* Toggles */}
                       <div className="flex items-center gap-4 border-t border-line/50 pt-3">
-                        <CmsSwitch
-                          checked={project.isFeatured}
-                          onChange={() => toggleFeatured(project._id, project.isFeatured)}
-                          label="Featured"
-                          size="sm"
-                        />
-                        <CmsSwitch
-                          checked={project.isPublished}
-                          onChange={() => togglePublished(project._id, project.isPublished)}
-                          label="Published"
-                          size="sm"
-                        />
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            isSelected={project.isFeatured}
+                            onChange={() => toggleFeatured(project._id, project.isFeatured)}
+                          />
+                          <span className="text-[12px] font-medium text-ink">Featured</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            isSelected={project.isPublished}
+                            onChange={() => togglePublished(project._id, project.isPublished)}
+                          />
+                          <span className="text-[12px] font-medium text-ink">Published</span>
+                        </div>
                       </div>
 
                       {/* Actions */}
