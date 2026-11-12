@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { Modal } from "@/components/admin/modal";
+import { ConfirmDialog } from "@/components/admin/ui";
 import {
   AdminApiError,
   deleteMessage,
@@ -722,47 +723,27 @@ function DetailModal({
   onReply: () => void;
   onDelete: () => void;
 }) {
-  const [confirm, setConfirm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const replies = message.replies ?? [];
 
   return (
-    <Modal
-      title={message.subject || "Portfolio inquiry"}
-      label={`message · ${message._id.slice(-8)}`}
-      onClose={onClose}
-      width="max-w-3xl"
-      footer={
-        <>
-          {confirm ? (
-            <span className="mr-auto flex items-center gap-2">
-              <span className="text-[11.5px] text-danger">Delete permanently?</span>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={onDelete}
-                className="rounded-md border border-danger/40 bg-danger/15 px-2.5 py-1 text-[11px] font-semibold text-danger disabled:opacity-50"
-              >
-                Delete
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirm(false)}
-                className="rounded-md border border-line px-2.5 py-1 text-[11px] text-muted"
-              >
-                Cancel
-              </button>
-            </span>
-          ) : (
+    <>
+      <Modal
+        title={message.subject || "Portfolio inquiry"}
+        label={`message · ${message._id.slice(-8)}`}
+        onClose={onClose}
+        width="max-w-3xl"
+        footer={
+          <>
             <button
               type="button"
               disabled={busy}
-              onClick={() => setConfirm(true)}
+              onClick={() => setConfirmDelete(true)}
               className="mr-auto inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1.5 text-[11px] text-faint transition-colors hover:border-danger/40 hover:text-danger disabled:opacity-50"
             >
-              <Icon name="Trash" className="h-3 w-3" />
+              <Icon name="Trash2" className="h-3 w-3" />
               Delete
             </button>
-          )}
 
           {(["read", "replied", "archived"] as const)
             .filter((value) => value !== message.status)
@@ -857,6 +838,20 @@ function DetailModal({
         </p>
       ) : null}
     </Modal>
+    <ConfirmDialog
+      open={confirmDelete}
+      title="Delete message?"
+      message="This message and all replies will be permanently deleted from the database. This cannot be undone."
+      confirmLabel="Delete"
+      status="danger"
+      busy={busy}
+      onConfirm={() => {
+        setConfirmDelete(false);
+        onDelete();
+      }}
+      onCancel={() => setConfirmDelete(false)}
+    />
+  </>
   );
 }
 

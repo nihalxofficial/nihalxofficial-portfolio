@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, Switch, TextArea } from "@heroui/react";
 import { uploadImageFile } from "@/components/admin/settings/settings-utils";
+import { useConfirm } from "@/components/admin/ui";
 
 interface HeroSection {
   _id: string;
@@ -70,6 +71,7 @@ function normaliseHero(raw: Partial<HeroSection>): HeroSection {
 }
 
 export default function HeroManagementPage() {
+  const confirm = useConfirm();
   const [hero, setHero] = useState<HeroSection | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -108,7 +110,13 @@ export default function HeroManagementPage() {
 
   async function handleDelete(id: string) {
     if (!hero || hero._id === "current") return;
-    if (!confirm("Delete this hero section?")) return;
+    const ok = await confirm({
+      title: "Delete hero section?",
+      message: "Are you sure you want to delete this hero section? This cannot be undone.",
+      confirmLabel: "Delete",
+      status: "danger",
+    });
+    if (!ok) return;
     try {
       setSaving(true);
       await deleteContent("hero", id);

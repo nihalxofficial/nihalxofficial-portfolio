@@ -5,6 +5,7 @@ import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/component
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, Switch } from "@heroui/react";
+import { useConfirm } from "@/components/admin/ui";
 
 interface NavItem {
   _id: string;
@@ -18,6 +19,7 @@ interface NavItem {
 }
 
 export default function NavigationManagerPage() {
+  const confirm = useConfirm();
   const [items, setItems] = useState<NavItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +71,13 @@ export default function NavigationManagerPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this navigation item?")) return;
+    const ok = await confirm({
+      title: "Delete navigation item?",
+      message: "Are you sure you want to delete this navigation item? This cannot be undone.",
+      confirmLabel: "Delete",
+      status: "danger",
+    });
+    if (!ok) return;
 
     try {
       await deleteContent("navigation", id);
@@ -285,7 +293,7 @@ export default function NavigationManagerPage() {
                       onClick={() => startEdit(item)}
                       className="inline-flex items-center rounded-lg border border-transparent p-1.5 text-muted transition-all hover:border-line hover:bg-surface-2/60 hover:text-accent"
                     >
-                      <Icon name="Edit" className="h-4 w-4" />
+                      <Icon name="Pencil" className="h-4 w-4" />
                     </button>
                     <button
                       type="button"

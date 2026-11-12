@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { CmsSwitch, useConfirm } from "@/components/admin/ui";
 
 interface AboutHighlight {
   icon: string;
@@ -63,6 +63,7 @@ function normaliseAbout(raw: Partial<AboutSection>): AboutSection {
 }
 
 export default function AboutManagerPage() {
+  const confirm = useConfirm();
   const [about, setAbout] = useState<AboutSection | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -108,7 +109,13 @@ export default function AboutManagerPage() {
 
   async function handleDelete(id: string) {
     if (!about || about._id === "current") return;
-    if (!confirm("Delete this about section?")) return;
+    const ok = await confirm({
+      title: "Delete about section?",
+      message: "Are you sure you want to delete this about section? This cannot be undone.",
+      confirmLabel: "Delete",
+      status: "danger",
+    });
+    if (!ok) return;
     try {
       setSaving(true);
       await deleteContent("about", id);

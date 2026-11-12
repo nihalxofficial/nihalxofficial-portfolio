@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/admin/auth-provider";
 import { AccentProvider } from "@/components/site/accent-context";
+import { ConfirmProvider } from "@/components/admin/ui";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <AccentProvider>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        <ConfirmProvider>{children}</ConfirmProvider>
+      </AuthProvider>
     </AccentProvider>
   );
 }

@@ -221,10 +221,10 @@ function ListControl({ field, value, path, errors, disabled, onChange }: FieldCo
           type="button"
           disabled={disabled}
           onClick={() => onChange([...items, ""])}
-          className="mono inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 text-[9.5px] uppercase tracking-[0.14em] text-faint transition-colors hover:border-line-strong hover:text-accent disabled:opacity-50"
+          className="mono inline-flex items-center gap-1 rounded-md border border-accent/30 bg-accent/10 px-2 py-1 text-[9.5px] uppercase tracking-[0.14em] text-accent transition-colors hover:bg-accent/20 hover:border-accent disabled:opacity-50"
         >
           <Icon name="Plus" className="h-3 w-3" />
-          add
+          add item
         </button>
       </div>
 
@@ -252,7 +252,7 @@ function ListControl({ field, value, path, errors, disabled, onChange }: FieldCo
               aria-label="Move up"
               className="grid h-8 w-7 shrink-0 place-items-center rounded-md border border-line text-faint transition-colors hover:text-accent disabled:opacity-40"
             >
-              <Icon name="ChevronDown" className="h-3.5 w-3.5 rotate-180" />
+              <Icon name="ChevronUp" className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
@@ -270,7 +270,7 @@ function ListControl({ field, value, path, errors, disabled, onChange }: FieldCo
               aria-label="Remove entry"
               className="grid h-8 w-7 shrink-0 place-items-center rounded-md border border-line text-faint transition-colors hover:border-danger/40 hover:text-danger disabled:opacity-40"
             >
-              <Icon name="Trash" className="h-3.5 w-3.5" />
+              <Icon name="Trash2" className="h-3.5 w-3.5" />
             </button>
           </div>
         ))}
@@ -329,7 +329,7 @@ function ObjectListControl({ field, value, path, errors, disabled, onChange }: F
           type="button"
           disabled={disabled}
           onClick={() => onChange([...rows, {}])}
-          className="mono inline-flex items-center gap-1 rounded-md border border-line px-2 py-1 text-[9.5px] uppercase tracking-[0.14em] text-faint transition-colors hover:border-line-strong hover:text-accent disabled:opacity-50"
+          className="mono inline-flex items-center gap-1 rounded-md border border-accent/30 bg-accent/10 px-2 py-1 text-[9.5px] uppercase tracking-[0.14em] text-accent transition-colors hover:bg-accent/20 hover:border-accent disabled:opacity-50"
         >
           <Icon name="Plus" className="h-3 w-3" />
           add row
@@ -357,7 +357,7 @@ function ObjectListControl({ field, value, path, errors, disabled, onChange }: F
                   aria-label="Move row up"
                   className="grid h-7 w-7 place-items-center rounded-md border border-line text-faint transition-colors hover:text-accent disabled:opacity-40"
                 >
-                  <Icon name="ChevronDown" className="h-3 w-3 rotate-180" />
+                  <Icon name="ChevronUp" className="h-3 w-3" />
                 </button>
                 <button
                   type="button"
@@ -375,7 +375,7 @@ function ObjectListControl({ field, value, path, errors, disabled, onChange }: F
                   aria-label="Remove row"
                   className="grid h-7 w-7 place-items-center rounded-md border border-line text-faint transition-colors hover:border-danger/40 hover:text-danger disabled:opacity-40"
                 >
-                  <Icon name="Trash" className="h-3 w-3" />
+                  <Icon name="Trash2" className="h-3 w-3" />
                 </button>
               </div>
             </div>

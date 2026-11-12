@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch } from "@/components/admin/ui";
+import { CmsSwitch, useConfirm } from "@/components/admin/ui";
 
 interface Experience {
   _id: string;
@@ -31,6 +31,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function ExperienceManagerPage() {
+  const confirm = useConfirm();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +88,13 @@ export default function ExperienceManagerPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this experience?")) return;
+    const ok = await confirm({
+      title: "Delete experience?",
+      message: "Are you sure you want to delete this experience record? This cannot be undone.",
+      confirmLabel: "Delete",
+      status: "danger",
+    });
+    if (!ok) return;
 
     try {
       await deleteContent("experience", id);
@@ -410,7 +417,7 @@ export default function ExperienceManagerPage() {
                       onClick={() => startEdit(exp)}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-line hover:bg-surface-2/60 hover:text-accent"
                     >
-                      <Icon name="Edit" className="h-3.5 w-3.5" />
+                      <Icon name="Pencil" className="h-3.5 w-3.5" />
                       Edit
                     </button>
                     <button

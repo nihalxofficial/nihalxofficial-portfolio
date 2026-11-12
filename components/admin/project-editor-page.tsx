@@ -417,7 +417,7 @@ export function ProjectAddPage() {
                           onClick={() => removeFeature(idx)}
                           className="text-slate-500 hover:text-rose-400"
                         >
-                          <Icon name="Trash" className="h-3.5 w-3.5" />
+                          <Icon name="Trash2" className="h-3.5 w-3.5" />
                         </button>
                       </li>
                     ))}
@@ -578,7 +578,7 @@ export function ProjectAddPage() {
                         onClick={() => removeScreenshot(idx)}
                         className="absolute top-1 right-1 h-6 w-6 rounded bg-black/70 text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                       >
-                        <Icon name="Trash" className="h-3 w-3" />
+                        <Icon name="Trash2" className="h-3 w-3" />
                       </button>
                     </div>
                   ))}

@@ -5,6 +5,7 @@ import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/component
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, Switch, TextArea } from "@heroui/react";
+import { useConfirm } from "@/components/admin/ui";
 
 interface Testimonial {
   _id: string;
@@ -25,6 +26,7 @@ const btnGhost = "inline-flex items-center gap-1.5 rounded-lg border border-tran
 const btnDanger = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger";
 
 export default function TestimonialsManagerPage() {
+  const confirm = useConfirm();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +63,13 @@ export default function TestimonialsManagerPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this testimonial?")) return;
+    const ok = await confirm({
+      title: "Delete testimonial?",
+      message: "Are you sure you want to delete this testimonial? This cannot be undone.",
+      confirmLabel: "Delete",
+      status: "danger",
+    });
+    if (!ok) return;
     try { await deleteContent("testimonials", id); await loadTestimonials(); }
     catch (err) { alert(err instanceof Error ? err.message : "Failed to delete testimonial"); }
   }
@@ -179,7 +187,7 @@ export default function TestimonialsManagerPage() {
                 <p className="text-[13px] text-muted line-clamp-3 italic">&quot;{test.message}&quot;</p>
                 <div className="flex items-center gap-2 border-t border-line/50 pt-3">
                   <button type="button" onClick={() => startEdit(test)} className={btnGhost}>
-                    <Icon name="Edit" className="h-3.5 w-3.5" /> Edit
+                    <Icon name="Pencil" className="h-3.5 w-3.5" /> Edit
                   </button>
                   <button type="button" onClick={() => handleDelete(test._id)} className={btnDanger}>
                     <Icon name="Trash2" className="h-3.5 w-3.5" /> Delete

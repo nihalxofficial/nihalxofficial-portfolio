@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { AiFill } from "@/components/admin/ai-fill";
 import { FieldGrid, type FieldErrors } from "@/components/admin/field-control";
+import { ConfirmDialog } from "@/components/admin/ui";
 import { Icon } from "@/components/ui/icon";
 import {
   AdminApiError,
@@ -180,7 +181,7 @@ function EntityForm({
             </>
           ) : (
             <>
-              <Icon name="Save" className="h-4 w-4" />
+              <Icon name={submitLabel.toLowerCase().includes("create") ? "Plus" : "Save"} className="h-4 w-4" />
               {submitLabel}
             </>
           )}
@@ -281,7 +282,7 @@ function SingletonEditor({
             onClick={() => setNonce((value) => value + 1)}
             className="mono inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1.5 text-[9.5px] uppercase tracking-[0.14em] text-faint transition-colors hover:border-line-strong hover:text-accent"
           >
-            <Icon name="Loader" className="h-3 w-3" />
+            <Icon name="RefreshCw" className="h-3 w-3" />
             reload
           </button>
         </div>
@@ -468,7 +469,7 @@ function CollectionEditor({
               className="grid h-9 w-9 place-items-center rounded-lg border border-line text-faint transition-colors hover:border-line-strong hover:text-accent"
               aria-label="Refresh"
             >
-              <Icon name="Loader" className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              <Icon name="RefreshCw" className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             </button>
 
             {type.key === "projects" ? (
@@ -646,43 +647,17 @@ function CollectionEditor({
       ) : null}
 
       {pendingDelete ? (
-        <div className="fixed inset-0 z-50 grid place-items-center px-5">
-          <button
-            type="button"
-            aria-label="Cancel"
-            onClick={() => setPendingDelete(null)}
-            className="absolute inset-0 bg-page/80 backdrop-blur-sm"
-          />
-          <div className="panel relative w-full max-w-sm p-5">
-            <p className="flex items-center gap-2 text-[13px] font-semibold text-ink">
-              <Icon name="Trash" className="h-4 w-4 text-danger" />
-              Delete this record?
-            </p>
-            <p className="mt-2 text-[12px] leading-relaxed text-muted">
-              “{String(pendingDelete[type.titleField] ?? "Untitled")}” will be removed from the
-              database. This cannot be undone.
-            </p>
-            <div className="mt-4 flex items-center gap-2">
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => void remove(pendingDelete)}
-                className="flex h-9 items-center gap-1.5 rounded-lg border border-danger/40 bg-danger/15 px-3.5 text-[12px] font-semibold text-danger hover:bg-danger/25 disabled:opacity-60"
-              >
-                {busy ? <Icon name="Loader" className="h-3.5 w-3.5 animate-spin" /> : null}
-                Delete
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => setPendingDelete(null)}
-                className="btn-ghost flex h-9 items-center rounded-lg border border-line bg-transparent px-3.5 text-[12px] font-medium text-slate-300 hover:text-white"
-              >
-                Keep it
-              </button>
-            </div>
-          </div>
-        </div>
+        <ConfirmDialog
+          open={Boolean(pendingDelete)}
+          title="Delete this record?"
+          message={`“${String(pendingDelete[type.titleField] ?? "Untitled")}” will be removed from the database. This cannot be undone.`}
+          confirmLabel="Delete"
+          cancelLabel="Keep it"
+          status="danger"
+          busy={busy}
+          onConfirm={() => void remove(pendingDelete)}
+          onCancel={() => setPendingDelete(null)}
+        />
       ) : null}
     </div>
   );

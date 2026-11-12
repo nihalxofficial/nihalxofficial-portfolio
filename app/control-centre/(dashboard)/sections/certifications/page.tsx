@@ -5,6 +5,7 @@ import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/component
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, Switch } from "@heroui/react";
+import { useConfirm } from "@/components/admin/ui";
 
 interface Certification {
   _id: string;
@@ -26,6 +27,7 @@ const btnIcon = "inline-flex items-center rounded-lg border border-transparent p
 const btnDanger = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger";
 
 export default function CertificationsManagerPage() {
+  const confirm = useConfirm();
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +65,13 @@ export default function CertificationsManagerPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure?")) return;
+    const ok = await confirm({
+      title: "Delete certification?",
+      message: "Are you sure you want to delete this certification? This cannot be undone.",
+      confirmLabel: "Delete",
+      status: "danger",
+    });
+    if (!ok) return;
     try { await deleteContent("certifications", id); await loadCertifications(); }
     catch (err) { alert(err instanceof Error ? err.message : "Failed to delete"); }
   }
@@ -171,7 +179,7 @@ export default function CertificationsManagerPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 border-t border-line/50 pt-3">
-                  <button type="button" onClick={() => startEdit(cert)} className={btnIcon}><Icon name="Edit" className="h-3.5 w-3.5" /><span className="ml-1 text-[12px]">Edit</span></button>
+                  <button type="button" onClick={() => startEdit(cert)} className={btnIcon}><Icon name="Pencil" className="h-3.5 w-3.5" /><span className="ml-1 text-[12px]">Edit</span></button>
                   <button type="button" onClick={() => void handleDelete(cert._id)} className={btnDanger}><Icon name="Trash2" className="h-3.5 w-3.5" />Delete</button>
                 </div>
               </div>

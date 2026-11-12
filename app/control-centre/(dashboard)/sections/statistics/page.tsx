@@ -5,6 +5,7 @@ import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/component
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, Switch, TextArea } from "@heroui/react";
+import { useConfirm } from "@/components/admin/ui";
 
 interface Statistic {
   _id: string;
@@ -24,6 +25,7 @@ const btnGhost = "inline-flex items-center gap-1.5 rounded-lg border border-tran
 const btnDanger = "inline-flex items-center gap-1.5 rounded-lg border border-transparent px-2 py-1.5 text-[12px] font-medium text-muted transition-all hover:border-danger/30 hover:bg-danger/5 hover:text-danger";
 
 export default function StatisticsManagerPage() {
+  const confirm = useConfirm();
   const [stats, setStats] = useState<Statistic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +73,13 @@ export default function StatisticsManagerPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this statistic?")) return;
+    const ok = await confirm({
+      title: "Delete statistic?",
+      message: "Are you sure you want to delete this statistic? This cannot be undone.",
+      confirmLabel: "Delete",
+      status: "danger",
+    });
+    if (!ok) return;
     try {
       await deleteContent("statistics", id);
       await loadStats();
@@ -173,7 +181,7 @@ export default function StatisticsManagerPage() {
                 </div>
                 <div className="flex items-center gap-2 pt-1">
                   <button type="button" onClick={() => startEdit(stat)} className={btnGhost}>
-                    <Icon name="Edit" className="h-3.5 w-3.5" /> Edit
+                    <Icon name="Pencil" className="h-3.5 w-3.5" /> Edit
                   </button>
                   <button type="button" onClick={() => handleDelete(stat._id)} className={btnDanger}>
                     <Icon name="Trash2" className="h-3.5 w-3.5" /> Delete
