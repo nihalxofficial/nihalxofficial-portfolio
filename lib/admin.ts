@@ -107,7 +107,6 @@ export interface AdminSession {
   email: string | null;
   name: string | null;
   role?: string;
-  roles?: string[];
   adminCount?: number;
 }
 
@@ -115,8 +114,7 @@ export async function verifySession(): Promise<AdminSession> {
   const res = await authClient.getSession();
   const user = res?.data?.user as any;
   if (!user) throw new AdminApiError("Not signed in", 401);
-  const roles = Array.isArray(user.roles) ? user.roles : [user.role || "user"];
-  const isAdmin = roles.includes("admin") || user.role === "admin";
+  const isAdmin = user.role === "admin" || user.role === "demoadmin";
   if (!isAdmin) {
     throw new AdminApiError("This account does not have admin privileges", 403);
   }
@@ -125,7 +123,6 @@ export async function verifySession(): Promise<AdminSession> {
     email: user.email ?? null,
     name: user.name ?? null,
     role: user.role,
-    roles,
     adminCount: 1,
   };
 }

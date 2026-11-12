@@ -41,8 +41,6 @@ export const auth = betterAuth({
             data: {
               ...user,
               role: isAdmin ? "admin" : user.role || "user",
-              roles: isAdmin ? ["admin"] : user.roles || ["user"],
-              activeRole: isAdmin ? "admin" : user.activeRole || "user",
             },
           };
         },

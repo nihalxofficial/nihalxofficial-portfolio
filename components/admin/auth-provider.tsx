@@ -23,7 +23,6 @@ export interface AuthUser {
   displayName?: string;
   image?: string | null;
   role?: string;
-  roles?: string[];
   emailVerified?: boolean;
   providerData?: Array<{ providerId: string }>;
 }
@@ -61,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       displayName: u.name,
       image: u.image,
       role: u.role,
-      roles: u.roles,
       emailVerified: true,
       providerData: [{ providerId: "better-auth" }],
     };
@@ -77,7 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: user.email,
       name: user.name,
       role: user.role,
-      roles: user.roles,
       adminCount: 1,
     };
   }, [user]);
