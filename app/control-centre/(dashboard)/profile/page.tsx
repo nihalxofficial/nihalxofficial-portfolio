@@ -117,9 +117,7 @@ export default function AdminProfilePage() {
           </span>
         </div>
         <p className="mt-2 text-[12.5px] text-muted">
-          {session?.firebaseConfigured
-            ? "Your Firebase token was accepted and confirmed against the server admin allowlist. Authorization is enforced on every request."
-            : "Firebase is not configured, so this session could not be verified against the allowlist."}
+          Your Better-Auth session is verified and authorized with administrator clearance. Authorization is enforced on every request.
         </p>
       </section>
     </div>

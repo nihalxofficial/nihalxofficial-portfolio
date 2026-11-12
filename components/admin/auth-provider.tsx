@@ -1,18 +1,6 @@
 "use client";
 
 import {
-  createUserWithEmailAndPassword,
-  GithubAuthProvider,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut as firebaseSignOut,
-  updateProfile,
-  type AuthProvider as FirebaseProvider,
-  type User,
-} from "firebase/auth";
-import {
   createContext,
   useCallback,
   useContext,
@@ -21,21 +9,27 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AdminApiError, fetchAuthStatus, verifySession, type AdminSession } from "@/lib/admin";
-import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase";
+import { authClient } from "@/lib/auth-client";
+import { type AdminSession } from "@/lib/admin";
+import { isAdminRole } from "@/lib/core/roles";
 
-/**
- * Dashboard session.
- *
- * The browser signs in with Firebase (email, Google or GitHub), then asks the
- * API to verify the ID token against the ADMIN_UIDS allowlist. A valid Firebase
- * account that is not on the list is signed straight back out — authorization
- * never happens client-side.
- */
 export type SocialProvider = "google" | "github";
 
+export interface AuthUser {
+  id: string;
+  uid?: string;
+  email: string;
+  name: string;
+  displayName?: string;
+  image?: string | null;
+  role?: string;
+  roles?: string[];
+  emailVerified?: boolean;
+  providerData?: Array<{ providerId: string }>;
+}
+
 interface AuthState {
-  user: User | null;
+  user: AuthUser | null;
   session: AdminSession | null;
   loading: boolean;
   signingIn: boolean;
@@ -50,205 +44,107 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-const INVALID_CREDENTIALS = "Wrong email or password.";
-const NOT_ALLOWLISTED =
-  "This account is not an admin. Add its UID to ADMIN_UIDS on the server.";
-
-const PROVIDERS: Record<SocialProvider, () => FirebaseProvider> = {
-  google: () => new GoogleAuthProvider(),
-  github: () => new GithubAuthProvider(),
-};
-
-function messageFor(error: unknown): string {
-  if (error instanceof AdminApiError) {
-    return error.status === 403 || error.status === 401 ? NOT_ALLOWLISTED : error.message;
-  }
-
-  const code = (error as { code?: string })?.code ?? "";
-
-  switch (code) {
-    case "auth/invalid-credential":
-    case "auth/wrong-password":
-    case "auth/user-not-found":
-      return INVALID_CREDENTIALS;
-    case "auth/too-many-requests":
-      return "Too many attempts. Wait a minute and try again.";
-    case "auth/operation-not-allowed":
-      return "That sign-in method is disabled in the Firebase console.";
-    case "auth/admin-restricted-operation":
-      return "New account creation is disabled in the Firebase console.";
-    case "auth/email-already-in-use":
-      return "That email already has an account — sign in instead.";
-    case "auth/weak-password":
-      return "Use a password with at least 6 characters.";
-    case "auth/popup-closed-by-user":
-    case "auth/cancelled-popup-request":
-      return "The sign-in window was closed before it finished.";
-    case "auth/popup-blocked":
-      return "The browser blocked the sign-in window. Allow popups and try again.";
-    case "auth/account-exists-with-different-credential":
-      return "That email is already linked to another sign-in method.";
-    case "auth/network-request-failed":
-      return "Cannot reach Firebase. Check your connection.";
-    default:
-      return error instanceof Error ? error.message : "Sign-in failed.";
-  }
-}
-
-/**
- * Turns a rejected `/auth/session` into an actionable message.
- *
- * `/auth/status` still works for accounts outside the allowlist, so the page can
- * name the exact UID the owner has to paste into ADMIN_UIDS.
- */
-async function explainRejection(cause: unknown): Promise<string> {
-  if (cause instanceof AdminApiError && (cause.status === 401 || cause.status === 403)) {
-    try {
-      const status = await fetchAuthStatus();
-      const who = status.email || status.name || "This account";
-      const empty =
-        status.adminCount === 0
-          ? " ADMIN_UIDS is currently empty, so no account can sign in."
-          : "";
-
-      return `${who} is not an admin. Add UID ${status.uid} to ADMIN_UIDS in portfolio-server/.env, restart the API and sign in again.${empty}`;
-    } catch {
-      return NOT_ALLOWLISTED;
-    }
-  }
-
-  return messageFor(cause);
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const configured = isFirebaseConfigured();
+  const { data: sessionData, isPending } = authClient.useSession();
 
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<AdminSession | null>(null);
-  const [loading, setLoading] = useState(configured);
   const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState("");
 
+  const user = useMemo<AuthUser | null>(() => {
+    if (!sessionData?.user) return null;
+    const u = sessionData.user as any;
+    return {
+      id: u.id,
+      uid: u.id,
+      email: u.email,
+      name: u.name,
+      displayName: u.name,
+      image: u.image,
+      role: u.role,
+      roles: u.roles,
+      emailVerified: true,
+      providerData: [{ providerId: "better-auth" }],
+    };
+  }, [sessionData]);
+
+  const session = useMemo<AdminSession | null>(() => {
+    if (!user) return null;
+    const isAdmin = isAdminRole(user);
+    if (!isAdmin) return null;
+
+    return {
+      uid: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      roles: user.roles,
+      adminCount: 1,
+    };
+  }, [user]);
+
   useEffect(() => {
-    if (!configured) return;
+    if (!isPending && user && !isAdminRole(user)) {
+      setError("This account does not have admin clearance. Contact the administrator.");
+    }
+  }, [isPending, user]);
 
-    const auth = getFirebaseAuth();
-
-    const unsubscribe = onAuthStateChanged(auth, (nextUser) => {
-      setUser(nextUser);
-
-      if (!nextUser) {
-        setSession(null);
-        setLoading(false);
-        try {
-          localStorage.removeItem("pf_is_admin");
-        } catch {}
-        return;
+  const signIn = useCallback(async (email: string, password: string) => {
+    setSigningIn(true);
+    setError("");
+    try {
+      const res = await authClient.signIn.email({
+        email: email.trim(),
+        password,
+      });
+      if (res?.error) {
+        setError(res.error.message || "Failed to sign in. Please verify your credentials.");
       }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Sign-in failed");
+    } finally {
+      setSigningIn(false);
+    }
+  }, []);
 
-      setLoading(true);
-
-      verifySession()
-        .then((value) => {
-          setSession(value);
-          setError("");
-          try {
-            localStorage.setItem("pf_is_admin", "true");
-          } catch {}
-        })
-        .catch(async (cause: unknown) => {
-          setSession(null);
-          try {
-            localStorage.removeItem("pf_is_admin");
-          } catch {}
-          setError(await explainRejection(cause));
-          await firebaseSignOut(auth).catch(() => undefined);
-        })
-        .finally(() => setLoading(false));
-    });
-
-    return unsubscribe;
-  }, [configured]);
-
-  const guard = useCallback(() => {
-    if (configured) return true;
-    setError("Firebase web config is missing — see the setup note on this page.");
-    return false;
-  }, [configured]);
-
-  const signIn = useCallback(
-    async (email: string, password: string) => {
-      if (!guard()) return;
-
-      setSigningIn(true);
-      setError("");
-
-      try {
-        await signInWithEmailAndPassword(getFirebaseAuth(), email.trim(), password);
-        // onAuthStateChanged finishes the allowlist check.
-      } catch (cause) {
-        setError(messageFor(cause));
-      } finally {
-        setSigningIn(false);
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    setSigningIn(true);
+    setError("");
+    try {
+      const res = await authClient.signUp.email({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+      });
+      if (res?.error) {
+        setError(res.error.message || "Registration failed.");
       }
-    },
-    [guard],
-  );
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setSigningIn(false);
+    }
+  }, []);
 
-  const register = useCallback(
-    async (name: string, email: string, password: string) => {
-      if (!guard()) return;
-
-      setSigningIn(true);
-      setError("");
-
-      try {
-        const credential = await createUserWithEmailAndPassword(
-          getFirebaseAuth(),
-          email.trim(),
-          password,
-        );
-
-        if (name.trim()) {
-          await updateProfile(credential.user, { displayName: name.trim() });
-        }
-        // onAuthStateChanged then verifies the fresh account against ADMIN_UIDS.
-      } catch (cause) {
-        setError(messageFor(cause));
-      } finally {
-        setSigningIn(false);
-      }
-    },
-    [guard],
-  );
-
-  const signInWith = useCallback(
-    async (provider: SocialProvider) => {
-      if (!guard()) return;
-
-      setSigningIn(true);
-      setError("");
-
-      try {
-        await signInWithPopup(getFirebaseAuth(), PROVIDERS[provider]());
-      } catch (cause) {
-        setError(messageFor(cause));
-      } finally {
-        setSigningIn(false);
-      }
-    },
-    [guard],
-  );
+  const signInWith = useCallback(async (provider: SocialProvider) => {
+    setSigningIn(true);
+    setError("");
+    try {
+      await authClient.signIn.social({
+        provider,
+        callbackURL: "/control-centre",
+      });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "OAuth sign-in failed");
+      setSigningIn(false);
+    }
+  }, []);
 
   const signOut = useCallback(async () => {
-    if (!configured) return;
     try {
       localStorage.removeItem("pf_is_admin");
     } catch {}
-    await firebaseSignOut(getFirebaseAuth()).catch(() => undefined);
-    setSession(null);
-    setUser(null);
-  }, [configured]);
+    await authClient.signOut();
+  }, []);
 
   const clearError = useCallback(() => setError(""), []);
 
@@ -256,19 +152,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       session,
-      loading,
+      loading: isPending,
       signingIn,
       error,
-      configError: configured
-        ? null
-        : "NEXT_PUBLIC_FIREBASE_API_KEY / APP_ID are empty. Copy them from the Firebase console → Project settings → Your apps → Web app config.",
+      configError: null,
       signIn,
       register,
       signInWith,
       signOut,
       clearError,
     }),
-    [user, session, loading, signingIn, error, configured, signIn, register, signInWith, signOut, clearError],
+    [user, session, isPending, signingIn, error, signIn, register, signInWith, signOut, clearError],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

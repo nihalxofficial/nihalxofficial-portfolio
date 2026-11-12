@@ -13,7 +13,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: {
       userAgent: "*",
       allow: "/",
-      // The dashboard is private and additionally guarded by Firebase auth.
+      // The dashboard is private and guarded by Better-Auth administrator role.
       disallow: [ADMIN_BASE, `${ADMIN_BASE}/`],
     },
     sitemap: `${baseUrl}/sitemap.xml`,

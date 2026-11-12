@@ -1,11 +1,10 @@
 import { API_URL, type Envelope } from "./api";
-import { getFirebaseAuth } from "./firebase";
+import { authClient } from "./auth-client";
 
 /**
  * Authenticated client for the `/api/v1/admin/*` endpoints.
  *
- * Every request carries the Firebase ID token, which the API verifies before
- * checking the UID allowlist — the dashboard never decides who is an admin.
+ * Uses Better-Auth session tokens for authorization.
  */
 
 export type FieldKind =
@@ -57,10 +56,10 @@ export class AdminApiError extends Error {
 }
 
 async function idToken(): Promise<string> {
-  const auth = getFirebaseAuth();
-  const user = auth.currentUser;
-  if (!user) throw new AdminApiError("Not signed in", 401);
-  return user.getIdToken();
+  const sessionRes = await authClient.getSession();
+  const token = sessionRes?.data?.session?.token;
+  if (!token) throw new AdminApiError("Not signed in", 401);
+  return token;
 }
 
 /** Parses the API envelope, converting failures into AdminApiError. */
@@ -68,16 +67,23 @@ async function request<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<{ data: T; meta?: Envelope<T>["meta"]; message: string }> {
-  const token = await idToken();
+  let authHeader: Record<string, string> = {};
+  try {
+    const token = await idToken();
+    if (token) authHeader = { Authorization: `Bearer ${token}` };
+  } catch {
+    // continue without token if not signed in
+  }
 
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      Authorization: `Bearer ${token}`,
+      ...authHeader,
       ...(init.headers ?? {}),
     },
+    credentials: "include",
     cache: "no-store",
   });
 
@@ -100,33 +106,50 @@ export interface AdminSession {
   uid: string;
   email: string | null;
   name: string | null;
-  firebaseConfigured: boolean;
-  adminCount: number;
+  role?: string;
+  roles?: string[];
+  adminCount?: number;
 }
 
 export async function verifySession(): Promise<AdminSession> {
-  const { data } = await request<AdminSession>("/auth/session", { method: "GET" });
-  return data;
+  const res = await authClient.getSession();
+  const user = res?.data?.user as any;
+  if (!user) throw new AdminApiError("Not signed in", 401);
+  const roles = Array.isArray(user.roles) ? user.roles : [user.role || "user"];
+  const isAdmin = roles.includes("admin") || user.role === "admin";
+  if (!isAdmin) {
+    throw new AdminApiError("This account does not have admin privileges", 403);
+  }
+  return {
+    uid: user.id,
+    email: user.email ?? null,
+    name: user.name ?? null,
+    role: user.role,
+    roles,
+    adminCount: 1,
+  };
 }
 
-/**
- * Identity of the signed-in Firebase account, *without* the allowlist check.
- *
- * Used only to explain a rejected sign-in ("your UID is …"), so a fresh
- * registration can be pointed at ADMIN_UIDS instead of a generic error.
- */
 export interface AuthStatus {
   uid: string;
   email: string | null;
   name: string | null;
   isAdmin: boolean;
-  firebaseConfigured: boolean;
   adminCount: number;
 }
 
 export async function fetchAuthStatus(): Promise<AuthStatus> {
-  const { data } = await request<AuthStatus>("/auth/status", { method: "GET" });
-  return data;
+  const res = await authClient.getSession();
+  const user = res?.data?.user as any;
+  const roles = user ? (Array.isArray(user.roles) ? user.roles : [user.role || "user"]) : [];
+  const isAdmin = roles.includes("admin") || user?.role === "admin";
+  return {
+    uid: user?.id ?? "",
+    email: user?.email ?? null,
+    name: user?.name ?? null,
+    isAdmin,
+    adminCount: isAdmin ? 1 : 0,
+  };
 }
 
 export async function fetchContentTypes(): Promise<ContentType[]> {

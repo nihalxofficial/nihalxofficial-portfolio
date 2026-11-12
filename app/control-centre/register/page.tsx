@@ -49,9 +49,9 @@ export default function AdminRegisterPage() {
 
   return (
     <AuthShell
-      eyebrow="first account · then ADMIN_UIDS"
+      eyebrow="admin access"
       title="Create account"
-      subtitle="Registering only creates the Firebase account. Access is granted by adding its UID to ADMIN_UIDS on the server."
+      subtitle="Create your account to manage your portfolio, content, and system settings."
       footer={
         <>
           <span>Already registered?</span>
@@ -147,8 +147,7 @@ export default function AdminRegisterPage() {
             <AuthError message={mismatch || error} />
 
             <p className="mono rounded-lg border border-line bg-surface-2/60 px-3 py-2 text-[10.5px] leading-relaxed text-faint">
-              After registering, copy the UID shown in the error (or in Firebase → Authentication →
-              Users) into <span className="text-accent">ADMIN_UIDS</span>.
+              Admin roles can be configured via <span className="text-accent">ADMIN_EMAILS</span> in your environment.
             </p>
           </form>
         </>
