@@ -14,7 +14,7 @@ page can be changed from the private dashboard without a deploy.
 ## Stack
 
 | Concern | Choice |
-| --- | --- |
+|---------|--------|
 | Framework | Next.js 16 (App Router, Turbopack) with `output: "standalone"` |
 | UI runtime | React 19 |
 | Styling | Tailwind CSS 4 (`@theme inline` tokens, no config file) |
@@ -43,7 +43,7 @@ colour, only for the few cases where contrast demands it.
 ## Routes
 
 | Route | Type | Notes |
-| --- | --- | --- |
+|-------|------|-------|
 | `/` | server, ISR | assembles every visible section from `/api/v1/portfolio` |
 | `/projects/[slug]` | server, ISR | case study: gallery, features, challenges, stack, related work |
 | `/blog/[slug]` | server, ISR | post body rendered from a small block parser |
@@ -95,7 +95,7 @@ lib/
 Create `portfolio/.env.local`:
 
 | Variable | Required | Purpose |
-| --- | --- | --- |
+|----------|----------|---------|
 | `NEXT_PUBLIC_API_URL` | yes | public API origin, `http://localhost:5000/api/v1` |
 | `NEXT_PUBLIC_SITE_URL` | yes | canonical origin used by metadata, sitemap and robots |
 | `NEXT_PUBLIC_FIREBASE_API_KEY` | for dashboard | Firebase Web API key |
@@ -129,7 +129,7 @@ the ID token **and** find your UID in `ADMIN_UIDS`.
    the `firebaseConfig` object. Paste each value into `.env.local`:
 
    | `firebaseConfig` key | `.env.local` variable |
-   | --- | --- |
+   |----------------------|------------------------|
    | `apiKey` | `NEXT_PUBLIC_FIREBASE_API_KEY` |
    | `authDomain` | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` |
    | `projectId` | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` |
@@ -219,7 +219,7 @@ and the sitemap, and `noindex` is set in `app/control-centre/layout.tsx`.
 ## Release tags
 
 | Image | Contents |
-| --- | --- |
+|-------|----------|
 | `nihalxofficial/portfolio:release-1` | original single page portfolio (frontend only) |
 | `nihalxofficial/portfolio-api:release-2` | backend API |
 | `nihalxofficial/portfolio-web:release-2` | this app (public site + dashboard) |
