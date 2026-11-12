@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
-import { listContent, updateContent } from "@/lib/admin";
+import { listContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, Switch, TextArea } from "@heroui/react";
 import { uploadImageFile } from "@/components/admin/settings/settings-utils";
 
@@ -103,6 +103,19 @@ export default function HeroManagementPage() {
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to save hero section");
+    } finally { setSaving(false); }
+  }
+
+  async function handleDelete(id: string) {
+    if (!hero || hero._id === "current") return;
+    if (!confirm("Delete this hero section?")) return;
+    try {
+      setSaving(true);
+      await deleteContent("hero", id);
+      setSuccess(true);
+      setTimeout(() => { setSuccess(false); loadHero(); }, 3000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete hero section");
     } finally { setSaving(false); }
   }
 
@@ -244,6 +257,12 @@ export default function HeroManagementPage() {
             {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" /> : <Icon name="Save" className="h-4 w-4" />}
             {saving ? "Saving..." : "Save Changes"}
           </button>
+          {hero && hero._id !== "current" && (
+            <button type="button" onClick={() => void handleDelete(hero._id)} disabled={saving} className="inline-flex items-center gap-2 rounded-lg border border-danger/40 bg-danger/15 px-5 py-2.5 text-[14px] font-medium text-danger transition-all hover:bg-danger/25 disabled:opacity-60">
+              {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-danger/30 border-t-danger" /> : <Icon name="Trash2" className="h-4 w-4" />}
+              {saving ? "Deleting..." : "Delete"}
+            </button>
+          )}
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">
               <Icon name="CheckCircle" className="h-4 w-4" /><span>Hero section saved!</span>
