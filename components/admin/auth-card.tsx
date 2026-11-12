@@ -26,23 +26,23 @@ export function AuthShell({
   footer: ReactNode;
 }) {
   return (
-    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#03050f] px-5 py-12 select-none">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-start sm:justify-center overflow-x-hidden overflow-y-auto bg-[#03050f] px-4 py-8 sm:py-12">
       {/* Live Animated DNA / Selected Background Mode */}
       <DynamicSiteBackground />
 
       {/* Radial vignette overlay */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,transparent_20%,#03050f_85%)]"
+        className="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_at_center,transparent_20%,#03050f_85%)]"
       />
 
       {/* Cyber Grid Texture */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 z-[2] grid-bg opacity-25"
+        className="pointer-events-none fixed inset-0 z-[2] grid-bg opacity-25"
       />
 
-      <div className="relative z-10 w-full max-w-sm">
+      <div className="relative z-10 my-auto w-full max-w-sm">
         {/* Main Glass Panel */}
         <div className="hud !border-white/15 bg-[#03050f]/85 p-6 sm:p-7 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.85)] backdrop-blur-2xl">
           {/* Header with NB Logo */}

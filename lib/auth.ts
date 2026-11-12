@@ -4,10 +4,10 @@ import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { jwt } from "better-auth/plugins";
 
 const mongoUri =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/portfolio";
+  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/nihalxofficial";
 const client = new MongoClient(mongoUri);
 const dbName =
-  process.env.MONGODB_DATABASE || process.env.DATABASE || "portfolio";
+  process.env.MONGODB_DATABASE || process.env.DATABASE || "nihalxofficial";
 const db = client.db(dbName);
 
 const adminEmails = (
