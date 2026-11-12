@@ -348,8 +348,6 @@ export function Skills({
   section?: SectionMeta;
   index: number;
 }) {
-  if (groups.length === 0) return null;
-
   // Prioritize "Tech Stack" group first, and prioritize Next.js as the first skill
   const orderedGroups = useMemo(() => {
     return [...groups]
@@ -419,6 +417,10 @@ export function Skills({
     const key = selected.name.toLowerCase().split(" ")[0];
     return projects.filter((p) => p.techStack.some((t) => t.toLowerCase().includes(key))).map((p) => p.title);
   }, [selected, projects]);
+
+  // Bail out only after every hook has run, so the hook order stays stable
+  // when the CMS list becomes empty between renders.
+  if (groups.length === 0) return null;
 
   return (
     <section id="skills" className="relative py-12">

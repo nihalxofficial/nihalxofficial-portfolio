@@ -77,8 +77,6 @@ export function Projects({
   section?: SectionMeta;
   index: number;
 }) {
-  if (projects.length === 0) return null;
-
   const [query, setQuery] = useState("");
   const [selectedCat, setSelectedCat] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"spotlight" | "matrix">("spotlight");
@@ -110,6 +108,10 @@ export function Projects({
   // In spotlight mode, the 1st project is the flagship hero, rest are fleet cards
   const flagship = filtered[0];
   const fleet = filtered.slice(1);
+
+  // Bail out only after every hook has run, so the hook order stays stable
+  // when the CMS list becomes empty between renders.
+  if (projects.length === 0) return null;
 
   return (
     <section id="projects" className="relative py-14">
