@@ -19,14 +19,24 @@ const adminEmails = (
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean);
 
+/**
+ * Sessions are signed with this value. It must come from the environment: a
+ * repository default would be public knowledge and would silently be used by
+ * any deployment that forgot to set the variable.
+ */
+const secret = process.env.BETTER_AUTH_SECRET;
+if (!secret) {
+  throw new Error(
+    "BETTER_AUTH_SECRET is not set. Add it to portfolio/.env.local (and to the web container environment) — dashboard sessions cannot be signed or verified without it.",
+  );
+}
+
 export const auth = betterAuth({
   baseURL:
     process.env.BETTER_AUTH_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
     "http://localhost:3000",
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    "nihal-portfolio-betterauth-secret-key-32chars",
+  secret,
   database: mongodbAdapter(db, {
     client,
   }),
