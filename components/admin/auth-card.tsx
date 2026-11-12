@@ -135,21 +135,21 @@ export function AuthError({ message }: { message: string }) {
   );
 }
 
-/** Shown while Firebase web config is still empty in `.env.local`. */
+/** Shown while auth config is still empty in `.env.local`. */
 export function ConfigNotice({ message }: { message: string }) {
   return (
     <div className="mt-5 rounded-xl border border-amber-500/35 bg-amber-500/10 p-4 font-mono">
       <p className="flex items-center gap-2 text-[12px] font-semibold text-amber-400">
         <Icon name="Settings" className="h-4 w-4" />
-        Firebase web config missing
+        Auth configuration missing
       </p>
       <p className="mt-2 text-[11.5px] leading-relaxed text-slate-300">{message}</p>
       <p className="mt-3 rounded-lg border border-white/10 bg-black/40 px-3 py-2 text-[10px] leading-relaxed text-slate-400">
         portfolio/.env.local
         <br />
-        NEXT_PUBLIC_FIREBASE_API_KEY=…
+        BETTER_AUTH_SECRET=…
         <br />
-        NEXT_PUBLIC_FIREBASE_APP_ID=…
+        MONGODB_URI=…
       </p>
     </div>
   );

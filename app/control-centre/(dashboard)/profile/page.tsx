@@ -5,7 +5,7 @@ import { Icon } from "@/components/ui/icon";
 import { SectionHeader } from "@/components/admin/ui";
 import { useAuth } from "@/components/admin/auth-provider";
 
-/** Human label for a Firebase provider id ("google.com" → "Google"). */
+/** Human label for an auth provider id ("google.com" → "Google"). */
 function providerLabel(id: string): string {
   if (id.includes("google")) return "Google";
   if (id.includes("github")) return "GitHub";
@@ -20,7 +20,7 @@ function providerLabel(id: string): string {
  * is an admin. This screen only surfaces the already-verified identity from
  * `useAuth()` (the Firebase user plus the `/auth/session` allowlist result) and
  * a sign-out control. There is nothing to edit: authorization lives in the
- * server's ADMIN_UIDS allowlist.
+ * server's ADMIN_EMAILS allowlist.
  */
 export default function AdminProfilePage() {
   const { user, session, signOut } = useAuth();
@@ -98,8 +98,8 @@ export default function AdminProfilePage() {
             />
           </dl>
           <p className="mt-3 rounded-lg border border-line bg-surface-2/40 px-3 py-2 text-[11.5px] text-faint">
-            To grant or revoke admin access, edit{" "}
-            <span className="mono text-accent">ADMIN_UIDS</span> on the server and restart the API.
+            To grant or revoke admin access, update{" "}
+            <span className="mono text-accent">ADMIN_EMAILS</span> in the environment variables.
           </p>
         </section>
       </div>

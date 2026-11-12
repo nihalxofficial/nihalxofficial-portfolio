@@ -72,7 +72,7 @@ function isAdmin(): boolean {
     if (localStorage.getItem("pf_is_admin") === "true") return true;
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && (key.startsWith("firebase:authUser:") || key === "pf_admin_session")) {
+      if (key && (key.startsWith("better-auth") || key === "pf_admin_session")) {
         return true;
       }
     }

@@ -25,7 +25,7 @@ function useCollapsedGroups() {
  * Dashboard chrome and access gate.
  *
  * Nothing inside renders until the API has accepted the session, so a signed-in
- * Firebase account that is missing from ADMIN_UIDS never sees the dashboard.
+ * account that lacks the "admin" role never sees the dashboard.
  * The sidebar is driven entirely by `lib/admin-nav` — grouped, collapsible, and
  * icon-led — so the whole CMS is navigable from one logical structure.
  */
@@ -104,7 +104,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     return (
       <Gate
         title={loading ? "Checking access…" : "Redirecting to sign-in…"}
-        body={error || "Verifying your Firebase session against the admin allowlist."}
+        body={error || "Verifying your admin session..."}
       >
         <span className="h-5 w-5 animate-spin rounded-full border-2 border-line-strong border-t-accent" />
       </Gate>
