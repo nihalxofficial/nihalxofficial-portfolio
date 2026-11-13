@@ -27,6 +27,7 @@ export default function GlobalSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
@@ -65,11 +66,12 @@ export default function GlobalSettingsPage() {
     try {
       setSaving(true);
       setSuccess(false);
+      setActionError(null);
       await updateContent("settings", settings._id, settings as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save settings");
+      setActionError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -242,6 +244,13 @@ export default function GlobalSettingsPage() {
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">
               <Icon name="CheckCircle" className="h-4 w-4" />
               <span>Settings saved successfully!</span>
+            </div>
+          )}
+
+          {actionError && (
+            <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-[13px] font-medium text-danger">
+              <Icon name="AlertCircle" className="h-4 w-4" />
+              <span>{actionError}</span>
             </div>
           )}
         </div>

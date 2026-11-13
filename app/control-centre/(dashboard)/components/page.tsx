@@ -21,6 +21,7 @@ export default function ComponentVisibilityPage() {
   const [sections, setSections] = useState<ComponentVisibilityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [updating, setUpdating] = useState<string | null>(null);
   const [reorderMsg, setReorderMsg] = useState(false);
 
@@ -44,12 +45,13 @@ export default function ComponentVisibilityPage() {
   async function toggleVisibility(id: string, currentState: boolean) {
     try {
       setUpdating(id);
+      setActionError(null);
       await updateContent("sections", id, { isVisible: !currentState });
       setSections((prev) =>
         prev.map((s) => (s._id === id ? { ...s, isVisible: !currentState } : s))
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update visibility");
+      setActionError(err instanceof Error ? err.message : "Failed to update visibility");
     } finally {
       setUpdating(null);
     }
@@ -75,6 +77,7 @@ export default function ComponentVisibilityPage() {
     );
 
     try {
+      setActionError(null);
       await Promise.all([
         updateContent("sections", a._id, { order: newOrderA }),
         updateContent("sections", b._id, { order: newOrderB }),
@@ -90,7 +93,7 @@ export default function ComponentVisibilityPage() {
           return s;
         })
       );
-      alert(err instanceof Error ? err.message : "Failed to reorder");
+      setActionError(err instanceof Error ? err.message : "Failed to reorder");
     }
   }
 
@@ -119,6 +122,8 @@ export default function ComponentVisibilityPage() {
     );
   }
 
+  const orderedSections = [...sections].sort((a, b) => a.order - b.order);
+
   return (
     <div>
       {/* Header */}
@@ -140,13 +145,17 @@ export default function ComponentVisibilityPage() {
         </div>
       </div>
 
+      {actionError && (
+        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
+
       {/* Components Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {sections
-          .sort((a, b) => a.order - b.order)
-          .map((section, index) => {
-            const sorted = [...sections].sort((a, b) => a.order - b.order);
+        {orderedSections.map((section, index) => {
             const config = HOMEPAGE_COMPONENTS.find((c) => c.key === section.key);
+            const ConfigIcon = config?.icon;
             const isUpdating = updating === section._id;
 
             return (
@@ -159,10 +168,11 @@ export default function ComponentVisibilityPage() {
                   {/* Icon and Info */}
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-gradient-to-br from-accent/15 to-accent/5 text-accent">
-                      <Icon
-                        name={typeof config?.icon === "string" ? config.icon : "Box"}
-                        className="h-5 w-5"
-                      />
+                      {ConfigIcon ? (
+                        <ConfigIcon className="h-5 w-5" />
+                      ) : (
+                        <Icon name="Box" className="h-5 w-5" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-semibold text-[14px] text-ink truncate">
@@ -195,7 +205,7 @@ export default function ComponentVisibilityPage() {
                       <button
                         type="button"
                         onClick={() => void moveSection(index, "down")}
-                        disabled={index === sorted.length - 1}
+                        disabled={index === orderedSections.length - 1}
                         title="Move down"
                         className="flex h-6 w-6 items-center justify-center rounded border border-line text-muted transition-all hover:border-accent/40 hover:text-accent disabled:opacity-30"
                       >

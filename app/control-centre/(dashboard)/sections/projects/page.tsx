@@ -56,6 +56,7 @@ export default function ProjectsManagerPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Project>>({});
@@ -88,7 +89,7 @@ export default function ProjectsManagerPage() {
   async function handleSave() {
     try {
       if (!formData.title || !formData.shortDescription) {
-        alert("Title and short description are required");
+        setActionError("Title and short description are required");
         return;
       }
 
@@ -100,6 +101,7 @@ export default function ProjectsManagerPage() {
       }
 
       setSaving(true);
+      setActionError(null);
 
       if (editing) {
         await updateContent("projects", editing, payload as unknown as Record<string, unknown>);
@@ -118,7 +120,7 @@ export default function ProjectsManagerPage() {
       setCreating(false);
       setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save project");
+      setActionError(err instanceof Error ? err.message : "Failed to save project");
     } finally {
       setSaving(false);
     }
@@ -136,7 +138,7 @@ export default function ProjectsManagerPage() {
       await deleteContent("projects", id);
       await loadProjects();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete project");
+      setActionError(err instanceof Error ? err.message : "Failed to delete project");
     }
   }
 
@@ -147,7 +149,7 @@ export default function ProjectsManagerPage() {
         prev.map((proj) => (proj._id === id ? { ...proj, isPublished: !currentState } : proj))
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update published status");
+      setActionError(err instanceof Error ? err.message : "Failed to update published status");
     }
   }
 
@@ -158,7 +160,7 @@ export default function ProjectsManagerPage() {
         prev.map((proj) => (proj._id === id ? { ...proj, isFeatured: !currentState } : proj))
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update featured status");
+      setActionError(err instanceof Error ? err.message : "Failed to update featured status");
     }
   }
 
@@ -228,6 +230,13 @@ export default function ProjectsManagerPage() {
           Add Project
         </Link>
       </div>
+
+      {/* Action Error Banner */}
+      {actionError && (
+        <p className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {/* Create/Edit Form */}
       {(creating || editing) && (

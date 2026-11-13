@@ -65,6 +65,7 @@ export default function ContactManagementPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [addingLink, setAddingLink] = useState(false);
   const [newSocial, setNewSocial] = useState<{ platform: string; url: string }>({ platform: "github", url: "" });
@@ -95,11 +96,12 @@ export default function ContactManagementPage() {
     if (!data) return;
     try {
       setSaving(true); setSuccess(false);
+      setActionError(null);
       await updateContent("settings", data._id || "current", data as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Save failed");
+      setActionError(err instanceof Error ? err.message : "Save failed");
     } finally { setSaving(false); }
   }
 
@@ -315,6 +317,12 @@ export default function ContactManagementPage() {
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">
               <Icon name="CheckCircle" className="h-4 w-4" /><span>Contact settings saved!</span>
+            </div>
+          )}
+
+          {actionError && (
+            <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-[13px] font-medium text-danger">
+              <Icon name="AlertCircle" className="h-4 w-4" /><span>{actionError}</span>
             </div>
           )}
         </div>

@@ -49,6 +49,7 @@ export default function PostsManagerPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<BlogPost>>({});
@@ -88,7 +89,7 @@ export default function PostsManagerPage() {
   async function handleSave() {
     try {
       if (!formData.title || !formData.excerpt) {
-        alert("Title and excerpt are required");
+        setActionError("Title and excerpt are required");
         return;
       }
 
@@ -108,6 +109,7 @@ export default function PostsManagerPage() {
       }
 
       setSaving(true);
+      setActionError(null);
 
       if (editing) {
         await updateContent("posts", editing, payload as unknown as Record<string, unknown>);
@@ -121,7 +123,7 @@ export default function PostsManagerPage() {
       setCreating(false);
       setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save post");
+      setActionError(err instanceof Error ? err.message : "Failed to save post");
     } finally {
       setSaving(false);
     }
@@ -139,7 +141,7 @@ export default function PostsManagerPage() {
       await deleteContent("posts", id);
       await loadPosts();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete post");
+      setActionError(err instanceof Error ? err.message : "Failed to delete post");
     }
   }
 
@@ -157,7 +159,7 @@ export default function PostsManagerPage() {
         prev.map((post) => (post._id === id ? { ...post, ...updates } : post))
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update published status");
+      setActionError(err instanceof Error ? err.message : "Failed to update published status");
     }
   }
 
@@ -222,6 +224,13 @@ export default function PostsManagerPage() {
           New Post
         </button>
       </div>
+
+      {/* Action Error Banner */}
+      {actionError && (
+        <p className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {/* Create/Edit Form */}
       {(creating || editing) && (

@@ -30,6 +30,7 @@ export default function TestimonialsManagerPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Testimonial>>({});
@@ -49,8 +50,12 @@ export default function TestimonialsManagerPage() {
 
   async function handleSave() {
     try {
-      if (!formData.name || !formData.message) { alert("Name and message are required"); return; }
+      if (!formData.name || !formData.message) {
+        setActionError("Name and message are required");
+        return;
+      }
       setSaving(true);
+      setActionError(null);
       if (editing) {
         await updateContent("testimonials", editing, formData as unknown as Record<string, unknown>);
       } else {
@@ -58,7 +63,7 @@ export default function TestimonialsManagerPage() {
       }
       await loadTestimonials(); setEditing(null); setCreating(false); setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save testimonial");
+      setActionError(err instanceof Error ? err.message : "Failed to save testimonial");
     } finally { setSaving(false); }
   }
 
@@ -71,14 +76,14 @@ export default function TestimonialsManagerPage() {
     });
     if (!ok) return;
     try { await deleteContent("testimonials", id); await loadTestimonials(); }
-    catch (err) { alert(err instanceof Error ? err.message : "Failed to delete testimonial"); }
+    catch (err) { setActionError(err instanceof Error ? err.message : "Failed to delete testimonial"); }
   }
 
   async function toggleVisibility(id: string, currentState: boolean) {
     try {
       await updateContent("testimonials", id, { isVisible: !currentState });
       setTestimonials((prev) => prev.map((t) => (t._id === id ? { ...t, isVisible: !currentState } : t)));
-    } catch (err) { alert(err instanceof Error ? err.message : "Failed to update visibility"); }
+    } catch (err) { setActionError(err instanceof Error ? err.message : "Failed to update visibility"); }
   }
 
   function startEdit(test: Testimonial) { setEditing(test._id); setFormData(test); setCreating(false); }
@@ -112,6 +117,12 @@ export default function TestimonialsManagerPage() {
           <Icon name="Plus" className="h-4 w-4" /> Add Testimonial
         </button>
       </div>
+
+      {actionError && (
+        <p className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Testimonial" : "Add Testimonial"}>

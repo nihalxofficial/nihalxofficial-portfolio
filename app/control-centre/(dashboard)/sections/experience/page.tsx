@@ -35,6 +35,7 @@ export default function ExperienceManagerPage() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Experience>>({});
@@ -60,10 +61,11 @@ export default function ExperienceManagerPage() {
   async function handleSave() {
     try {
       if (!formData.organization || !formData.role) {
-        alert("Organization and role are required");
+        setActionError("Organization and role are required");
         return;
       }
 
+      setActionError(null);
       setSaving(true);
 
       if (editing) {
@@ -81,7 +83,7 @@ export default function ExperienceManagerPage() {
       setCreating(false);
       setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save experience");
+      setActionError(err instanceof Error ? err.message : "Failed to save experience");
     } finally {
       setSaving(false);
     }
@@ -100,7 +102,7 @@ export default function ExperienceManagerPage() {
       await deleteContent("experience", id);
       await loadExperiences();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete experience");
+      setActionError(err instanceof Error ? err.message : "Failed to delete experience");
     }
   }
 
@@ -111,7 +113,7 @@ export default function ExperienceManagerPage() {
         prev.map((exp) => (exp._id === id ? { ...exp, isVisible: !currentState } : exp))
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update visibility");
+      setActionError(err instanceof Error ? err.message : "Failed to update visibility");
     }
   }
 
@@ -184,6 +186,12 @@ export default function ExperienceManagerPage() {
       </div>
 
       {/* Create/Edit Form */}
+      {actionError && (
+        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
+
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Experience" : "Add Experience"}>
           <div className="space-y-4">

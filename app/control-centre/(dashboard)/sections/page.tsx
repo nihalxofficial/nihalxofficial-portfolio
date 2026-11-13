@@ -37,6 +37,7 @@ export default function SectionsManagerPage() {
   const [sections, setSections] = useState<SectionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Section create / edit state
   const [creating, setCreating] = useState(false);
@@ -116,11 +117,12 @@ export default function SectionsManagerPage() {
   async function handleSaveSection() {
     try {
       if (!formData.key?.trim()) {
-        alert("Section key/slug is required");
+        setActionError("Section key/slug is required");
         return;
       }
 
       setSaving(true);
+      setActionError(null);
       const payload: Record<string, unknown> = {
         ...formData,
         key: formData.key.trim().toLowerCase().replace(/\s+/g, "-"),
@@ -136,7 +138,7 @@ export default function SectionsManagerPage() {
       await loadSections();
       cancelForm();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save section");
+      setActionError(err instanceof Error ? err.message : "Failed to save section");
     } finally {
       setSaving(false);
     }
@@ -155,7 +157,7 @@ export default function SectionsManagerPage() {
       await deleteContent("sections", section._id);
       await loadSections();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete section");
+      setActionError(err instanceof Error ? err.message : "Failed to delete section");
     }
   }
 
@@ -167,7 +169,7 @@ export default function SectionsManagerPage() {
         prev.map((s) => (s._id === section._id ? { ...s, isVisible: nextVisible } : s)),
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to toggle visibility");
+      setActionError(err instanceof Error ? err.message : "Failed to toggle visibility");
     }
   }
 
@@ -187,7 +189,7 @@ export default function SectionsManagerPage() {
       );
       setQuickItemInputs((prev) => ({ ...prev, [section._id]: "" }));
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to add item to section");
+      setActionError(err instanceof Error ? err.message : "Failed to add item to section");
     } finally {
       setSavingItemId(null);
     }
@@ -212,7 +214,7 @@ export default function SectionsManagerPage() {
         prev.map((s) => (s._id === section._id ? { ...s, items: updatedItems } : s)),
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete item");
+      setActionError(err instanceof Error ? err.message : "Failed to delete item");
     }
   }
 
@@ -230,7 +232,7 @@ export default function SectionsManagerPage() {
         prev.map((s) => (s._id === section._id ? { ...s, items: currentItems } : s)),
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to reorder items");
+      setActionError(err instanceof Error ? err.message : "Failed to reorder items");
     }
   }
 
@@ -278,6 +280,13 @@ export default function SectionsManagerPage() {
           </button>
         </div>
       </div>
+
+      {/* Action Error Banner */}
+      {actionError && (
+        <p className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {/* Add / Edit Section Form Modal/Card */}
       {(creating || editingId) && (

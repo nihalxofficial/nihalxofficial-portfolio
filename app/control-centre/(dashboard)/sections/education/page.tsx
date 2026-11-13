@@ -32,6 +32,7 @@ export default function EducationManagerPage() {
   const [education, setEducation] = useState<Education[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Education>>({});
@@ -51,7 +52,8 @@ export default function EducationManagerPage() {
 
   async function handleSave() {
     try {
-      if (!formData.degree || !formData.institution) { alert("Degree and institution are required"); return; }
+      if (!formData.degree || !formData.institution) { setActionError("Degree and institution are required"); return; }
+      setActionError(null);
       setSaving(true);
       if (editing) {
         await updateContent("education", editing, formData as Record<string, unknown>);
@@ -61,7 +63,7 @@ export default function EducationManagerPage() {
       await loadEducation();
       setEditing(null); setCreating(false); setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save education");
+      setActionError(err instanceof Error ? err.message : "Failed to save education");
     } finally { setSaving(false); }
   }
 
@@ -74,14 +76,14 @@ export default function EducationManagerPage() {
     });
     if (!ok) return;
     try { await deleteContent("education", id); await loadEducation(); }
-    catch (err) { alert(err instanceof Error ? err.message : "Failed to delete"); }
+    catch (err) { setActionError(err instanceof Error ? err.message : "Failed to delete"); }
   }
 
   async function toggleVisibility(id: string, currentState: boolean) {
     try {
       await updateContent("education", id, { isVisible: !currentState });
       setEducation((prev) => prev.map((e) => (e._id === id ? { ...e, isVisible: !currentState } : e)));
-    } catch (err) { alert(err instanceof Error ? err.message : "Failed to update"); }
+    } catch (err) { setActionError(err instanceof Error ? err.message : "Failed to update"); }
   }
 
   function startEdit(edu: Education) { setEditing(edu._id); setFormData(edu); setCreating(false); }
@@ -105,6 +107,12 @@ export default function EducationManagerPage() {
           <Icon name="Plus" className="h-4 w-4" />Add Education
         </button>
       </div>
+
+      {actionError && (
+        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Education" : "Add Education"}>

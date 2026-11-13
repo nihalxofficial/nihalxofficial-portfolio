@@ -28,6 +28,7 @@ export default function ServicesManagerPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Service>>({});
@@ -53,9 +54,10 @@ export default function ServicesManagerPage() {
   async function handleSave() {
     try {
       if (!formData.title || !formData.description) {
-        alert("Title and description are required");
+        setActionError("Title and description are required");
         return;
       }
+      setActionError(null);
       setSaving(true);
       if (editing) {
         await updateContent("services", editing, formData as unknown as Record<string, unknown>);
@@ -71,7 +73,7 @@ export default function ServicesManagerPage() {
       setCreating(false);
       setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save service");
+      setActionError(err instanceof Error ? err.message : "Failed to save service");
     } finally {
       setSaving(false);
     }
@@ -89,7 +91,7 @@ export default function ServicesManagerPage() {
       await deleteContent("services", id);
       await loadServices();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete service");
+      setActionError(err instanceof Error ? err.message : "Failed to delete service");
     }
   }
 
@@ -100,7 +102,7 @@ export default function ServicesManagerPage() {
         prev.map((service) => (service._id === id ? { ...service, isVisible: !currentState } : service))
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update visibility");
+      setActionError(err instanceof Error ? err.message : "Failed to update visibility");
     }
   }
 
@@ -157,6 +159,12 @@ export default function ServicesManagerPage() {
       </div>
 
       {/* Create/Edit Form */}
+      {actionError && (
+        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
+
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Service" : "Add Service"}>
           <div className="space-y-4">

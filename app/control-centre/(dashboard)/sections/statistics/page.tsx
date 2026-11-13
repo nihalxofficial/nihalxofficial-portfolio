@@ -29,6 +29,7 @@ export default function StatisticsManagerPage() {
   const [stats, setStats] = useState<Statistic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Statistic>>({});
@@ -52,9 +53,10 @@ export default function StatisticsManagerPage() {
   async function handleSave() {
     try {
       if (!formData.value || !formData.label) {
-        alert("Value and label are required");
+        setActionError("Value and label are required");
         return;
       }
+      setActionError(null);
       setSaving(true);
       if (editing) {
         await updateContent("statistics", editing, formData as unknown as Record<string, unknown>);
@@ -66,7 +68,7 @@ export default function StatisticsManagerPage() {
       setCreating(false);
       setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save statistic");
+      setActionError(err instanceof Error ? err.message : "Failed to save statistic");
     } finally {
       setSaving(false);
     }
@@ -84,7 +86,7 @@ export default function StatisticsManagerPage() {
       await deleteContent("statistics", id);
       await loadStats();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete statistic");
+      setActionError(err instanceof Error ? err.message : "Failed to delete statistic");
     }
   }
 
@@ -93,7 +95,7 @@ export default function StatisticsManagerPage() {
       await updateContent("statistics", id, { isVisible: !currentState });
       setStats((prev) => prev.map((s) => (s._id === id ? { ...s, isVisible: !currentState } : s)));
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update visibility");
+      setActionError(err instanceof Error ? err.message : "Failed to update visibility");
     }
   }
 
@@ -118,6 +120,12 @@ export default function StatisticsManagerPage() {
           <Icon name="Plus" className="h-4 w-4" /> Add Statistic
         </button>
       </div>
+
+      {actionError && (
+        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Statistic" : "Add Statistic"}>

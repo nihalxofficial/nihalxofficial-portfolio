@@ -23,6 +23,7 @@ export default function NavigationManagerPage() {
   const [items, setItems] = useState<NavItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<NavItem>>({});
@@ -47,10 +48,11 @@ export default function NavigationManagerPage() {
   async function handleSave() {
     try {
       if (!formData.label || !formData.href) {
-        alert("Label and URL are required");
+        setActionError("Label and URL are required");
         return;
       }
 
+      setActionError(null);
       if (editing) {
         await updateContent("navigation", editing, formData);
       } else {
@@ -66,7 +68,7 @@ export default function NavigationManagerPage() {
       setCreating(false);
       setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save navigation item");
+      setActionError(err instanceof Error ? err.message : "Failed to save navigation item");
     }
   }
 
@@ -83,7 +85,7 @@ export default function NavigationManagerPage() {
       await deleteContent("navigation", id);
       await loadNavigation();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete navigation item");
+      setActionError(err instanceof Error ? err.message : "Failed to delete navigation item");
     }
   }
 
@@ -94,7 +96,7 @@ export default function NavigationManagerPage() {
         prev.map((item) => (item._id === id ? { ...item, isVisible: !currentState } : item))
       );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update visibility");
+      setActionError(err instanceof Error ? err.message : "Failed to update visibility");
     }
   }
 
@@ -159,6 +161,13 @@ export default function NavigationManagerPage() {
           Add Link
         </button>
       </div>
+
+      {/* Action Error Banner */}
+      {actionError && (
+        <p className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {/* Create/Edit Form */}
       {(creating || editing) && (

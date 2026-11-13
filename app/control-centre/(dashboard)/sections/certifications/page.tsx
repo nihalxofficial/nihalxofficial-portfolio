@@ -31,6 +31,7 @@ export default function CertificationsManagerPage() {
   const [certifications, setCertifications] = useState<Certification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState<Partial<Certification>>({});
@@ -50,8 +51,12 @@ export default function CertificationsManagerPage() {
 
   async function handleSave() {
     try {
-      if (!formData.title || !formData.issuer) { alert("Title and issuer are required"); return; }
+      if (!formData.title || !formData.issuer) {
+        setActionError("Title and issuer are required");
+        return;
+      }
       setSaving(true);
+      setActionError(null);
       if (editing) {
         await updateContent("certifications", editing, formData as Record<string, unknown>);
       } else {
@@ -60,7 +65,7 @@ export default function CertificationsManagerPage() {
       await loadCertifications();
       setEditing(null); setCreating(false); setFormData({});
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save certification");
+      setActionError(err instanceof Error ? err.message : "Failed to save certification");
     } finally { setSaving(false); }
   }
 
@@ -73,14 +78,14 @@ export default function CertificationsManagerPage() {
     });
     if (!ok) return;
     try { await deleteContent("certifications", id); await loadCertifications(); }
-    catch (err) { alert(err instanceof Error ? err.message : "Failed to delete"); }
+    catch (err) { setActionError(err instanceof Error ? err.message : "Failed to delete"); }
   }
 
   async function toggleVisibility(id: string, currentState: boolean) {
     try {
       await updateContent("certifications", id, { isVisible: !currentState });
       setCertifications((prev) => prev.map((c) => (c._id === id ? { ...c, isVisible: !currentState } : c)));
-    } catch (err) { alert(err instanceof Error ? err.message : "Failed to update"); }
+    } catch (err) { setActionError(err instanceof Error ? err.message : "Failed to update"); }
   }
 
   function startEdit(cert: Certification) { setEditing(cert._id); setFormData(cert); setCreating(false); }
@@ -104,6 +109,12 @@ export default function CertificationsManagerPage() {
           <Icon name="Plus" className="h-4 w-4" />Add Certification
         </button>
       </div>
+
+      {actionError && (
+        <p className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
+          {actionError}
+        </p>
+      )}
 
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Certification" : "Add Certification"}>
