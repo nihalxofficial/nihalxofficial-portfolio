@@ -3,10 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
-import { listContent, updateContent, deleteContent } from "@/lib/admin";
+import {
+  AdminApiError,
+  createContent,
+  listContent,
+  readContent,
+  updateContent,
+  type EntityRecord,
+} from "@/lib/admin";
 import { Input, Switch, TextArea } from "@heroui/react";
 import { uploadImageFile } from "@/components/admin/settings/settings-utils";
-import { useConfirm } from "@/components/admin/ui";
 
 interface HeroSection {
   _id: string;
@@ -71,26 +77,38 @@ function normaliseHero(raw: Partial<HeroSection>): HeroSection {
 }
 
 export default function HeroManagementPage() {
-  const confirm = useConfirm();
   const [hero, setHero] = useState<HeroSection | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [uploadingPortrait, setUploadingPortrait] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Homepage visibility is owned by the `sections` document (key "hero"),
+  // never by the hero singleton itself.
+  const [sectionDoc, setSectionDoc] = useState<EntityRecord | null>(null);
+  const [visible, setVisible] = useState(true);
+  const [togglingVisible, setTogglingVisible] = useState(false);
 
   useEffect(() => { loadHero(); }, []);
 
   async function loadHero() {
     try {
       setLoading(true); setError(null);
-      const result = await listContent("hero", { limit: 1 });
-      if (result.items.length > 0) {
-        setHero(normaliseHero(result.items[0] as unknown as Partial<HeroSection>));
-      } else {
-        setError("Hero section not found");
-      }
+      const [record, sections] = await Promise.all([
+        // A site that has never been saved is a normal first run, not an error.
+        readContent("hero", "current").catch((cause: unknown) => {
+          if (cause instanceof AdminApiError && cause.status === 404) return {} as EntityRecord;
+          throw cause;
+        }),
+        listContent("sections", { limit: 100 }),
+      ]);
+      const found = sections.items.find((item) => item.key === "hero") ?? null;
+      setSectionDoc(found);
+      setVisible(found ? found.isVisible !== false : true);
+      setHero(normaliseHero(record as unknown as Partial<HeroSection>));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load hero section");
     } finally { setLoading(false); }
@@ -99,32 +117,34 @@ export default function HeroManagementPage() {
   async function handleSave() {
     if (!hero) return;
     try {
-      setSaving(true); setSuccess(false);
-      await updateContent("hero", hero._id || "current", hero as unknown as Record<string, unknown>);
+      setSaving(true); setSuccess(false); setSaveError(null);
+      await updateContent("hero", "current", hero as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save hero section");
+      setSaveError(err instanceof Error ? err.message : "Failed to save hero section");
     } finally { setSaving(false); }
   }
 
-  async function handleDelete(id: string) {
-    if (!hero || hero._id === "current") return;
-    const ok = await confirm({
-      title: "Delete hero section?",
-      message: "Are you sure you want to delete this hero section? This cannot be undone.",
-      confirmLabel: "Delete",
-      status: "danger",
-    });
-    if (!ok) return;
+  async function toggleVisible(next: boolean) {
+    setTogglingVisible(true); setSaveError(null);
     try {
-      setSaving(true);
-      await deleteContent("hero", id);
-      setSuccess(true);
-      setTimeout(() => { setSuccess(false); loadHero(); }, 3000);
+      if (sectionDoc) {
+        const saved = await updateContent("sections", sectionDoc._id, { isVisible: next });
+        setSectionDoc(saved);
+      } else {
+        const created = await createContent("sections", {
+          key: "hero",
+          label: "Hero",
+          isVisible: next,
+          order: 1,
+        });
+        setSectionDoc(created);
+      }
+      setVisible(next);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete hero section");
-    } finally { setSaving(false); }
+      setSaveError(err instanceof Error ? err.message : "Could not update this section's visibility");
+    } finally { setTogglingVisible(false); }
   }
 
   function updateField(path: string, value: unknown) {
@@ -150,7 +170,7 @@ export default function HeroManagementPage() {
       const url = await uploadImageFile(file, "hero", "portrait");
       updateField("portraitUrl", url);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Portrait upload failed");
+      setSaveError(err instanceof Error ? err.message : "Portrait upload failed");
     } finally {
       setUploadingPortrait(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -169,7 +189,11 @@ export default function HeroManagementPage() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[13px] text-muted">Visible</span>
-          <Switch isSelected={hero.isVisible} onChange={(val) => updateField("isVisible", val)} />
+          <Switch
+            isSelected={visible}
+            isDisabled={togglingVisible}
+            onChange={(val) => void toggleVisible(val)}
+          />
         </div>
       </div>
 
@@ -265,15 +289,14 @@ export default function HeroManagementPage() {
             {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-accent/30 border-t-accent" /> : <Icon name="Save" className="h-4 w-4" />}
             {saving ? "Saving..." : "Save Changes"}
           </button>
-          {hero && hero._id !== "current" && (
-            <button type="button" onClick={() => void handleDelete(hero._id)} disabled={saving} className="inline-flex items-center gap-2 rounded-lg border border-danger/40 bg-danger/15 px-5 py-2.5 text-[14px] font-medium text-danger transition-all hover:bg-danger/25 disabled:opacity-60">
-              {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-danger/30 border-t-danger" /> : <Icon name="Trash2" className="h-4 w-4" />}
-              {saving ? "Deleting..." : "Delete"}
-            </button>
-          )}
           {success && (
             <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-[13px] font-medium text-emerald-500">
               <Icon name="CheckCircle" className="h-4 w-4" /><span>Hero section saved!</span>
+            </div>
+          )}
+          {saveError && (
+            <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-[13px] font-medium text-danger">
+              <Icon name="AlertTriangle" className="h-4 w-4" /><span>{saveError}</span>
             </div>
           )}
         </div>
