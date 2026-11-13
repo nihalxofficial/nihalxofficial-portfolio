@@ -24,7 +24,6 @@ export interface Hero extends DocMeta {
   availability: { label: string; isAvailable: boolean };
   primaryCta: CtaLink;
   secondaryCta: CtaLink;
-  terminal: { command: string; lines: string[] };
   /** Banner typewriter: cycles through `lines` behind an optional `prefix`. */
   rotator?: { prefix?: string; lines: string[] };
   portraitUrl: string;
