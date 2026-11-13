@@ -3,8 +3,15 @@
 import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
-import { listContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch, useConfirm } from "@/components/admin/ui";
+import {
+  AdminApiError,
+  createContent,
+  listContent,
+  readContent,
+  updateContent,
+  type EntityRecord,
+} from "@/lib/admin";
+import { CmsSwitch } from "@/components/admin/ui";
 
 interface AboutHighlight {
   icon: string;
@@ -63,12 +70,18 @@ function normaliseAbout(raw: Partial<AboutSection>): AboutSection {
 }
 
 export default function AboutManagerPage() {
-  const confirm = useConfirm();
   const [about, setAbout] = useState<AboutSection | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Homepage visibility is owned by the `sections` document (key "about"),
+  // never by the about singleton itself.
+  const [sectionDoc, setSectionDoc] = useState<EntityRecord | null>(null);
+  const [visible, setVisible] = useState(true);
+  const [togglingVisible, setTogglingVisible] = useState(false);
 
   useEffect(() => {
     loadAbout();
@@ -78,12 +91,18 @@ export default function AboutManagerPage() {
     try {
       setLoading(true);
       setError(null);
-      const result = await listContent("about", { limit: 1 });
-      if (result.items.length > 0) {
-        setAbout(normaliseAbout(result.items[0] as unknown as Partial<AboutSection>));
-      } else {
-        setError("About section not found");
-      }
+      const [record, sections] = await Promise.all([
+        // A site that has never been saved is a normal first run, not an error.
+        readContent("about", "current").catch((cause: unknown) => {
+          if (cause instanceof AdminApiError && cause.status === 404) return {} as EntityRecord;
+          throw cause;
+        }),
+        listContent("sections", { limit: 100 }),
+      ]);
+      const found = sections.items.find((item) => item.key === "about") ?? null;
+      setSectionDoc(found);
+      setVisible(found ? found.isVisible !== false : true);
+      setAbout(normaliseAbout(record as unknown as Partial<AboutSection>));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load about section");
     } finally {
@@ -97,34 +116,38 @@ export default function AboutManagerPage() {
     try {
       setSaving(true);
       setSuccess(false);
-      await updateContent("about", about._id || "current", about as unknown as Record<string, unknown>);
+      setSaveError(null);
+      await updateContent("about", "current", about as unknown as Record<string, unknown>);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to save about section");
+      setSaveError(err instanceof Error ? err.message : "Failed to save about section");
     } finally {
       setSaving(false);
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!about || about._id === "current") return;
-    const ok = await confirm({
-      title: "Delete about section?",
-      message: "Are you sure you want to delete this about section? This cannot be undone.",
-      confirmLabel: "Delete",
-      status: "danger",
-    });
-    if (!ok) return;
+  async function toggleVisible(next: boolean) {
+    setTogglingVisible(true);
+    setSaveError(null);
     try {
-      setSaving(true);
-      await deleteContent("about", id);
-      setSuccess(true);
-      setTimeout(() => { setSuccess(false); loadAbout(); }, 3000);
+      if (sectionDoc) {
+        const saved = await updateContent("sections", sectionDoc._id, { isVisible: next });
+        setSectionDoc(saved);
+      } else {
+        const created = await createContent("sections", {
+          key: "about",
+          label: "About",
+          isVisible: next,
+          order: 2,
+        });
+        setSectionDoc(created);
+      }
+      setVisible(next);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete about section");
+      setSaveError(err instanceof Error ? err.message : "Could not update this section's visibility");
     } finally {
-      setSaving(false);
+      setTogglingVisible(false);
     }
   }
 
@@ -198,9 +221,9 @@ export default function AboutManagerPage() {
           </p>
         </div>
         <CmsSwitch
-          checked={about.isVisible}
-          onChange={(val) => updateField("isVisible", val)}
-          label="Visible"
+          checked={visible}
+          onChange={(val) => void toggleVisible(val)}
+          label={togglingVisible ? "Saving…" : "Visible"}
           size="sm"
         />
       </div>
@@ -426,15 +449,11 @@ export default function AboutManagerPage() {
             </div>
           )}
 
-          {about && about._id !== "current" && (
-            <button type="button" onClick={() => void handleDelete(about._id)} disabled={saving} className="inline-flex items-center gap-2 rounded-lg border border-danger/40 bg-danger/15 px-5 py-2.5 text-[14px] font-medium text-danger transition-all hover:bg-danger/25 disabled:opacity-60">
-              {saving ? (
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-danger/30 border-t-danger" />
-              ) : (
-                <Icon name="Trash2" className="h-4 w-4" />
-              )}
-              {saving ? "Deleting..." : "Delete"}
-            </button>
+          {saveError && (
+            <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-[13px] font-medium text-danger">
+              <Icon name="AlertTriangle" className="h-4 w-4" />
+              <span>{saveError}</span>
+            </div>
           )}
 
         </div>
