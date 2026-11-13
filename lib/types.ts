@@ -248,6 +248,19 @@ export interface SiteSettings extends DocMeta {
     mapEmbedUrl?: string;
   };
   socialLinks: SocialLink[];
+  /** Footer copy; empty values fall back to the built-in defaults. */
+  footer?: {
+    tagline?: string;
+    description?: string;
+    navigationHeading?: string;
+    elsewhereHeading?: string;
+    resumeLabel?: string;
+    ctaLabel?: string;
+    /** Supports {year} and {name} tokens. */
+    copyright?: string;
+    builtWith?: string;
+    stack?: string[];
+  };
   resumeUrl: string;
   backgroundEffect?: string;
 }

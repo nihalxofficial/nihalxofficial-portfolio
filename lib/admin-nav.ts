@@ -62,6 +62,7 @@ const CONTENT: NavGroup = {
     { href: adminHref("sections/posts"), label: "Blog", icon: "Newspaper", entity: "posts" },
     { href: adminHref("sections"), label: "Sections & Copy", icon: "ListChecks", entity: "sections" },
     { href: adminHref("sections/contact"), label: "Contact", icon: "Mail" },
+    { href: adminHref("sections/footer"), label: "Footer", icon: "PanelBottom", entity: "settings" },
     { href: adminHref("media"), label: "Media", icon: "Image" },
     { href: adminHref("messages"), label: "Messages", icon: "Inbox" },
   ],

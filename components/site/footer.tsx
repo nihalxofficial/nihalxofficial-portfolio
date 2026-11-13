@@ -6,7 +6,19 @@ import { Icon } from "@/components/ui/icon";
 import type { NavigationItem, SiteSettings } from "@/lib/types";
 import { initials } from "@/lib/utils";
 
-const STACK = ["Next.js", "Node.js", "MongoDB", "Tailwind CSS", "Framer Motion"];
+const DEFAULT_STACK = ["Next.js", "Node.js", "MongoDB", "Tailwind CSS", "Framer Motion"];
+
+const DEFAULT_COPY = {
+  tagline: "Full-Stack Developer",
+  navigationHeading: "Navigate",
+  elsewhereHeading: "Elsewhere",
+  resumeLabel: "Résumé / CV",
+  ctaLabel: "Start a project",
+  copyright: "© {year} {name} — all rights reserved",
+  builtWith: "Built with",
+  description:
+    "Building fast, accessible products with a clean, typed codebase from database to interface.",
+};
 
 export function Footer({
   settings,
@@ -22,6 +34,21 @@ export function Footer({
   const branding = settings?.branding;
   const hasLogo  = Boolean(branding?.footerLogoLight || branding?.footerLogoDark);
   const mark     = branding?.mark?.trim() || initials(name);
+
+  const footer = settings?.footer;
+  const copy = {
+    tagline: footer?.tagline || DEFAULT_COPY.tagline,
+    navigationHeading: footer?.navigationHeading || DEFAULT_COPY.navigationHeading,
+    elsewhereHeading: footer?.elsewhereHeading || DEFAULT_COPY.elsewhereHeading,
+    resumeLabel: footer?.resumeLabel || DEFAULT_COPY.resumeLabel,
+    ctaLabel: footer?.ctaLabel || DEFAULT_COPY.ctaLabel,
+    builtWith: footer?.builtWith || DEFAULT_COPY.builtWith,
+  };
+  const description = footer?.description || settings?.metaDescription || DEFAULT_COPY.description;
+  const copyright = (footer?.copyright || DEFAULT_COPY.copyright)
+    .replaceAll("{year}", String(year))
+    .replaceAll("{name}", name);
+  const stack = footer?.stack?.length ? footer.stack : DEFAULT_STACK;
 
   return (
     <footer className="relative mt-16 border-t border-white/5 pb-24 md:pb-8">
@@ -40,7 +67,7 @@ export function Footer({
                 <div>
                   <p className="text-sm font-semibold">{name}</p>
                   <p className="font-mono text-[11px] uppercase tracking-widest text-slate-500">
-                    Full-Stack Developer
+                    {copy.tagline}
                   </p>
                 </div>
               </>
@@ -48,8 +75,7 @@ export function Footer({
           </div>
 
           <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">
-            {settings?.metaDescription ||
-              "Building fast, accessible products with a clean, typed codebase from database to interface."}
+            {description}
           </p>
 
           {socials.length > 0 && (
@@ -73,7 +99,7 @@ export function Footer({
 
         {/* Navigate column */}
         <div className="col-span-1">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-acc mb-4">Navigate</p>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-acc mb-4">{copy.navigationHeading}</p>
           <ul className="space-y-2.5">
             {navigation.map((item) => (
               <li key={item._id}>
@@ -97,7 +123,7 @@ export function Footer({
 
         {/* Contact column */}
         <div className="col-span-1">
-          <p className="font-mono text-[10px] uppercase tracking-widest text-acc mb-4">Elsewhere</p>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-acc mb-4">{copy.elsewhereHeading}</p>
           <ul className="space-y-2.5">
             {settings?.contact?.email && (
               <li>
@@ -117,7 +143,7 @@ export function Footer({
                   rel="noopener noreferrer"
                   className="text-sm text-slate-400 hover:text-acc transition-colors"
                 >
-                  Résumé / CV
+                  {copy.resumeLabel}
                 </a>
               </li>
             )}
@@ -127,7 +153,7 @@ export function Footer({
                 onClick={(e) => { e.preventDefault(); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }}
                 className="text-sm text-slate-400 hover:text-acc transition-colors"
               >
-                Start a project
+                {copy.ctaLabel}
               </a>
             </li>
           </ul>
@@ -136,17 +162,15 @@ export function Footer({
 
       {/* Bottom bar */}
       <div className="flex flex-col gap-4 border-t border-white/5 pt-6 text-xs text-slate-500 md:flex-row md:items-center md:justify-between">
-        <p className="font-mono">
-          © {year} {name} — all rights reserved
-        </p>
+        <p className="font-mono">{copyright}</p>
         <p className="font-mono flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span>Built with</span>
+          <span>{copy.builtWith}</span>
           <span className="text-red-500">♥</span>
           <span>&</span>
-          {STACK.map((item, index) => (
+          {stack.map((item, index) => (
             <span key={item} className="flex items-center gap-2">
               <span className="text-acc/70">{item}</span>
-              {index < STACK.length - 1 && <span className="text-slate-700">/</span>}
+              {index < stack.length - 1 && <span className="text-slate-700">/</span>}
             </span>
           ))}
         </p>
