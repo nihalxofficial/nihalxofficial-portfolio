@@ -92,20 +92,24 @@ export default function ProjectsManagerPage() {
         return;
       }
 
-      if (!formData.slug && formData.title) {
-        formData.slug = generateSlug(formData.title);
+      // Never mutate form state directly; build the payload from a copy.
+      const payload: Partial<Project> = { ...formData };
+
+      if (!payload.slug && payload.title) {
+        payload.slug = generateSlug(payload.title);
       }
 
       setSaving(true);
 
       if (editing) {
-        await updateContent("projects", editing, formData as unknown as Record<string, unknown>);
+        await updateContent("projects", editing, payload as unknown as Record<string, unknown>);
       } else {
+        // Respect the form's publish/feature toggles on create.
         await createContent("projects", {
-          ...formData,
+          ...payload,
           order: projects.length,
-          isPublished: false,
-          isFeatured: false,
+          isPublished: payload.isPublished ?? false,
+          isFeatured: payload.isFeatured ?? false,
         });
       }
 

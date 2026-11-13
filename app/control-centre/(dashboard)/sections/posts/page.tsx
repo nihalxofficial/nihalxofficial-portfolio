@@ -92,27 +92,28 @@ export default function PostsManagerPage() {
         return;
       }
 
-      if (!formData.slug && formData.title) {
-        formData.slug = generateSlug(formData.title);
+      // Work on a copy so the form state is never mutated in place.
+      const payload: Partial<BlogPost> = { ...formData };
+
+      if (!payload.slug && payload.title) {
+        payload.slug = generateSlug(payload.title);
       }
 
-      if (formData.content) {
-        formData.readingTime = calculateReadingTime(formData.content);
+      if (payload.content) {
+        payload.readingTime = calculateReadingTime(payload.content);
       }
 
-      if (formData.isPublished && !formData.publishedAt) {
-        formData.publishedAt = new Date().toISOString();
+      if (payload.isPublished && !payload.publishedAt) {
+        payload.publishedAt = new Date().toISOString();
       }
 
       setSaving(true);
 
       if (editing) {
-        await updateContent("posts", editing, formData as unknown as Record<string, unknown>);
+        await updateContent("posts", editing, payload as unknown as Record<string, unknown>);
       } else {
-        await createContent("posts", {
-          ...formData,
-          isPublished: false,
-        });
+        // Respect the form's publish toggle on create.
+        await createContent("posts", payload as Record<string, unknown>);
       }
 
       await loadPosts();
