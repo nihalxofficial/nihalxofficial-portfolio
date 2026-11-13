@@ -5,7 +5,7 @@ import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/component
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, Switch, TextArea } from "@heroui/react";
-import { useConfirm } from "@/components/admin/ui";
+import { FormAlert, useConfirm } from "@/components/admin/ui";
 
 interface Statistic {
   _id: string;
@@ -121,11 +121,7 @@ export default function StatisticsManagerPage() {
         </button>
       </div>
 
-      {actionError && (
-        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
-          {actionError}
-        </p>
-      )}
+      {actionError && <FormAlert message={actionError} className="mb-4" />}
 
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Statistic" : "Add Statistic"}>

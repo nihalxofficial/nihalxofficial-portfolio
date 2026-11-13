@@ -5,7 +5,7 @@ import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/component
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
 import { Input, ListBoxItem, Select, Switch, TextArea } from "@heroui/react";
-import { useConfirm } from "@/components/admin/ui";
+import { FormAlert, useConfirm } from "@/components/admin/ui";
 
 interface BlogPost {
   _id: string;
@@ -226,11 +226,7 @@ export default function PostsManagerPage() {
       </div>
 
       {/* Action Error Banner */}
-      {actionError && (
-        <p className="mb-6 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
-          {actionError}
-        </p>
-      )}
+      {actionError && <FormAlert message={actionError} className="mb-6" />}
 
       {/* Create/Edit Form */}
       {(creating || editing) && (

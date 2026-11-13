@@ -6,7 +6,7 @@ import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dash
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent } from "@/lib/admin";
 import { HOMEPAGE_COMPONENTS } from "@/lib/dashboard-config";
-import { CmsSwitch } from "@/components/admin/ui";
+import { CmsSwitch, FormAlert } from "@/components/admin/ui";
 
 interface ComponentVisibilityItem {
   _id: string;
@@ -145,11 +145,7 @@ export default function ComponentVisibilityPage() {
         </div>
       </div>
 
-      {actionError && (
-        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
-          {actionError}
-        </p>
-      )}
+      {actionError && <FormAlert message={actionError} className="mb-4" />}
 
       {/* Components Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

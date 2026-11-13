@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { DashboardCard, LoadingState, ErrorState, EmptyState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, createContent, updateContent, deleteContent } from "@/lib/admin";
-import { CmsSwitch, useConfirm } from "@/components/admin/ui";
+import { CmsSwitch, FormAlert, useConfirm } from "@/components/admin/ui";
 
 interface Experience {
   _id: string;
@@ -186,11 +186,7 @@ export default function ExperienceManagerPage() {
       </div>
 
       {/* Create/Edit Form */}
-      {actionError && (
-        <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-[12.5px] text-danger">
-          {actionError}
-        </p>
-      )}
+      {actionError && <FormAlert message={actionError} className="mb-4" />}
 
       {(creating || editing) && (
         <DashboardCard className="mb-6" icon="Edit" title={editing ? "Edit Experience" : "Add Experience"}>

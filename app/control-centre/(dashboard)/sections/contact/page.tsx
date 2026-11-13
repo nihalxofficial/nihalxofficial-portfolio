@@ -5,6 +5,7 @@ import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dash
 import { Icon } from "@/components/ui/icon";
 import { updateContent, listContent } from "@/lib/admin";
 import { loadSettings } from "@/components/admin/settings/settings-utils";
+import { FormAlert } from "@/components/admin/ui";
 import { Input, Switch } from "@heroui/react";
 
 interface SocialLink {
@@ -320,11 +321,7 @@ export default function ContactManagementPage() {
             </div>
           )}
 
-          {actionError && (
-            <div className="flex items-center gap-2 rounded-lg border border-danger/30 bg-danger/10 px-4 py-2 text-[13px] font-medium text-danger">
-              <Icon name="AlertCircle" className="h-4 w-4" /><span>{actionError}</span>
-            </div>
-          )}
+          {actionError && <FormAlert message={actionError} className="mb-0" />}
         </div>
       </div>
     </div>

@@ -12,3 +12,4 @@ export {
   type ConfirmDialogProps,
 } from "@/components/admin/ui/confirm-dialog";
 export { CmsSwitch } from "@/components/admin/ui/cms-switch";
+export { FormAlert } from "@/components/admin/ui/form-alert";
