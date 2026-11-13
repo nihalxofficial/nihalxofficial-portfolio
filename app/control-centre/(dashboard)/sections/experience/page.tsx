@@ -360,7 +360,7 @@ export default function ExperienceManagerPage() {
         />
       ) : (
         <div className="space-y-4">
-          {experiences
+          {[...experiences]
             .sort((a, b) => a.order - b.order)
             .map((exp) => (
               <DashboardCard key={exp._id} hover>

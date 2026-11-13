@@ -498,7 +498,7 @@ export default function ProjectsManagerPage() {
             />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {projects
+              {[...projects]
                 .sort((a, b) => a.order - b.order)
                 .map((project) => (
                   <DashboardCard key={project._id} hover>

@@ -434,7 +434,7 @@ export default function PostsManagerPage() {
             />
           ) : (
             <div className="space-y-4">
-              {posts
+              {[...posts]
                 .sort((a, b) => {
                   const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
                   const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;

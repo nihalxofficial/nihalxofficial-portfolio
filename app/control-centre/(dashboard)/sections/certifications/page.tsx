@@ -153,7 +153,7 @@ export default function CertificationsManagerPage() {
         <EmptyState icon="Award" title="No certifications yet" description="Add your first certification" action={<button type="button" onClick={startCreate} className={btnPrimary}>Add Your First Certification</button>} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {certifications.sort((a, b) => a.order - b.order).map((cert) => (
+          {[...certifications].sort((a, b) => a.order - b.order).map((cert) => (
             <DashboardCard key={cert._id} hover>
               <div className="space-y-3">
                 <div className="flex items-start justify-between">

@@ -161,7 +161,7 @@ export default function EducationManagerPage() {
         <EmptyState icon="GraduationCap" title="No education entries yet" description="Add your academic background" action={<button type="button" onClick={startCreate} className={btnPrimary}>Add Your First Education</button>} />
       ) : (
         <div className="space-y-4">
-          {education.sort((a, b) => a.order - b.order).map((edu) => (
+          {[...education].sort((a, b) => a.order - b.order).map((edu) => (
             <DashboardCard key={edu._id} hover>
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">

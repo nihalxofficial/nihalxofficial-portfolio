@@ -158,7 +158,7 @@ export default function TestimonialsManagerPage() {
           action={<button type="button" onClick={startCreate} className={btnPrimary}>Add Your First Testimonial</button>} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {testimonials.sort((a, b) => a.order - b.order).map((test) => (
+          {[...testimonials].sort((a, b) => a.order - b.order).map((test) => (
             <DashboardCard key={test._id} hover>
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-4">

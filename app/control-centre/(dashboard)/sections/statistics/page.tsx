@@ -159,7 +159,7 @@ export default function StatisticsManagerPage() {
           action={<button type="button" onClick={startCreate} className={btnPrimary}>Add Your First Statistic</button>} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {stats.sort((a, b) => a.order - b.order).map((stat) => (
+          {[...stats].sort((a, b) => a.order - b.order).map((stat) => (
             <DashboardCard key={stat._id} hover>
               <div className="space-y-3">
                 <div className="flex items-start justify-between">

@@ -253,7 +253,7 @@ export default function NavigationManagerPage() {
         />
       ) : (
         <div className="space-y-3">
-          {items
+          {[...items]
             .sort((a, b) => a.order - b.order)
             .map((item) => (
               <DashboardCard key={item._id} hover>

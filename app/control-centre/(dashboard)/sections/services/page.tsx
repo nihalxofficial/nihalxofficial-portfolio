@@ -216,7 +216,7 @@ export default function ServicesManagerPage() {
         />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          {services
+          {[...services]
             .sort((a, b) => a.order - b.order)
             .map((service) => (
               <DashboardCard key={service._id} hover>

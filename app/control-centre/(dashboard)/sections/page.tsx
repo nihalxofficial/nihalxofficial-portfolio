@@ -469,7 +469,7 @@ export default function SectionsManagerPage() {
         />
       ) : (
         <div className="space-y-4">
-          {sections
+          {[...sections]
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
             .map((section) => {
               const items = Array.isArray(section.items) ? section.items : [];
