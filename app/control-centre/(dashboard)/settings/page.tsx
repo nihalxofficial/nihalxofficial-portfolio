@@ -63,7 +63,7 @@ const CARDS: Card[] = [
     icon: "Compass",
   },
   {
-    href: adminHref("sections/sections"),
+    href: adminHref("sections"),
     label: "Section Copy",
     description: "Headings and ordering for every homepage block.",
     icon: "ListChecks",

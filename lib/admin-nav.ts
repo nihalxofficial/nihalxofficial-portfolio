@@ -85,8 +85,6 @@ const SYSTEM: NavGroup = {
   id: "system",
   label: "System",
   items: [
-    { href: adminHref("media"), label: "Media Library", icon: "Image" },
-    { href: adminHref("messages"), label: "Messages", icon: "Inbox" },
     { href: adminHref("profile"), label: "Profile & Security", icon: "UserCog" },
     { href: adminHref("components"), label: "Component Visibility", icon: "LayoutGrid" },
     { href: "/", label: "View Site", icon: "Globe", external: true },

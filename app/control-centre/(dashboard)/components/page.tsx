@@ -5,7 +5,8 @@ import Link from "next/link";
 import { DashboardCard, LoadingState, ErrorState } from "@/components/admin/dashboard-card";
 import { Icon } from "@/components/ui/icon";
 import { listContent, updateContent } from "@/lib/admin";
-import { HOMEPAGE_COMPONENTS } from "@/lib/dashboard-config";
+import { getSectionPageByKey } from "@/lib/section-pages";
+import { adminHref } from "@/lib/admin-routes";
 import { CmsSwitch, FormAlert } from "@/components/admin/ui";
 
 interface ComponentVisibilityItem {
@@ -150,8 +151,7 @@ export default function ComponentVisibilityPage() {
       {/* Components Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {orderedSections.map((section, index) => {
-            const config = HOMEPAGE_COMPONENTS.find((c) => c.key === section.key);
-            const ConfigIcon = config?.icon;
+            const config = getSectionPageByKey(section.key);
             const isUpdating = updating === section._id;
 
             return (
@@ -164,11 +164,7 @@ export default function ComponentVisibilityPage() {
                   {/* Icon and Info */}
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-accent/20 bg-gradient-to-br from-accent/15 to-accent/5 text-accent">
-                      {ConfigIcon ? (
-                        <ConfigIcon className="h-5 w-5" />
-                      ) : (
-                        <Icon name="Box" className="h-5 w-5" />
-                      )}
+                      <Icon name={config?.icon ?? "Box"} className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-semibold text-[14px] text-ink truncate">
@@ -212,9 +208,9 @@ export default function ComponentVisibilityPage() {
                 </div>
 
                 {/* Management Link */}
-                {config?.hasCustomPage && (
+                {config && (
                   <Link
-                    href={config.route}
+                    href={adminHref(`sections/${config.routeKey}`)}
                     className="mt-4 flex items-center gap-2 text-[12px] font-medium text-accent hover:underline"
                   >
                     <Icon name="Settings" className="h-3.5 w-3.5" />

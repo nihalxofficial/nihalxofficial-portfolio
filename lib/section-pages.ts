@@ -155,3 +155,8 @@ export const SECTION_PAGES: Record<string, SectionPageConfig> = Object.fromEntri
 export function getSectionPage(routeKey: string | undefined): SectionPageConfig | undefined {
   return routeKey ? SECTION_PAGES[routeKey] : undefined;
 }
+
+/** Find the management page that owns a given homepage `sections` key. */
+export function getSectionPageByKey(sectionKey: string): SectionPageConfig | undefined {
+  return PAGES.find((page) => page.sectionKey && page.sectionKey === sectionKey);
+}
